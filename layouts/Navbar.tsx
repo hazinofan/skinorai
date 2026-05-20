@@ -1,5 +1,8 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 const navItems = [
@@ -10,6 +13,12 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  if (pathname === "/scan") {
+    return null;
+  }
+
   return (
     <header className="fixed left-0 top-0 z-50 w-full">
       <nav className="mx-auto flex h-[78px] w-full max-w-[1600px] items-center justify-between px-4 sm:h-[84px] sm:px-6 md:px-8 lg:h-[92px] lg:px-12 xl:px-16 2xl:px-20">
@@ -48,7 +57,7 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/analyze"
+            href="/scan"
             className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-[#b27cff] via-[#946bff] to-[#7f64ff] px-3 py-2 text-xs font-semibold text-white shadow-[0_12px_30px_rgba(143,109,255,0.28)] transition hover:-translate-y-0.5 sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5 sm:text-sm lg:px-5 lg:py-3"
           >
             Demarrer le scan

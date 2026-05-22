@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import {
-  Bookmark,
+  ArrowRight,
+  Bell,
   Camera,
   Check,
   CheckCircle2,
+  ChevronLeft,
   ChevronDown,
   ChevronRight,
   CircleHelp,
@@ -15,8 +17,11 @@ import {
   EyeOff,
   Lightbulb,
   Lock,
+  LoaderCircle,
   Pencil,
+  Paperclip,
   Plus,
+  Search,
   Send,
   ShieldCheck,
   Sparkles,
@@ -24,9 +29,12 @@ import {
   Target,
   TextCursorInput,
   UploadCloud,
+  UserRound,
   X,
   Zap,
+  MoreVertical,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
@@ -38,13 +46,85 @@ const stepLabels = [
   "Resultat IA",
 ];
 
-const goals = [
-  { label: "Hydratation", image: "/icons/hydratation.png", selected: true },
-  { label: "Acne & imperfections", image: "/icons/acne.png" },
-  { label: "Reparation de la barriere", image: "/icons/reparation.png" },
-  { label: "Rougeurs", image: "/icons/rougeurs.png" },
-  { label: "Peau grasse", image: "/icons/hydratation.png" },
-  { label: "Routine du matin", image: "/icons/routine-matin.png" },
+type SkinGoal = {
+  id: string;
+  label: string;
+  image: string;
+  accentLabel: string;
+  icon: LucideIcon;
+  positiveMatches: string[];
+  tips: string[];
+  questions: string[];
+  nextStep: string;
+};
+
+const goals: SkinGoal[] = [
+  {
+    id: "hydration",
+    label: "Hydratation",
+    image: "/icons/hydratation.png",
+    accentLabel: "hydrater et repulper",
+    icon: Droplet,
+    positiveMatches: ["glycerin", "hyaluron", "panthenol", "betaine", "urea", "aloe"],
+    tips: ["Appliquez sur peau legerement humide.", "Scellez ensuite avec une creme hydratante.", "Utilisez un SPF le matin."],
+    questions: ["Puis-je utiliser ce produit avec du retinol ?", "Est-ce un bon choix pour une peau deshydratee ?"],
+    nextStep: "Utilisez 2 a 3 fois par semaine au debut, puis augmentez si votre peau reste confortable.",
+  },
+  {
+    id: "acne",
+    label: "Acne & imperfections",
+    image: "/icons/acne.png",
+    accentLabel: "cibler les imperfections",
+    icon: Sparkles,
+    positiveMatches: ["salicy", "niacinamide", "zinc", "sulfur", "tea tree", "azela"],
+    tips: ["Introduisez le produit progressivement.", "Evitez de le superposer avec trop d actifs irritants.", "Hydratez bien la peau pour proteger la barriere."],
+    questions: ["Ce produit aide-t-il pour les boutons inflammatoires ?", "Puis-je l utiliser le meme jour qu un exfoliant ?"],
+    nextStep: "Commencez doucement et observez si la formule aide sans augmenter la sensibilite.",
+  },
+  {
+    id: "barrier",
+    label: "Reparation de la barriere",
+    image: "/icons/reparation.png",
+    accentLabel: "renforcer la barriere cutanee",
+    icon: ShieldCheck,
+    positiveMatches: ["ceramide", "panthenol", "squalane", "cholesterol", "centella", "oat"],
+    tips: ["Favorisez une routine simple pendant quelques jours.", "Evitez les exfoliants forts si la peau est reactive.", "Appliquez sur peau propre avec des gestes doux."],
+    questions: ["Est-ce adapte apres une irritation ?", "Ce produit soutient-il une barriere abimee ?"],
+    nextStep: "Associez-le a des formules simples et evitez les actifs trop puissants le meme jour.",
+  },
+  {
+    id: "redness",
+    label: "Rougeurs",
+    image: "/icons/rougeurs.png",
+    accentLabel: "apaiser les rougeurs",
+    icon: Lightbulb,
+    positiveMatches: ["allantoin", "centella", "panthenol", "bisabolol", "aloe", "oat"],
+    tips: ["Testez d abord sur une petite zone.", "Evitez l eau trop chaude apres application.", "Associez-le a une routine tres douce."],
+    questions: ["Ce produit convient-il a une peau sensible ?", "Y a-t-il des ingredients qui peuvent aggraver les rougeurs ?"],
+    nextStep: "Si votre peau reagit facilement, utilisez-le seul pendant quelques jours pour evaluer la tolerance.",
+  },
+  {
+    id: "oily",
+    label: "Peau grasse",
+    image: "/icons/hydratation.png",
+    accentLabel: "equilibrer l exces de sebum",
+    icon: Target,
+    positiveMatches: ["niacinamide", "zinc", "salicy", "green tea", "clay", "tea tree"],
+    tips: ["Appliquez en fine couche pour eviter l effet lourd.", "Ne sautez pas l hydratation meme si la peau est grasse.", "Surveillez si le produit laisse un fini confortable."],
+    questions: ["Ce produit risque-t-il de boucher les pores ?", "Est-ce une bonne option pour limiter la brillance ?"],
+    nextStep: "Observez le fini sur la zone T et combinez-le avec une routine legere et non comedogene.",
+  },
+  {
+    id: "morning",
+    label: "Routine du matin",
+    image: "/icons/routine-matin.png",
+    accentLabel: "optimiser la routine du matin",
+    icon: Zap,
+    positiveMatches: ["vitamin c", "niacinamide", "caffeine", "green tea", "hyaluron", "glycerin"],
+    tips: ["Superposez du plus leger au plus riche.", "Terminez toujours par un SPF.", "Gardez la routine simple pour gagner du temps le matin."],
+    questions: ["Ce produit se combine-t-il bien avec la vitamine C ?", "Est-ce une bonne etape avant la creme solaire ?"],
+    nextStep: "Utilisez-le dans une routine courte et verifiez qu il se superpose bien sous la protection solaire.",
+  },
 ];
 
 type IngredientStatus = "OK" | "A surveiller";
@@ -58,6 +138,22 @@ type UploadedImage = {
   id: string;
   file: File;
   url: string;
+};
+
+type ResultDetail = {
+  name: string;
+  note: string;
+};
+
+type AnalysisResult = {
+  score: number;
+  verdict: string;
+  summary: string;
+  positives: ResultDetail[];
+  watchouts: ResultDetail[];
+  tips: string[];
+  questions: string[];
+  nextStep: string;
 };
 
 const defaultIngredients: IngredientItem[] = [
@@ -93,18 +189,116 @@ function parseIngredientText(value: string): string[] {
     .filter(Boolean);
 }
 
+function formatProductName(imageName?: string | null) {
+  if (!imageName) {
+    return "Produit analyse";
+  }
+
+  return imageName
+    .replace(/\.[^.]+$/, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function toTitleCase(value: string) {
+  return value.replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function buildIngredientNote(name: string, goalId: string, status: IngredientStatus) {
+  const normalized = name.toLowerCase();
+
+  if (status === "A surveiller") {
+    if (normalized.includes("fragrance") || normalized.includes("parfum")) {
+      return "Peut etre irritant sur les peaux sensibles.";
+    }
+
+    if (normalized.includes("alcohol") || normalized.includes("denat")) {
+      return "Peut etre desschant selon la sensibilite de votre peau.";
+    }
+
+    if (normalized.includes("essential oil")) {
+      return "A surveiller si votre peau reagit facilement.";
+    }
+
+    return "Ingredient a surveiller selon votre tolerance.";
+  }
+
+  const goalSpecificNotes: Record<string, string> = {
+    hydration: "Aide a soutenir l hydratation cutanee.",
+    acne: "Peut aider a garder une routine plus ciblee sur les imperfections.",
+    barrier: "Soutient une routine orientee confort et barriere.",
+    redness: "Interesse pour une routine plus apaisante.",
+    oily: "Peut convenir a une routine pour peau grasse.",
+    morning: "S integre bien dans une routine du matin simple.",
+  };
+
+  return goalSpecificNotes[goalId] ?? "Point positif pour cet objectif peau.";
+}
+
+function buildAnalysisResult(goal: SkinGoal, ingredientItems: IngredientItem[]): AnalysisResult {
+  const positivesBase = ingredientItems.filter((item) => item.status === "OK");
+  const watchoutsBase = ingredientItems.filter((item) => item.status === "A surveiller");
+
+  const matchedPositives = positivesBase.filter((item) =>
+    goal.positiveMatches.some((keyword) => item.name.toLowerCase().includes(keyword))
+  );
+
+  const positives = (matchedPositives.length > 0 ? matchedPositives : positivesBase)
+    .slice(0, 3)
+    .map((item) => ({
+      name: toTitleCase(item.name),
+      note: buildIngredientNote(item.name, goal.id, item.status),
+    }));
+
+  const watchouts = watchoutsBase.slice(0, 3).map((item) => ({
+    name: toTitleCase(item.name),
+    note: buildIngredientNote(item.name, goal.id, item.status),
+  }));
+
+  const rawScore = 6.2 + positives.length * 0.9 - watchouts.length * 0.55;
+  const score = Number(Math.min(9.6, Math.max(4.2, rawScore)).toFixed(1));
+
+  let verdict = "Good Choice";
+  if (score >= 8.5) {
+    verdict = "Excellent Match";
+  } else if (score < 6.5) {
+    verdict = "Mixed Match";
+  }
+
+  const summary =
+    positives.length > 0
+      ? `Ce produit semble globalement adapte pour ${goal.accentLabel}. Il presente ${positives.length} point${positives.length > 1 ? "s" : ""} positif${positives.length > 1 ? "s" : ""}${watchouts.length > 0 ? ` avec ${watchouts.length} element${watchouts.length > 1 ? "s" : ""} a surveiller` : ""}.`
+      : `L analyse montre quelques points utiles pour ${goal.accentLabel}, mais la formule reste a verifier selon votre tolerance.`;
+
+  return {
+    score,
+    verdict,
+    summary,
+    positives,
+    watchouts,
+    tips: goal.tips,
+    questions: goal.questions,
+    nextStep: goal.nextStep,
+  };
+}
+
 export default function ScanPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [selectedGoalId, setSelectedGoalId] = useState(goals[0].id);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [isManualDialogOpen, setIsManualDialogOpen] = useState(false);
   const [manualIngredientsInput, setManualIngredientsInput] = useState("");
   const [ingredientItems, setIngredientItems] = useState<IngredientItem[]>([]);
   const [stepTwoError, setStepTwoError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isResultReady, setIsResultReady] = useState(false);
   const uploadedImagesRef = useRef<UploadedImage[]>([]);
 
   const hasManualIngredients = parseIngredientText(manualIngredientsInput).length > 0;
   const hasStepTwoData = uploadedImages.length > 0 || hasManualIngredients;
+  const selectedGoal = goals.find((goal) => goal.id === selectedGoalId) ?? goals[0];
   const goToStep = (step: number) => {
     const nextStep = Math.min(Math.max(step, 1), 4);
 
@@ -117,6 +311,20 @@ export default function ScanPage() {
     setCurrentStep(nextStep);
   };
   const selectedImage = uploadedImages.find((image) => image.id === selectedImageId) ?? uploadedImages[0] ?? null;
+  const analysisResult = buildAnalysisResult(selectedGoal, ingredientItems);
+
+  const resetFlow = () => {
+    uploadedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
+    uploadedImagesRef.current = [];
+    setUploadedImages([]);
+    setSelectedImageId(null);
+    setManualIngredientsInput("");
+    setIngredientItems([]);
+    setStepTwoError("");
+    setIsAnalyzing(false);
+    setIsResultReady(false);
+    setCurrentStep(1);
+  };
 
   useEffect(() => {
     uploadedImagesRef.current = uploadedImages;
@@ -127,6 +335,21 @@ export default function ScanPage() {
       uploadedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
     };
   }, []);
+
+  useEffect(() => {
+    if (currentStep !== 4 || isResultReady) {
+      setIsAnalyzing(false);
+      return;
+    }
+
+    setIsAnalyzing(true);
+    const timeout = window.setTimeout(() => {
+      setIsAnalyzing(false);
+      setIsResultReady(true);
+    }, 2200);
+
+    return () => window.clearTimeout(timeout);
+  }, [currentStep, isResultReady]);
 
   const addFiles = (files: FileList | File[]) => {
     const validFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
@@ -183,6 +406,22 @@ export default function ScanPage() {
     setCurrentStep(3);
   };
 
+  if (isResultReady) {
+    return (
+      <ResultWorkspace
+        analysisResult={analysisResult}
+        currentStep={currentStep}
+        selectedGoal={selectedGoal}
+        selectedImage={selectedImage}
+        onChangeGoal={() => {
+          setIsResultReady(false);
+          setCurrentStep(1);
+        }}
+        onScanAnother={resetFlow}
+      />
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#fbfaff] text-[#111631]">
       <ScanHeader />
@@ -205,7 +444,7 @@ export default function ScanPage() {
           </div>
 
           <div className="mt-9">
-            <ScanProgress currentStep={currentStep} onStepClick={goToStep} />
+            <ScanProgress currentStep={currentStep} onStepClick={goToStep} selectedGoalLabel={selectedGoal.label} />
 
             <Stepper
               activeStep={currentStep - 1}
@@ -218,7 +457,7 @@ export default function ScanPage() {
               }}
             >
               <StepperPanel header={stepLabels[0]}>
-                <GoalStep />
+                <GoalStep selectedGoalId={selectedGoalId} onSelectGoal={setSelectedGoalId} />
               </StepperPanel>
               <StepperPanel header={stepLabels[1]}>
                 <UploadStep
@@ -240,7 +479,7 @@ export default function ScanPage() {
                 />
               </StepperPanel>
               <StepperPanel header={stepLabels[3]}>
-                <ResultStep />
+                <AnalysisLoadingStep selectedGoal={selectedGoal} ingredientCount={ingredientItems.length} isAnalyzing={isAnalyzing} />
               </StepperPanel>
             </Stepper>
 
@@ -328,6 +567,23 @@ export default function ScanPage() {
       )}
 
       <style jsx global>{`
+        @keyframes analysis-fill {
+          0% {
+            transform: scaleX(0.18);
+            opacity: 0.8;
+          }
+
+          65% {
+            transform: scaleX(0.82);
+            opacity: 1;
+          }
+
+          100% {
+            transform: scaleX(1);
+            opacity: 1;
+          }
+        }
+
         .scan-prime-stepper > .p-stepper-nav {
           display: none !important;
         }
@@ -380,9 +636,11 @@ function ScanHeader() {
 function ScanProgress({
   currentStep,
   onStepClick,
+  selectedGoalLabel,
 }: {
   currentStep: number;
   onStepClick: (step: number) => void;
+  selectedGoalLabel: string;
 }) {
   return (
     <div className="mx-auto flex max-w-[920px] items-center pb-12">
@@ -414,6 +672,9 @@ function ScanProgress({
                   }`}
               >
                 {label}
+                {step === 1 && (
+                  <span className="mt-1 block text-xs font-medium text-[#7f86a3]">{selectedGoalLabel}</span>
+                )}
               </span>
             </button>
             {step < stepLabels.length && (
@@ -431,23 +692,31 @@ function ScanProgress({
   );
 }
 
-function GoalStep() {
+function GoalStep({
+  selectedGoalId,
+  onSelectGoal,
+}: {
+  selectedGoalId: string;
+  onSelectGoal: (goalId: string) => void;
+}) {
   return (
     <div className="mx-auto grid max-w-[1380px] gap-10 lg:grid-cols-[minmax(0,930px)_410px] lg:items-stretch lg:justify-center mt-8">
       <Panel className="min-h-[500px] px-9 pb-28 pt-8">
         <StepTitle number="1" title="Choisissez votre objectif peau" description="Selectionnez votre priorite du moment pour personnaliser l analyse." />
         <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal) => {
+            const isSelected = goal.id === selectedGoalId;
             return (
               <button
                 key={goal.label}
                 type="button"
-                className={`relative flex min-h-[132px] flex-col items-center justify-center rounded-2xl border bg-white px-4 text-center transition hover:-translate-y-0.5 ${goal.selected
+                onClick={() => onSelectGoal(goal.id)}
+                className={`relative flex min-h-[132px] flex-col cursor-pointer py-4 items-center justify-center rounded-2xl border bg-white px-4 text-center transition hover:-translate-y-0.5 ${isSelected
                   ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
                   : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
                   }`}
               >
-                {goal.selected && (
+                {isSelected && (
                   <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#7947e6] text-white">
                     <Check className="h-4 w-4" />
                   </span>
@@ -462,6 +731,7 @@ function GoalStep() {
                   />
                 </span>
                 <span className="mt-4 text-base font-semibold">{goal.label}</span>
+                <span className="mt-1 text-sm text-[#7a819e]">{goal.accentLabel}</span>
               </button>
             );
           })}
@@ -510,7 +780,7 @@ function UploadStep({
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px]">
+    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px] mt-10">
       <Panel>
         <StepTitle number="2" title="Importez l etiquette du produit" description="Prenez une photo claire de la liste d ingredients pour que notre IA puisse l analyser." />
         <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_260px]">
@@ -652,7 +922,7 @@ function IngredientsStep({
       <Panel className="px-8 py-7">
         <StepTitle number="3" title="Verifiez les ingredients detectes" description="Passez en revue la liste d ingredients extraite par l IA. Modifiez-la si necessaire." />
         <div className="mt-7 overflow-hidden rounded-[30px] border border-[#ece7fb] bg-white">
-          <div className="grid gap-8 px-6 py-6 xl:grid-cols-[minmax(0,1fr)_250px] xl:px-7">
+          <div className="grid gap-8 px-6 py-6 xl:grid-cols-1 xl:px-7">
             <div className="min-w-0">
               <div className="mb-5 flex flex-wrap items-center gap-3">
                 <h2 className="text-lg font-bold text-[#171b36]">Liste des ingredients (INCI)</h2>
@@ -668,7 +938,7 @@ function IngredientsStep({
                 <button
                   type="button"
                   onClick={onOpenManualDialog}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[#dccdfd] bg-white px-6 text-sm font-semibold text-[#7b57ea] transition hover:bg-[#fbf8ff]"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full border border-[#dccdfd] bg-white px-6 text-sm font-semibold text-[#7b57ea] transition hover:bg-[#fbf8ff]"
                 >
                   <Pencil className="h-4 w-4" />
                   Modifier la liste
@@ -676,7 +946,7 @@ function IngredientsStep({
                 <button
                   type="button"
                   onClick={onContinue}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-[#6f38df] px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)]"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)]"
                 >
                   Continuer l analyse
                   <ChevronRight className="h-4 w-4" />
@@ -684,14 +954,14 @@ function IngredientsStep({
               </div>
             </div>
 
-            <div className="border-l border-[#f1edf8] pl-0 xl:pl-7">
+            {/* <div className="border-l border-[#f1edf8] pl-0 xl:pl-7">
               <h3 className="text-center text-base font-bold text-[#1d2140]">Apercu de l etiquette</h3>
               <PhotoPreview selectedImage={selectedImage} small imageCount={selectedImage ? 1 : 0} />
-            </div>
+            </div> */}
           </div>
 
           <div className="border-t border-[#f0ecfa] p-4 sm:p-5">
-            <button className="flex w-full items-center gap-4 rounded-[22px] border border-[#ebe5fb] bg-[linear-gradient(90deg,_rgba(249,246,255,0.98)_0%,_rgba(244,239,255,0.98)_100%)] p-4 text-left shadow-[0_8px_20px_rgba(124,87,235,0.06)]">
+            <button className="flex cursor-pointer w-full items-center gap-4 rounded-[22px] border border-[#ebe5fb] bg-[linear-gradient(90deg,_rgba(249,246,255,0.98)_0%,_rgba(244,239,255,0.98)_100%)] p-4 text-left shadow-[0_8px_20px_rgba(124,87,235,0.06)]">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-[#7d57ea] shadow-sm">
                 <Sparkles className="h-5 w-5" />
               </span>
@@ -742,58 +1012,211 @@ function IngredientColumn({
   );
 }
 
-function ResultStep() {
-  return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="flex items-center gap-3 text-3xl font-bold">
-              <Sparkles className="h-7 w-7 text-[#7548e8]" />
-              AI Analysis Result
-            </h2>
-            <p className="mt-2 text-lg text-[#59617d]">Here is what we found for your skin goal: <span className="font-semibold text-[#6f3fe4]">Hydration</span></p>
-          </div>
-          <button className="rounded-full border border-[#bda7ff] px-6 py-3 font-semibold text-[#6f3fe4]">View full report</button>
-        </div>
+function AnalysisLoadingStep({
+  selectedGoal,
+  ingredientCount,
+  isAnalyzing,
+}: {
+  selectedGoal: SkinGoal;
+  ingredientCount: number;
+  isAnalyzing: boolean;
+}) {
+  const GoalIcon = selectedGoal.icon;
 
-        <section className="grid gap-6 rounded-3xl border border-[#e4e1ef] bg-[#f8f2ff] p-7 sm:grid-cols-[260px_minmax(0,1fr)]">
-          <div className="flex items-center justify-center">
-            <ShieldCheck className="h-36 w-36 text-[#7548e8]" strokeWidth={1.5} />
+  return (
+    <div className="mx-auto mt-14 max-w-[980px]">
+      <Panel className="overflow-hidden border-[#e8e0fb] bg-[radial-gradient(circle_at_top,_rgba(158,118,255,0.16),_transparent_36%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(250,246,255,0.98)_100%)] px-8 py-10 sm:px-12 sm:py-14">
+        <div className="flex flex-col items-center text-center">
+          <span className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white/90 text-[#7448e8] shadow-[0_18px_45px_rgba(116,72,232,0.15)]">
+            {isAnalyzing ? <LoaderCircle className="h-10 w-10 animate-spin" /> : <Sparkles className="h-10 w-10" />}
+          </span>
+
+          <h2 className="mt-8 text-3xl font-bold text-[#151833] sm:text-4xl">Analyse IA en cours</h2>
+          <p className="mt-4 max-w-[640px] text-base leading-8 text-[#68708b] sm:text-lg">
+            Nous analysons {ingredientCount} ingredient{ingredientCount > 1 ? "s" : ""} pour verifier si ce produit correspond a votre objectif peau: {selectedGoal.label}.
+          </p>
+
+          <div className="mt-10 grid w-full gap-4 md:grid-cols-3">
+            <LoadingInfoCard icon={GoalIcon} title="Objectif choisi" text={selectedGoal.label} />
+            <LoadingInfoCard icon={ClipboardCheck} title="Ingredients verifies" text={`${ingredientCount} elements confirmes`} />
+            <LoadingInfoCard icon={Sparkles} title="Etape actuelle" text="Generation du resultat personnalise" />
           </div>
-          <div className="flex flex-col justify-center">
-            <p className="text-[#59617d]">Overall Result</p>
-            <h3 className="mt-1 text-3xl font-bold text-[#6f3fe4]">Good Choice</h3>
-            <p className="mt-4 max-w-[460px] text-lg leading-8 text-[#31364f]">This product is beneficial for your hydration goal. It has good hydrating ingredients with a few things to watch.</p>
-            <div className="mt-6 flex flex-wrap items-center gap-5">
-              <span className="rounded-full bg-[#ddf7e7] px-5 py-2 text-2xl font-bold text-[#20a45c]">7.8 / 10</span>
-              <button className="font-semibold text-[#6f3fe4]">How is this score calculated?</button>
+
+          <div className="mt-10 w-full max-w-[640px]">
+            <div className="h-3 overflow-hidden rounded-full bg-white/90 shadow-inner">
+              <span className="block h-full w-full origin-left animate-[analysis-fill_2.2s_ease-in-out_forwards] rounded-full bg-gradient-to-r from-[#8a5df0] via-[#a97cf8] to-[#f1b6ff]" />
+            </div>
+            <div className="mt-4 flex items-center justify-between text-sm font-medium text-[#7b829e]">
+              <span>Lecture de la formule</span>
+              <span>Evaluation de compatibilite</span>
+              <span>Preparation du resultat</span>
+            </div>
+          </div>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+
+function LoadingInfoCard({
+  icon: Icon,
+  title,
+  text,
+}: {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/70 bg-white/75 p-5 text-left shadow-[0_14px_35px_rgba(116,69,232,0.08)] backdrop-blur-sm">
+      <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f4eeff] text-[#7448e8]">
+        <Icon className="h-6 w-6" />
+      </span>
+      <p className="mt-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#956cf8]">{title}</p>
+      <p className="mt-2 text-base font-semibold text-[#171b36]">{text}</p>
+    </div>
+  );
+}
+
+function ResultWorkspace({
+  analysisResult,
+  currentStep,
+  selectedGoal,
+  selectedImage,
+  onChangeGoal,
+  onScanAnother,
+}: {
+  analysisResult: AnalysisResult;
+  currentStep: number;
+  selectedGoal: SkinGoal;
+  selectedImage: UploadedImage | null;
+  onChangeGoal: () => void;
+  onScanAnother: () => void;
+}) {
+  const productName = formatProductName(selectedImage?.file.name ?? null);
+  const historyItems = [
+    { name: productName, date: "Aujourd hui · 10:24", active: true, image: selectedImage?.url ?? "/cleanser.png" },
+    { name: "Sunscreen SPF 50", date: "Hier · 14:32", active: false, image: "/cleanser.png" },
+    { name: "Vitamin C Serum", date: "2 mai · 09:15", active: false, image: "/cleanser.png" },
+    { name: "Retinol Night Cream", date: "28 avril · 21:08", active: false, image: "/cleanser.png" },
+  ];
+
+  return (
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] p-2 text-[#161a35] sm:p-4">
+      <div className="mx-auto flex min-h-[calc(100vh-1rem)] max-w-[1780px] overflow-hidden rounded-[34px] border border-[#e8e2fa] bg-white/85 shadow-[0_28px_80px_rgba(86,63,154,0.10)] backdrop-blur-xl sm:min-h-[calc(100vh-2rem)]">
+        <ResultSidebarShell historyItems={historyItems} onScanAnother={onScanAnother} selectedImage={selectedImage} />
+        <section className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-center justify-between border-b border-[#ede7fb] px-5 py-5 sm:px-8">
+            <button
+              type="button"
+              onClick={onChangeGoal}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#6d58ac] transition hover:text-[#5837d2]"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Retour au scan
+            </button>
+            <div className="flex items-center gap-4 text-[#636b88]">
+              <button type="button" className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]">
+                <CircleHelp className="h-5 w-5" />
+                Aide
+              </button>
+              <button type="button" className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]">
+                <Bell className="h-5 w-5" />
+                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#8f64f2]" />
+              </button>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-7 sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-[1080px]">
+              <ScanProgress currentStep={currentStep} onStepClick={() => undefined} selectedGoalLabel={selectedGoal.label} />
+
+              <div className="mt-6 flex items-start justify-end gap-4">
+                <div className="max-w-[720px] rounded-[26px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-6 py-5 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
+                  <p className="text-[15px] font-semibold text-[#1a1e39] sm:text-[17px]">{productName} - objectif: {selectedGoal.label}</p>
+                  <p className="mt-2 text-sm leading-7 text-[#69718f] sm:text-base">J ai scanne ce produit pour verifier s il est bien adapte a mon objectif peau et a ma routine.</p>
+                </div>
+                <div className="hidden items-center gap-4 sm:flex">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
+                    <UserRound className="h-7 w-7" />
+                  </span>
+                  <span className="text-sm text-[#868daa]">10:24</span>
+                </div>
+              </div>
+
+              <div className="mt-10 rounded-[34px] border border-[#ece5fb] bg-white px-5 py-6 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-7 sm:py-8">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <span className="mt-1 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
+                      <Sparkles className="h-7 w-7" />
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-2xl font-bold text-[#171b36]">Resultat de l analyse IA</h2>
+                        <span className="rounded-full bg-[#e7f8ec] px-4 py-2 text-sm font-semibold text-[#21a35c]">{analysisResult.verdict}</span>
+                      </div>
+                      <p className="mt-4 max-w-[780px] text-base leading-8 text-[#5f6784]">{analysisResult.summary}</p>
+                    </div>
+                  </div>
+                  <span className="rounded-[20px] bg-[#e9faef] px-4 py-3 text-3xl font-bold text-[#20a45c] shadow-sm">
+                    {analysisResult.score}/10
+                  </span>
+                </div>
+
+                <div className="mt-8 grid gap-4 xl:grid-cols-3">
+                  <InsightCard title="Points forts" tone="green" items={analysisResult.positives} />
+                  <InsightCard title="A surveiller" tone="orange" items={analysisResult.watchouts} />
+                  <NextStepCard tips={analysisResult.tips} nextStep={analysisResult.nextStep} />
+                </div>
+
+                <div className="mt-8">
+                  <h3 className="text-lg font-semibold text-[#171b36]">Questions a poser</h3>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    {analysisResult.questions.map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        className="rounded-2xl border border-[#e7defc] bg-[#faf7ff] px-4 py-3 text-sm font-semibold text-[#7350e5] transition hover:bg-[#f1eaff]"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-[30px] border border-[#e8e0fb] bg-white px-5 py-5 shadow-[0_18px_45px_rgba(90,66,165,0.06)] sm:px-6">
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-3 text-[#7a55ea]">
+                      <Sparkles className="h-5 w-5" />
+                      <span className="font-semibold">Posez une question sur ce produit...</span>
+                    </div>
+                    <input
+                      className="mt-4 w-full border-0 bg-transparent text-base text-[#171b36] outline-none placeholder:text-[#98a0bc]"
+                      placeholder="Compatibilite, usage, sensibilite, routine..."
+                    />
+                    <div className="mt-5 flex flex-wrap gap-3">
+                      <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-4 py-2 text-sm font-medium text-[#6a7290]">
+                        <Paperclip className="h-4 w-4" />
+                        Joindre une image
+                      </button>
+                      <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-4 py-2 text-sm font-medium text-[#6a7290]">
+                        <Sparkles className="h-4 w-4" />
+                        Exemples de questions
+                      </button>
+                    </div>
+                  </div>
+                  <button type="button" className="ml-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_18px_35px_rgba(112,75,225,0.28)]">
+                    <Send className="h-7 w-7" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
-
-        <ResultBand title="Key positives" count="3" tone="green" items={["Glycerin", "Niacinamide", "Sodium Hyaluronate"]} />
-        <ResultBand title="Things to watch" count="2" tone="orange" items={["Parfum (Fragrance)", "Alcohol Denat."]} />
-
-        <section className="rounded-3xl border border-[#ddd9f0] bg-[#fbfbff] p-7">
-          <h3 className="flex items-center gap-3 text-xl font-bold text-[#6f3fe4]">
-            <Zap className="h-6 w-6" />
-            Next best step
-          </h3>
-          <p className="mt-4 max-w-[620px] text-lg leading-8 text-[#31364f]">Use 2-3 times per week and avoid strong exfoliants on the same day. Monitor how your skin feels.</p>
-        </section>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <button className="h-14 rounded-2xl border border-[#bda7ff] bg-white text-lg font-semibold text-[#5f3bd8]">Scan another product</button>
-          <button className="h-14 rounded-2xl bg-gradient-to-r from-[#8c57eb] to-[#6c35d8] text-lg font-semibold text-white">
-            <Bookmark className="mr-2 inline h-5 w-5" />
-            Save result
-          </button>
-        </div>
       </div>
-
-      <ResultSidebar />
-    </div>
+    </main>
   );
 }
 
@@ -1051,64 +1474,146 @@ function ProductStill() {
   );
 }
 
-function ResultBand({ title, count, tone, items }: { title: string; count: string; tone: "green" | "orange"; items: string[] }) {
+function ResultSidebarShell({
+  historyItems,
+  onScanAnother,
+  selectedImage,
+}: {
+  historyItems: Array<{ name: string; date: string; active: boolean; image: string }>;
+  onScanAnother: () => void;
+  selectedImage: UploadedImage | null;
+}) {
+  return (
+    <aside className="hidden w-[320px] shrink-0 border-r border-[#ede7fb] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94)_0%,_rgba(249,245,255,0.92)_100%)] lg:flex lg:flex-col">
+      <div className="border-b border-[#ede7fb] px-6 py-8">
+        <div className="flex items-center justify-between">
+          <Image src="/logo.png" alt="SkinorAI" width={170} height={40} className="h-10 w-auto" priority />
+          <button type="button" className="rounded-full p-2 text-[#6c7190] transition hover:bg-[#f5f1ff]">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={onScanAnother}
+          className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-4 text-base font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
+        >
+          <Plus className="h-5 w-5" />
+          Nouveau scan
+        </button>
+
+        <div className="mt-8 flex items-center gap-3 rounded-2xl border border-[#e8e0fb] bg-white px-4 py-3 text-[#8a90aa]">
+          <Search className="h-5 w-5" />
+          <span className="text-sm">Rechercher un scan...</span>
+        </div>
+      </div>
+
+      <div className="flex-1 px-5 py-6">
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-[#171b36]">
+          <Clock3 className="h-5 w-5 text-[#7260ad]" />
+          Historique
+        </h3>
+
+        <div className="mt-6 space-y-3">
+          {historyItems.map((item) => (
+            <div
+              key={`${item.name}-${item.date}`}
+              className={`flex items-center gap-3 rounded-[24px] border px-3 py-3 shadow-sm ${item.active ? "border-[#e6ddfb] bg-[#f8f4ff]" : "border-transparent bg-white/70"}`}
+            >
+              <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-[#efe7fb] bg-white">
+                <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized={item.image === selectedImage?.url} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-[#1b1f39]">{item.name}</p>
+                <p className="mt-1 text-sm text-[#7b829e]">{item.date}</p>
+              </div>
+              <button type="button" className="rounded-full p-2 text-[#7680a0] transition hover:bg-white">
+                <MoreVertical className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <button type="button" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6f49e2] transition hover:text-[#5d39cf]">
+          Voir tous les scans
+          <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="mt-auto flex items-center gap-3 border-t border-[#ede7fb] px-5 py-5">
+        <Image src="/people.png" alt="Clara" width={44} height={44} className="h-11 w-11 rounded-full object-cover object-left" />
+        <div className="flex-1">
+          <p className="font-semibold text-[#171b36]">Clara</p>
+          <p className="text-sm font-medium text-[#7a55ea]">Plan Pro</p>
+        </div>
+        <ChevronDown className="h-4 w-4 text-[#6e7693]" />
+      </div>
+    </aside>
+  );
+}
+
+function InsightCard({
+  title,
+  tone,
+  items,
+}: {
+  title: string;
+  tone: "green" | "orange";
+  items: ResultDetail[];
+}) {
   const isGreen = tone === "green";
   return (
-    <section className={`rounded-3xl border p-6 ${isGreen ? "border-[#dfeee6] bg-[#fcfffd]" : "border-[#f3e5cf] bg-[#fffdf9]"}`}>
+    <section className={`rounded-[28px] border p-6 ${isGreen ? "border-[#ddf1e6] bg-[#fcfffd]" : "border-[#f5e5cb] bg-[#fffdf9]"}`}>
       <h3 className="flex items-center gap-3 text-xl font-bold">
         <CheckCircle2 className={`h-7 w-7 ${isGreen ? "text-[#55c987]" : "text-[#ffae4f]"}`} />
         {title}
-        <span className={`rounded-full px-3 py-1 text-sm ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>{count}</span>
+        <span className={`rounded-full px-3 py-1 text-sm ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>{items.length}</span>
       </h3>
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        {items.map((item) => (
-          <div key={item} className="rounded-2xl border border-[#e5e7ef] bg-white p-4 font-semibold">{item}</div>
-        ))}
-      </div>
+      {items.length > 0 ? (
+        <div className="mt-5 space-y-5">
+          {items.map((item) => (
+            <div key={item.name} className="flex gap-3">
+              <span className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isGreen ? "bg-[#e7f8ec] text-[#20a45c]" : "bg-[#fff2df] text-[#ff9d2f]"}`}>
+                {isGreen ? <Check className="h-4 w-4" /> : <CircleHelp className="h-4 w-4" />}
+              </span>
+              <div>
+                <p className="font-semibold text-[#171b36]">{item.name}</p>
+                <p className="mt-1 text-sm leading-6 text-[#66708f]">{item.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-5 text-[#66708f]">No major {isGreen ? "positives" : "watchouts"} were identified from the current ingredient list.</p>
+      )}
     </section>
   );
 }
 
-function ResultSidebar() {
+function NextStepCard({
+  tips,
+  nextStep,
+}: {
+  tips: string[];
+  nextStep: string;
+}) {
   return (
-    <aside className="space-y-5">
-      <Panel>
-        <h3 className="text-xl font-bold">Product summary</h3>
-        <div className="mt-5 flex gap-5">
-          <Image src="/cleanser.png" alt="The Ordinary serum" width={72} height={110} className="h-28 w-auto object-contain" />
-          <div>
-            <p className="text-lg font-bold">The Ordinary</p>
-            <p className="mt-2 text-lg font-bold leading-7">Hyaluronic Acid 2% + B5</p>
-            <p className="mt-4 text-[#66708f]">Serum - 30ml</p>
+    <section className="rounded-[28px] border border-[#e8defc] bg-[#fefcff] p-6">
+      <h3 className="flex items-center gap-3 text-xl font-bold text-[#171b36]">
+        <Sparkles className="h-6 w-6 text-[#7a55ea]" />
+        Prochaine etape
+      </h3>
+      <p className="mt-4 text-sm leading-7 text-[#66708f]">{nextStep}</p>
+      <div className="mt-5 space-y-4">
+        {tips.map((tip, index) => (
+          <div key={tip} className="flex gap-3 border-t border-[#f0e9fd] pt-4 first:border-t-0 first:pt-0">
+            <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
+              {index === 0 ? <Clock3 className="h-4 w-4" /> : index === 1 ? <ShieldCheck className="h-4 w-4" /> : <Droplet className="h-4 w-4" />}
+            </span>
+            <p className="text-sm leading-7 text-[#535a78]">{tip}</p>
           </div>
-        </div>
-      </Panel>
-      <Panel>
-        <h3 className="text-xl font-bold">Your skin goal</h3>
-        <div className="mt-5 flex items-center justify-between">
-          <span className="flex items-center gap-3 font-semibold"><Droplet className="h-6 w-6 text-[#7548e8]" /> Hydration</span>
-          <button className="rounded-full border border-[#e2dcff] px-4 py-2 text-sm font-semibold text-[#6f3fe4]">Change</button>
-        </div>
-      </Panel>
-      <Panel>
-        <h3 className="flex items-center gap-2 text-xl font-bold text-[#6f3fe4]"><Lightbulb className="h-5 w-5" /> Tips for best results</h3>
-        <ul className="mt-5 space-y-3 leading-7 text-[#4e536c]">
-          <li>Apply on slightly damp skin.</li>
-          <li>Follow with a moisturizer to lock in hydration.</li>
-          <li>Use SPF in the morning.</li>
-        </ul>
-      </Panel>
-      <Panel>
-        <h3 className="flex items-center gap-2 text-xl font-bold"><Sparkles className="h-5 w-5 text-[#7548e8]" /> Ask AI about this product</h3>
-        <p className="mt-4 leading-7 text-[#66708f]">Ask anything about ingredients, compatibility, usage, and more.</p>
-        <button className="mt-5 w-full rounded-2xl bg-[#f3edff] p-4 text-left font-semibold text-[#6f3fe4]">Can I use this with retinol?</button>
-        <div className="mt-5 flex rounded-2xl border border-[#e3e5f0] bg-white p-2">
-          <input className="min-w-0 flex-1 px-3 outline-none" placeholder="Ask your question..." />
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7548e8] text-white">
-            <Send className="h-5 w-5" />
-          </button>
-        </div>
-      </Panel>
-    </aside>
+        ))}
+      </div>
+    </section>
   );
 }

@@ -1,9 +1,11 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import {
   ArrowRight,
   Bell,
+  BookOpen,
+  Bot,
   Camera,
   Check,
   CheckCircle2,
@@ -13,31 +15,46 @@ import {
   CircleHelp,
   ClipboardCheck,
   Clock3,
+  Download,
   Droplet,
   EyeOff,
+  FlaskConical,
+  Leaf,
   Lightbulb,
   Lock,
   LoaderCircle,
-  Pencil,
+  LogOut,
+  Mic,
+  Moon,
+  MoreVertical,
+  PanelLeft,
   Paperclip,
+  Pencil,
   Plus,
   Search,
   Send,
+  Settings,
+  SlidersHorizontal,
   ShieldCheck,
   Sparkles,
   SquareDashed,
   Target,
   TextCursorInput,
   UploadCloud,
+  Upload,
+  Sun,
   UserRound,
   X,
   Zap,
-  MoreVertical,
+  ScanBarcode,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
 import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import gsap from "gsap";
+import { getStoredAuthToken, useAuth } from "@/components/AuthProvider";
 
 const stepLabels = [
   "Objectif peau",
@@ -127,7 +144,7 @@ const goals: SkinGoal[] = [
   },
 ];
 
-type IngredientStatus = "OK" | "A surveiller";
+type IngredientStatus = "OK" | "À surveiller";
 
 type IngredientItem = {
   name: string;
@@ -140,34 +157,100 @@ type UploadedImage = {
   url: string;
 };
 
-type ResultDetail = {
-  name: string;
-  note: string;
+type ScanVerdict = "excellent_match" | "good_choice" | "use_with_caution" | "not_ideal";
+
+type PositiveDetail = {
+  ingredient: string;
+  reason: string;
+  tag: string;
+};
+
+type WatchoutDetail = {
+  ingredient: string;
+  reason: string;
+  severity: "low" | "medium" | "high";
+};
+
+type QuotaStatus = {
+  planStatus: PlanStatus;
+  freeScanLimit: number;
+  freeScansUsed: number;
+  freeScansRemaining: number;
+  freePromptLimit: number;
+  promptCount: number;
+  promptsRemaining: number;
 };
 
 type AnalysisResult = {
   score: number;
-  verdict: string;
+  verdict: ScanVerdict;
+  verdictLabel: string;
   summary: string;
-  positives: ResultDetail[];
-  watchouts: ResultDetail[];
-  tips: string[];
-  questions: string[];
+  positives: PositiveDetail[];
+  watchouts: WatchoutDetail[];
+  recommendations: string[];
   nextStep: string;
+  followUpQuestions: string[];
+  disclaimer: string;
+  scanId?: string;
+  quota?: QuotaStatus;
 };
 
-const defaultIngredients: IngredientItem[] = [
-  { name: "Aqua (Water)", status: "OK" },
-  { name: "Glycerin", status: "OK" },
-  { name: "Niacinamide", status: "OK" },
-  { name: "Propanediol", status: "OK" },
-  { name: "Sodium Hyaluronate", status: "OK" },
-  { name: "Panthenol", status: "OK" },
-  { name: "Allantoin", status: "OK" },
-  { name: "Parfum (Fragrance)", status: "A surveiller" },
-  { name: "Alcohol Denat.", status: "A surveiller" },
-  { name: "Citric Acid", status: "OK" },
-];
+type ChatMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: string;
+};
+
+type ScanChatResponse = {
+  answer: string;
+  suggestions: string[];
+  quota?: QuotaStatus;
+};
+
+type ExtractIngredientsResponse = {
+  rawText: string;
+  ingredientsText: string;
+  ingredients: string[];
+  warnings: string[];
+};
+
+type ScanHistoryItem = {
+  id: string;
+  productName: string;
+  skinGoal?: string;
+  promptCount: number;
+  createdAt: string;
+  updatedAt: string;
+  analysisSummary?: string;
+  analysisVerdict?: string;
+};
+
+type ScanConversationDetail = ScanHistoryItem & {
+  ingredients: string[];
+  analysisResult: AnalysisResult;
+  conversation: ChatMessage[];
+};
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+type PlanStatus = "free" | "pro";
+type UpgradeDialogReason = "scan-limit" | "prompt-limit";
+
+const FREE_SCAN_LIMIT = 3;
+const FREE_PROMPT_LIMIT = 1;
+
+class UpgradeRequiredError extends Error {
+  reason: UpgradeDialogReason;
+  quota?: QuotaStatus;
+
+  constructor(reason: UpgradeDialogReason, message: string, quota?: QuotaStatus) {
+    super(message);
+    this.name = "UpgradeRequiredError";
+    this.reason = reason;
+    this.quota = quota;
+  }
+}
 
 const watchTerms = ["parfum", "fragrance", "alcohol", "denat", "essential oil", "citric acid"];
 
@@ -177,7 +260,7 @@ function buildIngredientItems(names: string[]): IngredientItem[] {
     const shouldWatch = watchTerms.some((term) => normalized.includes(term));
     return {
       name,
-      status: shouldWatch ? "A surveiller" : "OK",
+      status: shouldWatch ? "À surveiller" : "OK",
     };
   });
 }
@@ -201,89 +284,200 @@ function formatProductName(imageName?: string | null) {
     .trim();
 }
 
-function toTitleCase(value: string) {
-  return value.replace(/\b\w/g, (char) => char.toUpperCase());
-}
+async function getJson<T>(path: string): Promise<T> {
+  const token = getStoredAuthToken();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
 
-function buildIngredientNote(name: string, goalId: string, status: IngredientStatus) {
-  const normalized = name.toLowerCase();
-
-  if (status === "A surveiller") {
-    if (normalized.includes("fragrance") || normalized.includes("parfum")) {
-      return "Peut etre irritant sur les peaux sensibles.";
-    }
-
-    if (normalized.includes("alcohol") || normalized.includes("denat")) {
-      return "Peut etre desschant selon la sensibilite de votre peau.";
-    }
-
-    if (normalized.includes("essential oil")) {
-      return "A surveiller si votre peau reagit facilement.";
-    }
-
-    return "Ingredient a surveiller selon votre tolerance.";
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
   }
 
-  const goalSpecificNotes: Record<string, string> = {
-    hydration: "Aide a soutenir l hydratation cutanee.",
-    acne: "Peut aider a garder une routine plus ciblee sur les imperfections.",
-    barrier: "Soutient une routine orientee confort et barriere.",
-    redness: "Interesse pour une routine plus apaisante.",
-    oily: "Peut convenir a une routine pour peau grasse.",
-    morning: "S integre bien dans une routine du matin simple.",
-  };
-
-  return goalSpecificNotes[goalId] ?? "Point positif pour cet objectif peau.";
+  return response.json() as Promise<T>;
 }
 
-function buildAnalysisResult(goal: SkinGoal, ingredientItems: IngredientItem[]): AnalysisResult {
-  const positivesBase = ingredientItems.filter((item) => item.status === "OK");
-  const watchoutsBase = ingredientItems.filter((item) => item.status === "A surveiller");
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const token = getStoredAuthToken();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
 
-  const matchedPositives = positivesBase.filter((item) =>
-    goal.positiveMatches.some((keyword) => item.name.toLowerCase().includes(keyword))
-  );
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+    let reason: UpgradeDialogReason | undefined;
+    let quota: QuotaStatus | undefined;
 
-  const positives = (matchedPositives.length > 0 ? matchedPositives : positivesBase)
-    .slice(0, 3)
-    .map((item) => ({
-      name: toTitleCase(item.name),
-      note: buildIngredientNote(item.name, goal.id, item.status),
-    }));
+    try {
+      const errorBody = (await response.json()) as {
+        message?: string | string[];
+        reason?: UpgradeDialogReason;
+        quota?: QuotaStatus;
+      };
+      if (Array.isArray(errorBody.message)) {
+        message = errorBody.message.join(" ");
+      } else if (errorBody.message) {
+        message = errorBody.message;
+      }
+      reason = errorBody.reason;
+      quota = errorBody.quota;
+    } catch {
+      // Keep the status-based message when the backend does not return JSON.
+    }
 
-  const watchouts = watchoutsBase.slice(0, 3).map((item) => ({
-    name: toTitleCase(item.name),
-    note: buildIngredientNote(item.name, goal.id, item.status),
-  }));
+    if (response.status === 402 && reason) {
+      throw new UpgradeRequiredError(reason, message, quota);
+    }
 
-  const rawScore = 6.2 + positives.length * 0.9 - watchouts.length * 0.55;
-  const score = Number(Math.min(9.6, Math.max(4.2, rawScore)).toFixed(1));
-
-  let verdict = "Good Choice";
-  if (score >= 8.5) {
-    verdict = "Excellent Match";
-  } else if (score < 6.5) {
-    verdict = "Mixed Match";
+    throw new Error(message);
   }
 
-  const summary =
-    positives.length > 0
-      ? `Ce produit semble globalement adapte pour ${goal.accentLabel}. Il presente ${positives.length} point${positives.length > 1 ? "s" : ""} positif${positives.length > 1 ? "s" : ""}${watchouts.length > 0 ? ` avec ${watchouts.length} element${watchouts.length > 1 ? "s" : ""} a surveiller` : ""}.`
-      : `L analyse montre quelques points utiles pour ${goal.accentLabel}, mais la formule reste a verifier selon votre tolerance.`;
+  return response.json() as Promise<T>;
+}
 
-  return {
-    score,
-    verdict,
-    summary,
-    positives,
-    watchouts,
-    tips: goal.tips,
-    questions: goal.questions,
-    nextStep: goal.nextStep,
-  };
+const skinGoalApiMap: Record<string, string> = {
+  hydration: "hydration",
+  acne: "acne",
+  barrier: "barrier_repair",
+  redness: "redness",
+  oily: "oily_skin",
+  morning: "morning_routine",
+};
+
+function requestScanHistory() {
+  return getJson<ScanHistoryItem[]>("/api/scans");
+}
+
+function requestScanConversation(scanId: string) {
+  return getJson<ScanConversationDetail>(`/api/scans/${scanId}`);
+}
+
+function formatScanHistoryDate(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Date inconnue";
+  }
+
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const label = isToday
+    ? "Aujourd hui"
+    : date.toDateString() === yesterday.toDateString()
+      ? "Hier"
+      : date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+  return `${label} - ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function requestScanAnalysis({
+  goal,
+  productName,
+  ingredients,
+  ingredientsText,
+}: {
+  goal: SkinGoal;
+  productName: string;
+  ingredients: IngredientItem[];
+  ingredientsText: string;
+}) {
+  return postJson<AnalysisResult>("/api/scans/analyze", {
+    skinGoal: skinGoalApiMap[goal.id] ?? goal.id,
+    productName,
+    productCategory: undefined,
+    ingredients: ingredients.map((item) => item.name),
+    ingredientsText,
+  });
+}
+
+async function requestIngredientExtraction(file: File): Promise<ExtractIngredientsResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const token = getStoredAuthToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/scans/extract-ingredients`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    let message = `OCR request failed with status ${response.status}`;
+
+    try {
+      const errorBody = (await response.json()) as { message?: string | string[] };
+      if (Array.isArray(errorBody.message)) {
+        message = errorBody.message.join(" ");
+      } else if (errorBody.message) {
+        message = errorBody.message;
+      }
+    } catch {
+      // Keep the status-based message when the backend does not return JSON.
+    }
+
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<ExtractIngredientsResponse>;
+}
+
+function requestScanChat({
+  question,
+  productName,
+  selectedGoal,
+  ingredientItems,
+  analysisResult,
+  scanId,
+}: {
+  question: string;
+  productName: string;
+  selectedGoal: SkinGoal;
+  ingredientItems: IngredientItem[];
+  analysisResult: AnalysisResult;
+  scanId: string | null;
+}) {
+  return postJson<ScanChatResponse>("/scan/chat", {
+    scanId,
+    question,
+    productName,
+    goalLabel: selectedGoal.label,
+    ingredients: ingredientItems,
+    analysisResult,
+  });
+}
+
+function buildFallbackChatAnswer(question: string, selectedGoal: SkinGoal, analysisResult: AnalysisResult) {
+  const loweredQuestion = question.toLowerCase();
+
+  if (loweredQuestion.includes("irrit") || loweredQuestion.includes("sensible")) {
+    return analysisResult.watchouts.length > 0
+      ? `Avancez doucement: ${analysisResult.watchouts.map((item) => item.ingredient).join(", ")} meritent un test localise avant usage regulier.`
+      : "La formule ne montre pas de gros signal irritant dans cette analyse, mais faites un test localise si votre peau reagit vite.";
+  }
+
+  if (loweredQuestion.includes("matin") || loweredQuestion.includes("spf")) {
+    return "Le matin, gardez ce produit avant la protection solaire. Le SPF reste la derniere etape.";
+  }
+
+  return `Pour ${selectedGoal.label}, ce produit semble coherent avec l analyse actuelle. Introduisez-le progressivement et surveillez la tolerance de votre peau.`;
 }
 
 export default function ScanPage() {
+  const router = useRouter();
+  const { isReady: isAuthReady, token, user } = useAuth();
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedGoalId, setSelectedGoalId] = useState(goals[0].id);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -292,13 +486,40 @@ export default function ScanPage() {
   const [manualIngredientsInput, setManualIngredientsInput] = useState("");
   const [ingredientItems, setIngredientItems] = useState<IngredientItem[]>([]);
   const [stepTwoError, setStepTwoError] = useState("");
+  const [isExtractingIngredients, setIsExtractingIngredients] = useState(false);
+  const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [ocrRawText, setOcrRawText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisRequestId, setAnalysisRequestId] = useState(0);
   const [isResultReady, setIsResultReady] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [activeScanId, setActiveScanId] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState("");
+  const [planStatus, setPlanStatus] = useState<PlanStatus>("free");
+  const [freeScansUsed, setFreeScansUsed] = useState(0);
+  const [currentScanPromptCount, setCurrentScanPromptCount] = useState(0);
+  const [upgradeDialogReason, setUpgradeDialogReason] = useState<UpgradeDialogReason | null>(null);
   const uploadedImagesRef = useRef<UploadedImage[]>([]);
 
   const hasManualIngredients = parseIngredientText(manualIngredientsInput).length > 0;
-  const hasStepTwoData = uploadedImages.length > 0 || hasManualIngredients;
+  const hasStepTwoData = ingredientItems.length > 0 || hasManualIngredients;
   const selectedGoal = goals.find((goal) => goal.id === selectedGoalId) ?? goals[0];
+  const hasActivePlan = planStatus === "pro";
+  const freeScansRemaining = hasActivePlan ? 999999 : Math.max(0, FREE_SCAN_LIMIT - freeScansUsed);
+
+  const applyQuotaStatus = (quota?: QuotaStatus) => {
+    if (!quota) {
+      return;
+    }
+
+    setPlanStatus(quota.planStatus);
+    setFreeScansUsed(quota.freeScansUsed);
+    setCurrentScanPromptCount(quota.promptCount);
+  };
+
+  const activatePlan = () => {
+    setUpgradeDialogReason(null);
+  };
   const goToStep = (step: number) => {
     const nextStep = Math.min(Math.max(step, 1), 4);
 
@@ -308,10 +529,15 @@ export default function ScanPage() {
     }
 
     setStepTwoError("");
+
+    if (nextStep === 4) {
+      setIsAnalyzing(true);
+      setAnalysisError("");
+    }
     setCurrentStep(nextStep);
   };
   const selectedImage = uploadedImages.find((image) => image.id === selectedImageId) ?? uploadedImages[0] ?? null;
-  const analysisResult = buildAnalysisResult(selectedGoal, ingredientItems);
+  const productName = formatProductName(selectedImage?.file.name ?? null);
 
   const resetFlow = () => {
     uploadedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
@@ -321,9 +547,23 @@ export default function ScanPage() {
     setManualIngredientsInput("");
     setIngredientItems([]);
     setStepTwoError("");
+    setIsExtractingIngredients(false);
+    setOcrWarnings([]);
+    setOcrRawText("");
     setIsAnalyzing(false);
+    setAnalysisRequestId(0);
     setIsResultReady(false);
+    setAnalysisResult(null);
+    setActiveScanId(null);
+    setAnalysisError("");
+    setCurrentScanPromptCount(0);
+    setUpgradeDialogReason(null);
     setCurrentStep(1);
+  };
+
+  const startNewScan = () => {
+    resetFlow();
+    setIsWizardOpen(true);
   };
 
   useEffect(() => {
@@ -337,23 +577,88 @@ export default function ScanPage() {
   }, []);
 
   useEffect(() => {
-    if (currentStep !== 4 || isResultReady) {
-      setIsAnalyzing(false);
+    if (isAuthReady && !token) {
+      router.replace("/login");
+    }
+  }, [isAuthReady, router, token]);
+  useEffect(() => {
+    if (!isAuthReady || !user) {
       return;
     }
 
-    setIsAnalyzing(true);
-    const timeout = window.setTimeout(() => {
-      setIsAnalyzing(false);
-      setIsResultReady(true);
-    }, 2200);
+    setPlanStatus(user.planStatus ?? "free");
+    setFreeScansUsed(user.freeScansUsed ?? 0);
+  }, [isAuthReady, user]);
+  useEffect(() => {
+    if (!isWizardOpen || isResultReady || currentStep === 4) {
+      document.body.dataset.navbarHidden = "true";
 
-    return () => window.clearTimeout(timeout);
-  }, [currentStep, isResultReady]);
+      return () => {
+        delete document.body.dataset.navbarHidden;
+      };
+    }
 
-  const addFiles = (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter((file) => file.type.startsWith("image/"));
+    delete document.body.dataset.navbarHidden;
+  }, [currentStep, isResultReady, isWizardOpen]);
+
+
+  useEffect(() => {
+    if (currentStep !== 4 || isResultReady) {
+      return;
+    }
+
+    let isCancelled = false;
+    const timeout = window.setTimeout(async () => {
+      let didAnalyze = false;
+
+      try {
+        const response = await requestScanAnalysis({
+          goal: selectedGoal,
+          productName,
+          ingredients: ingredientItems,
+          ingredientsText: manualIngredientsInput,
+        });
+
+        if (isCancelled) {
+          return;
+        }
+
+        setAnalysisResult(response);
+        setActiveScanId(response.scanId ?? null);
+        applyQuotaStatus(response.quota);
+        didAnalyze = true;
+      } catch (error) {
+        if (isCancelled) {
+          return;
+        }
+
+        if (error instanceof UpgradeRequiredError) {
+          applyQuotaStatus(error.quota);
+          setUpgradeDialogReason(error.reason);
+          setCurrentStep(3);
+        } else {
+          setAnalysisError("Impossible de generer l analyse IA pour le moment. Verifiez le backend et reessayez.");
+        }
+        setAnalysisResult(null);
+        setActiveScanId(null);
+      } finally {
+        if (!isCancelled) {
+          setIsAnalyzing(false);
+          setIsResultReady(didAnalyze);
+        }
+      }
+    }, 700);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timeout);
+    };
+  }, [analysisRequestId, currentStep, ingredientItems, isResultReady, manualIngredientsInput, productName, selectedGoal]);
+
+  const addFiles = async (files: FileList | File[]) => {
+    const validFiles = Array.from(files).filter((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type));
     if (!validFiles.length) {
+      setStepTwoError("Ajoutez une image JPG, PNG ou WEBP pour lancer l extraction OCR.");
       return;
     }
 
@@ -366,7 +671,41 @@ export default function ScanPage() {
     setUploadedImages((prev) => [...prev, ...newImages]);
     setSelectedImageId((prev) => prev ?? newImages[0]?.id ?? null);
     setStepTwoError("");
-    setIngredientItems((prev) => (prev.length > 0 ? prev : defaultIngredients));
+    setOcrWarnings([]);
+    setIsExtractingIngredients(true);
+
+    try {
+      const extractionResults = await Promise.all(validFiles.map((file) => requestIngredientExtraction(file)));
+      const detectedIngredients = extractionResults.flatMap((result) => result.ingredients);
+      const detectedIngredientsText = extractionResults
+        .map((result) => result.ingredientsText)
+        .filter(Boolean)
+        .join("\n\n");
+      const warnings = extractionResults.flatMap((result) => result.warnings);
+      const rawText = extractionResults
+        .map((result) => result.rawText)
+        .filter(Boolean)
+        .join("\n\n---\n\n");
+
+      setManualIngredientsInput(detectedIngredientsText);
+      setOcrWarnings(warnings);
+      setOcrRawText(rawText);
+
+      if (!detectedIngredients.length) {
+        setIngredientItems([]);
+        setStepTwoError("OCR termine, mais aucun ingredient clair n a ete detecte. Collez ou corrigez la liste manuellement.");
+        return;
+      }
+
+      setIngredientItems(buildIngredientItems(detectedIngredients));
+      setStepTwoError("");
+      setCurrentStep(3);
+    } catch (error) {
+      setIngredientItems([]);
+      setStepTwoError(error instanceof Error ? error.message : "Impossible d extraire les ingredients depuis cette image.");
+    } finally {
+      setIsExtractingIngredients(false);
+    }
   };
 
   const removeImage = (imageId: string) => {
@@ -401,59 +740,110 @@ export default function ScanPage() {
     }
 
     setIngredientItems(buildIngredientItems(parsedIngredients));
+    setOcrWarnings([]);
     setIsManualDialogOpen(false);
     setStepTwoError("");
     setCurrentStep(3);
   };
 
-  if (isResultReady) {
+  const updateIngredientDraft = (value: string) => {
+    setManualIngredientsInput(value);
+    setIngredientItems(buildIngredientItems(parseIngredientText(value)));
+  };
+
+  const confirmIngredients = () => {
+    const parsedIngredients = parseIngredientText(manualIngredientsInput);
+
+    if (!parsedIngredients.length) {
+      setStepTwoError("Confirmez au moins un ingredient avant de lancer l analyse.");
+      return;
+    }
+
+    setIngredientItems(buildIngredientItems(parsedIngredients));
+    setStepTwoError("");
+    setAnalysisRequestId((requestId) => requestId + 1);
+    goToStep(4);
+  };
+
+  if (!isAuthReady || !token) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#fbfaff] px-4 text-[#111631]">
+        <div className="rounded-[28px] border border-[#e8e0fb] bg-white px-8 py-7 text-center shadow-[0_24px_60px_rgba(90,66,165,0.10)]">
+          <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-[#7548e8]" />
+          <h1 className="mt-4 text-xl font-bold">Verification de votre session...</h1>
+          <p className="mt-2 text-sm text-[#66708f]">Redirection vers la connexion si necessaire.</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!isWizardOpen && !isResultReady) {
+    return <ChatWorkspace onScanAnother={startNewScan} />;
+  }
+
+  if (isResultReady && analysisResult) {
     return (
       <ResultWorkspace
         analysisResult={analysisResult}
+        analysisError={analysisError}
         currentStep={currentStep}
+        ingredientItems={ingredientItems}
+        productName={productName}
         selectedGoal={selectedGoal}
         selectedImage={selectedImage}
+        scanId={activeScanId}
+        hasActivePlan={hasActivePlan}
+        currentScanPromptCount={currentScanPromptCount}
+        upgradeDialogReason={upgradeDialogReason}
+        freeScansUsed={freeScansUsed}
+        freeScansRemaining={freeScansRemaining}
+        onPromptConsumed={() => setCurrentScanPromptCount((count) => count + 1)}
+        onQuotaUpdated={applyQuotaStatus}
+        onUpgradeRequired={setUpgradeDialogReason}
+        onUpgradeDismiss={() => setUpgradeDialogReason(null)}
+        onUpgrade={activatePlan}
         onChangeGoal={() => {
           setIsResultReady(false);
+          setAnalysisResult(null);
+          setActiveScanId(null);
           setCurrentStep(1);
         }}
-        onScanAnother={resetFlow}
+        onScanAnother={startNewScan}
       />
     );
   }
 
   return (
     <main className="min-h-screen bg-[#fbfaff] text-[#111631]">
-      <ScanHeader />
 
-      <section className="relative overflow-hidden border-t border-[#ece8f7] bg-[radial-gradient(circle_at_83%_18%,_rgba(149,105,255,0.16),_transparent_26%),linear-gradient(180deg,_#ffffff_0%,_#fbfaff_42%,_#ffffff_100%)] px-4 pb-8 pt-32 sm:px-6 lg:px-10 lg:pt-36">
+      <section className="relative overflow-hidden border-t border-[#ece8f7] bg-[radial-gradient(circle_at_83%_18%,_rgba(149,105,255,0.16),_transparent_26%),linear-gradient(180deg,_#ffffff_0%,_#fbfaff_42%,_#ffffff_100%)] px-4 pb-6 pt-24 sm:px-6 lg:flex lg:min-h-[calc(100svh-72px)] lg:items-center lg:px-10 lg:pt-20">
         <div className={`pointer-events-none absolute right-[8%] top-12 hidden lg:block ${currentStep === 1 || currentStep === 4 ? "opacity-0" : "opacity-100"}`}>
           <ProductStill />
         </div>
 
-        <div className="mx-auto max-w-[1500px]">
+        <div className="mx-auto flex w-full max-w-[1500px] flex-col justify-center">
           <div className="text-center">
-            <h1 className="text-[36px] font-bold leading-tight sm:text-[48px] lg:text-[58px]">
+            <h1 className="text-[30px] font-bold leading-tight sm:text-[40px] lg:text-[46px]">
               Analysez votre premier produit
             </h1>
-            <p className="mx-auto mt-3 max-w-[900px] text-[17px] leading-7 text-[#66708f] sm:text-[20px]">
+            <p className="mx-auto mt-2 max-w-[820px] text-[15px] leading-6 text-[#66708f] sm:text-[17px]">
               {currentStep === 3
                 ? "Verifiez les ingredients detectes par l IA avant de lancer l analyse complete."
                 : "Scannez l etiquette d un produit de soin pour obtenir une analyse simple des ingredients par IA."}
             </p>
           </div>
 
-          <div className="mt-9">
+          <div className="mt-6">
             <ScanProgress currentStep={currentStep} onStepClick={goToStep} selectedGoalLabel={selectedGoal.label} />
 
             <Stepper
               activeStep={currentStep - 1}
               onChangeStep={(event) => goToStep(event.index + 1)}
               linear
-              className="scan-prime-stepper mx-auto max-w-[1380px]"
+              className="scan-prime-stepper mx-auto max-w-[1280px]"
               pt={{
                 nav: { className: "!hidden" },
-                panelContainer: { className: "mt-12" },
+                panelContainer: { className: "mt-8" },
               }}
             >
               <StepperPanel header={stepLabels[0]}>
@@ -464,6 +854,8 @@ export default function ScanPage() {
                   uploadedImages={uploadedImages}
                   selectedImage={selectedImage}
                   stepTwoError={stepTwoError}
+                  isExtractingIngredients={isExtractingIngredients}
+                  ocrWarnings={ocrWarnings}
                   onAddFiles={addFiles}
                   onSelectImage={setSelectedImageId}
                   onRemoveImage={removeImage}
@@ -473,23 +865,32 @@ export default function ScanPage() {
               <StepperPanel header={stepLabels[2]}>
                 <IngredientsStep
                   ingredientItems={ingredientItems}
-                  selectedImage={selectedImage}
+                  ingredientText={manualIngredientsInput}
+                  ocrRawText={ocrRawText}
+                  ocrWarnings={ocrWarnings}
+                  onIngredientTextChange={updateIngredientDraft}
                   onOpenManualDialog={() => setIsManualDialogOpen(true)}
-                  onContinue={() => goToStep(4)}
+                  onContinue={confirmIngredients}
                 />
               </StepperPanel>
               <StepperPanel header={stepLabels[3]}>
-                <AnalysisLoadingStep selectedGoal={selectedGoal} ingredientCount={ingredientItems.length} isAnalyzing={isAnalyzing} />
+                <AnalysisLoadingStep
+                  selectedGoal={selectedGoal}
+                  ingredientCount={ingredientItems.length}
+                  isAnalyzing={isAnalyzing}
+                  analysisError={analysisError}
+                  onRetry={() => {
+                    setAnalysisError("");
+                    setIsAnalyzing(true);
+                    setAnalysisRequestId((requestId) => requestId + 1);
+                  }}
+                  onBack={() => setCurrentStep(3)}
+                />
               </StepperPanel>
             </Stepper>
 
             {currentStep !== 4 && (
-              <div
-                className={`relative z-20 mx-auto flex max-w-[1380px] ${currentStep === 1
-                  ? "-mt-[94px] justify-start pl-[310px]"
-                  : "mt-10 justify-between"
-                  }`}
-              >
+              <div className="relative z-20 mx-auto mt-6 flex max-w-[1280px] flex-wrap items-center justify-center gap-3">
                 {currentStep !== 1 && (
                   <button
                     type="button"
@@ -503,8 +904,8 @@ export default function ScanPage() {
                 <button
                   type="button"
                   onClick={() => goToStep(currentStep + 1)}
-                  disabled={currentStep === 2 && !hasStepTwoData}
-                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${currentStep === 2 && !hasStepTwoData ? "cursor-not-allowed opacity-55" : "cursor-pointer"
+                  disabled={currentStep === 2 && (!hasStepTwoData || isExtractingIngredients)}
+                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${currentStep === 2 && (!hasStepTwoData || isExtractingIngredients) ? "cursor-not-allowed opacity-55" : "cursor-pointer"
                     }`}
                 >
                   <span
@@ -549,7 +950,7 @@ export default function ScanPage() {
           </div>
 
           {currentStep !== 4 && (
-            <p className={`${currentStep === 1 ? "mt-2" : "mt-6"} flex items-center justify-center gap-2 text-sm text-[#727a99]`}>
+            <p className="mt-4 flex items-center justify-center gap-2 text-sm text-[#727a99]">
               <Lock className="h-4 w-4" />
               Vos photos sont privees et securisees. Elles ne sont utilisees que pour l analyse.
             </p>
@@ -557,6 +958,15 @@ export default function ScanPage() {
         </div>
       </section>
 
+      {upgradeDialogReason && (
+        <UpgradePlanDialog
+          reason={upgradeDialogReason}
+          scansUsed={freeScansUsed}
+          scansRemaining={freeScansRemaining}
+          onClose={() => setUpgradeDialogReason(null)}
+          onUpgrade={activatePlan}
+        />
+      )}
       {isManualDialogOpen && (
         <ManualIngredientsDialog
           value={manualIngredientsInput}
@@ -603,36 +1013,6 @@ export default function ScanPage() {
   );
 }
 
-function ScanHeader() {
-  return (
-    <header className="fixed left-0 top-0 z-50 w-full border-b border-white/60 bg-white/70 backdrop-blur-xl">
-      <nav className="mx-auto flex h-[78px] w-full max-w-[1600px] items-center justify-between px-4 sm:h-[84px] sm:px-6 md:px-8 lg:h-[92px] lg:px-12 xl:px-16 2xl:px-20">
-        <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="SkinorAI" width={168} height={40} className="h-10 w-auto" priority />
-        </div>
-
-        <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
-          <button className="hidden items-center gap-2 text-sm font-medium text-[#5f5d6b] transition hover:text-[#151522] md:inline-flex">
-            <CircleHelp className="h-5 w-5" />
-            Aide
-          </button>
-          <button className="hidden items-center gap-2 text-sm font-medium text-[#5f5d6b] transition hover:text-[#151522] md:inline-flex">
-            <Clock3 className="h-5 w-5" />
-            Historique
-          </button>
-          <button className="inline-flex items-center gap-2 rounded-xl border border-[#e5dcff] bg-white/55 px-2 py-1.5 text-xs font-semibold text-[#151522] shadow-[0_10px_26px_rgba(95,70,150,0.08)] backdrop-blur-xl transition hover:-translate-y-0.5 sm:gap-3 sm:rounded-2xl sm:px-3 sm:py-2 sm:text-sm">
-            <span className="flex h-8 w-8 overflow-hidden rounded-full bg-[#e9ddff] sm:h-9 sm:w-9">
-              <Image src="/people.png" alt="Clara" width={36} height={36} className="h-full w-full object-cover object-left" />
-            </span>
-            <span className="hidden sm:block">Clara</span>
-            <ChevronDown className="h-4 w-4" />
-          </button>
-        </div>
-      </nav>
-    </header>
-  );
-}
-
 function ScanProgress({
   currentStep,
   onStepClick,
@@ -643,7 +1023,7 @@ function ScanProgress({
   selectedGoalLabel: string;
 }) {
   return (
-    <div className="mx-auto flex max-w-[920px] items-center pb-12">
+    <div className="mx-auto flex max-w-[860px] items-center pb-8">
       {stepLabels.map((label, index) => {
         const step = index + 1;
         const isComplete = currentStep > step;
@@ -654,11 +1034,11 @@ function ScanProgress({
             <button
               type="button"
               onClick={() => onStepClick(step)}
-              className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+              className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
               aria-label={`Aller a l etape ${step}`}
             >
               <span
-                className={`flex h-9 w-9 items-center justify-center rounded-full border text-base font-bold shadow-sm transition ${isComplete
+                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition ${isComplete
                   ? "border-[#7548e8] bg-[#7548e8] text-white"
                   : isActive
                     ? "border-[#7548e8] bg-gradient-to-b from-[#8d5df4] to-[#6c35d8] text-white"
@@ -668,7 +1048,7 @@ function ScanProgress({
                 {isComplete ? <Check className="h-5 w-5" /> : step}
               </span>
               <span
-                className={`absolute left-1/2 top-12 w-44 -translate-x-1/2 text-center text-sm font-semibold ${currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
+                className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
                   }`}
               >
                 {label}
@@ -700,10 +1080,10 @@ function GoalStep({
   onSelectGoal: (goalId: string) => void;
 }) {
   return (
-    <div className="mx-auto grid max-w-[1380px] gap-10 lg:grid-cols-[minmax(0,930px)_410px] lg:items-stretch lg:justify-center mt-8">
-      <Panel className="min-h-[500px] px-9 pb-28 pt-8">
+    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center lg:justify-center">
+      <Panel className="min-h-[420px] px-7 pb-20 pt-6">
         <StepTitle number="1" title="Choisissez votre objectif peau" description="Selectionnez votre priorite du moment pour personnaliser l analyse." />
-        <div className="mt-7 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal) => {
             const isSelected = goal.id === selectedGoalId;
             return (
@@ -711,7 +1091,7 @@ function GoalStep({
                 key={goal.label}
                 type="button"
                 onClick={() => onSelectGoal(goal.id)}
-                className={`relative flex min-h-[132px] flex-col cursor-pointer py-4 items-center justify-center rounded-2xl border bg-white px-4 text-center transition hover:-translate-y-0.5 ${isSelected
+                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${isSelected
                   ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
                   : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
                   }`}
@@ -721,17 +1101,17 @@ function GoalStep({
                     <Check className="h-4 w-4" />
                   </span>
                 )}
-                <span className="flex h-20 w-20 items-center justify-center">
+                <span className="flex h-14 w-14 items-center justify-center">
                   <Image
                     src={goal.image}
                     alt=""
-                    width={92}
-                    height={92}
-                    className="h-20 w-20 object-contain drop-shadow-[0_10px_18px_rgba(124,86,238,0.18)]"
+                    width={74}
+                    height={74}
+                    className="h-14 w-14 object-contain drop-shadow-[0_8px_16px_rgba(124,86,238,0.16)]"
                   />
                 </span>
-                <span className="mt-4 text-base font-semibold">{goal.label}</span>
-                <span className="mt-1 text-sm text-[#7a819e]">{goal.accentLabel}</span>
+                <span className="mt-3 text-[15px] font-semibold">{goal.label}</span>
+                <span className="mt-1 text-xs text-[#7a819e]">{goal.accentLabel}</span>
               </button>
             );
           })}
@@ -747,6 +1127,8 @@ function UploadStep({
   uploadedImages,
   selectedImage,
   stepTwoError,
+  isExtractingIngredients,
+  ocrWarnings,
   onAddFiles,
   onSelectImage,
   onRemoveImage,
@@ -755,7 +1137,9 @@ function UploadStep({
   uploadedImages: UploadedImage[];
   selectedImage: UploadedImage | null;
   stepTwoError: string;
-  onAddFiles: (files: FileList | File[]) => void;
+  isExtractingIngredients: boolean;
+  ocrWarnings: string[];
+  onAddFiles: (files: FileList | File[]) => Promise<void>;
   onSelectImage: (imageId: string) => void;
   onRemoveImage: (imageId: string) => void;
   onOpenManualDialog: () => void;
@@ -765,7 +1149,7 @@ function UploadStep({
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (event.target.files?.length) {
-      onAddFiles(event.target.files);
+      void onAddFiles(event.target.files);
       event.target.value = "";
     }
   };
@@ -775,12 +1159,12 @@ function UploadStep({
     setIsDragging(false);
 
     if (event.dataTransfer.files?.length) {
-      onAddFiles(event.dataTransfer.files);
+      void onAddFiles(event.dataTransfer.files);
     }
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px] mt-10">
+    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
       <Panel>
         <StepTitle number="2" title="Importez l etiquette du produit" description="Prenez une photo claire de la liste d ingredients pour que notre IA puisse l analyser." />
         <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_260px]">
@@ -788,7 +1172,7 @@ function UploadStep({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/png,image/jpeg,image/heic,image/heif,image/webp"
+              accept="image/png,image/jpeg,image/webp"
               multiple
               className="hidden"
               onChange={handleFileChange}
@@ -796,21 +1180,30 @@ function UploadStep({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
+              disabled={isExtractingIngredients}
               onDragOver={(event) => {
                 event.preventDefault();
                 setIsDragging(true);
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`flex cursor-pointer min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isDragging
+              className={`flex min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isExtractingIngredients ? "cursor-wait opacity-80" : "cursor-pointer"} ${isDragging
                 ? "border-[#8f68f2] bg-[#f4edff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all shadow-[0_22px_45px_rgba(123,86,238,0.14)]"
                 : "border-[#bda7ff] bg-[#fbf8ff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all"
                 }`}
             >
-              <UploadCloud className="h-16 w-16 text-[#9b77f5]" />
-              <span className="mt-5 text-xl font-bold">Glissez-deposez votre image ici</span>
-              <span className="mt-2 text-lg font-semibold text-[#6f3fe4]">ou cliquez pour parcourir</span>
-              <span className="mt-5 text-sm text-[#727a99]">Formats acceptes : JPG, PNG, HEIC</span>
+              {isExtractingIngredients ? (
+                <LoaderCircle className="h-14 w-14 animate-spin text-[#9b77f5]" />
+              ) : (
+                <UploadCloud className="h-14 w-14 text-[#9b77f5]" />
+              )}
+              <span className="mt-5 text-xl font-bold">
+                {isExtractingIngredients ? "Extraction OCR en cours..." : "Glissez-deposez votre image ici"}
+              </span>
+              <span className="mt-2 text-lg font-semibold text-[#6f3fe4]">
+                {isExtractingIngredients ? "Google Vision lit l etiquette" : "ou cliquez pour parcourir"}
+              </span>
+              <span className="mt-5 text-sm text-[#727a99]">Formats acceptes : JPG, PNG, WEBP</span>
               <span className="mt-5 flex items-center gap-2 text-sm text-[#727a99]">
                 <Lock className="h-4 w-4" />
                 Vos images sont privees et securisees.
@@ -892,6 +1285,13 @@ function UploadStep({
                 {stepTwoError}
               </p>
             )}
+            {ocrWarnings.length > 0 && (
+              <div className="mt-4 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-sm font-medium text-[#9b6500]">
+                {ocrWarnings.map((warning) => (
+                  <p key={warning}>{warning}</p>
+                ))}
+              </div>
+            )}
           </div>
           <PhotoPreview selectedImage={selectedImage} imageCount={uploadedImages.length} />
         </div>
@@ -904,12 +1304,18 @@ function UploadStep({
 
 function IngredientsStep({
   ingredientItems,
-  selectedImage,
+  ingredientText,
+  ocrRawText,
+  ocrWarnings,
+  onIngredientTextChange,
   onOpenManualDialog,
   onContinue,
 }: {
   ingredientItems: IngredientItem[];
-  selectedImage: UploadedImage | null;
+  ingredientText: string;
+  ocrRawText: string;
+  ocrWarnings: string[];
+  onIngredientTextChange: (value: string) => void;
   onOpenManualDialog: () => void;
   onContinue: () => void;
 }) {
@@ -918,17 +1324,54 @@ function IngredientsStep({
   const rightColumn = ingredientItems.slice(midpoint);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px]">
+    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
       <Panel className="px-8 py-7">
-        <StepTitle number="3" title="Verifiez les ingredients detectes" description="Passez en revue la liste d ingredients extraite par l IA. Modifiez-la si necessaire." />
+        <StepTitle number="3" title="Confirmez les ingredients" description="Corrigez la liste OCR si necessaire. Ce sont ces ingredients confirmes qui seront analyses ensuite." />
         <div className="mt-7 overflow-hidden rounded-[30px] border border-[#ece7fb] bg-white">
           <div className="grid gap-8 px-6 py-6 xl:grid-cols-1 xl:px-7">
             <div className="min-w-0">
               <div className="mb-5 flex flex-wrap items-center gap-3">
-                <h2 className="text-lg font-bold text-[#171b36]">Liste des ingredients (INCI)</h2>
+                <h2 className="text-lg font-bold text-[#171b36]">Liste editable des ingredients (INCI)</h2>
                 <span className="rounded-full bg-[#f2ebff] px-3 py-1 text-sm font-semibold text-[#7c57eb]">{ingredientItems.length} ingredients detectes</span>
               </div>
 
+              {ocrWarnings.length > 0 && (
+                <div className="mb-5 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-sm font-medium text-[#9b6500]">
+                  {ocrWarnings.map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                </div>
+              )}
+
+              <textarea
+                value={ingredientText}
+                onChange={(event) => onIngredientTextChange(event.target.value)}
+                placeholder="Ex: Aqua (Water), Glycerin, Niacinamide..."
+                className="min-h-[180px] w-full rounded-[24px] border border-[#dfd7f4] bg-[#fcfbff] px-5 py-4 text-[15px] leading-7 text-[#1d2140] outline-none transition placeholder:text-[#9aa1ba] focus:border-[#9b75f2] focus:ring-4 focus:ring-[#efe7ff]"
+              />
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#faf7ff] px-4 py-3">
+                <p className="text-sm text-[#66708f]">
+                  Modifiez les virgules, noms ou retours a la ligne avant de confirmer.
+                </p>
+                <button
+                  type="button"
+                  onClick={onOpenManualDialog}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#7b57ea] transition hover:text-[#5d39cf]"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Ouvrir l editeur large
+                </button>
+              </div>
+
+              {ocrRawText && (
+                <details className="mt-4 rounded-2xl border border-[#ece7fb] bg-[#fbfaff] px-4 py-3 text-sm text-[#66708f]">
+                  <summary className="cursor-pointer font-semibold text-[#6f49e2]">Voir le texte OCR brut</summary>
+                  <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#4f5473]">{ocrRawText}</pre>
+                </details>
+              )}
+
+              <h3 className="mt-7 text-base font-bold text-[#171b36]">Apercu des ingredients confirmes</h3>
               <div className="grid gap-6 md:grid-cols-2">
                 <IngredientColumn items={leftColumn} startIndex={0} />
                 <IngredientColumn items={rightColumn} startIndex={leftColumn.length} />
@@ -946,9 +1389,10 @@ function IngredientsStep({
                 <button
                   type="button"
                   onClick={onContinue}
-                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)]"
+                  disabled={ingredientItems.length === 0}
+                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Continuer l analyse
+                  Confirmer et continuer
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
@@ -966,7 +1410,7 @@ function IngredientsStep({
                 <Sparkles className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold text-[#171b36]">Prochaine etape : Resultat IA</span>
+                <span className="block text-[15px] font-bold text-[#171b36]">Prochaine étape : Resultat IA</span>
                 <span className="mt-1 block text-sm text-[#727a99]">L IA analysera vos ingredients pour vous fournir une evaluation personnalisee.</span>
               </span>
               <ChevronRight className="h-5 w-5 text-[#7d57ea]" />
@@ -1016,15 +1460,21 @@ function AnalysisLoadingStep({
   selectedGoal,
   ingredientCount,
   isAnalyzing,
+  analysisError,
+  onRetry,
+  onBack,
 }: {
   selectedGoal: SkinGoal;
   ingredientCount: number;
   isAnalyzing: boolean;
+  analysisError: string;
+  onRetry: () => void;
+  onBack: () => void;
 }) {
   const GoalIcon = selectedGoal.icon;
 
   return (
-    <div className="mx-auto mt-14 max-w-[980px]">
+    <div className="mx-auto mt-4 flex max-w-[980px] justify-center">
       <Panel className="overflow-hidden border-[#e8e0fb] bg-[radial-gradient(circle_at_top,_rgba(158,118,255,0.16),_transparent_36%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(250,246,255,0.98)_100%)] px-8 py-10 sm:px-12 sm:py-14">
         <div className="flex flex-col items-center text-center">
           <span className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white/90 text-[#7448e8] shadow-[0_18px_45px_rgba(116,72,232,0.15)]">
@@ -1035,6 +1485,28 @@ function AnalysisLoadingStep({
           <p className="mt-4 max-w-[640px] text-base leading-8 text-[#68708b] sm:text-lg">
             Nous analysons {ingredientCount} ingredient{ingredientCount > 1 ? "s" : ""} pour verifier si ce produit correspond a votre objectif peau: {selectedGoal.label}.
           </p>
+
+          {analysisError && (
+            <div className="mt-6 max-w-[680px] rounded-2xl border border-[#ffd7dd] bg-[#fff7f8] px-5 py-4 text-sm font-medium leading-6 text-[#c6405f]">
+              {analysisError}
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-[#efc6d0] bg-white px-5 text-sm font-semibold text-[#8f3850]"
+                >
+                  Retour aux ingredients
+                </button>
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-5 text-sm font-semibold text-white"
+                >
+                  Reessayer
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="mt-10 grid w-full gap-4 md:grid-cols-3">
             <LoadingInfoCard icon={GoalIcon} title="Objectif choisi" text={selectedGoal.label} />
@@ -1078,35 +1550,1107 @@ function LoadingInfoCard({
   );
 }
 
+function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
+  const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const [selectedHistoryChatId, setSelectedHistoryChatId] = useState<string | null>(null);
+  const [selectedHistoryDetail, setSelectedHistoryDetail] = useState<ScanConversationDetail | null>(null);
+  const [isConversationLoading, setIsConversationLoading] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatSending, setIsChatSending] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
+  const sidebarRef = useRef<HTMLElement | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
+  const heroRef = useRef<HTMLDivElement | null>(null);
+  const promptRef = useRef<HTMLDivElement | null>(null);
+  const cardsRef = useRef<HTMLDivElement | null>(null);
+  const chatMessageIdRef = useRef(0);
+
+  useEffect(() => {
+    document.body.dataset.navbarHidden = "true";
+
+    return () => {
+      delete document.body.dataset.navbarHidden;
+    };
+  }, []);
+
+  useEffect(() => {
+    const storedTheme = window.localStorage.getItem("skinorai_chat_theme");
+    if (storedTheme === "light" || storedTheme === "dark") {
+      setTheme(storedTheme);
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("skinorai_chat_theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadHistory = async () => {
+      setIsHistoryLoading(true);
+
+      try {
+        const scans = await requestScanHistory();
+        if (!isCancelled) {
+          setScanHistory(scans);
+        }
+      } catch {
+        if (!isCancelled) {
+          setScanHistory([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsHistoryLoading(false);
+        }
+      }
+    };
+
+    void loadHistory();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedHistoryChatId) {
+      setSelectedHistoryDetail(null);
+      setIsConversationLoading(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadConversation = async () => {
+      setIsConversationLoading(true);
+
+      try {
+        const detail = await requestScanConversation(selectedHistoryChatId);
+        if (!isCancelled) {
+          setSelectedHistoryDetail(detail);
+        }
+      } catch {
+        if (!isCancelled) {
+          setSelectedHistoryDetail(null);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsConversationLoading(false);
+        }
+      }
+    };
+
+    void loadConversation();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedHistoryChatId]);
+
+  useEffect(() => {
+    if (!workspaceRef.current) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const heroItems = gsap.utils.toArray<HTMLElement>("[data-chat-hero]");
+      const cards = gsap.utils.toArray<HTMLElement>("[data-chat-card]");
+      const orb = heroRef.current?.querySelector("[data-chat-orb]");
+
+      gsap.set(cards, { opacity: 1, y: 0 });
+
+      const timeline = gsap.timeline({
+        defaults: {
+          ease: "power3.out",
+        },
+      });
+
+      timeline
+        .from(sidebarRef.current, {
+          x: -30,
+          opacity: 0,
+          duration: 0.65,
+        })
+        .from(
+          headerRef.current,
+          {
+            y: -18,
+            opacity: 0,
+            duration: 0.45,
+          },
+          "-=0.35",
+        )
+        .from(
+          heroItems,
+          {
+            y: 20,
+            opacity: 0,
+            scale: 0.985,
+            duration: 0.56,
+            stagger: 0.07,
+          },
+          "-=0.18",
+        )
+        .fromTo(
+          cards,
+          {
+            y: 22,
+            opacity: 0,
+          },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.44,
+            stagger: 0.07,
+            clearProps: "transform,opacity",
+          },
+          "-=0.2",
+        );
+    }, workspaceRef);
+
+    return () => {
+      ctx.revert();
+    };
+  }, [theme, selectedHistoryChatId]);
+
+  const featureCards = [
+    [FlaskConical, "Ingredient Analyzer", "Decode ingredients, check safety, and understand what works for your skin."],
+    [Bot, "Routine Coach", "Get personalized routines tailored to your skin goals."],
+    [SquareDashed, "Product Scanner", "Scan any product and analyze its claims."],
+    [Sparkles, "Skin Insights", "Track changes and unlock deeper skin insights."],
+  ] as const;
+
+  const recentChats = scanHistory.slice(0, 6);
+  const selectedHistoryChat = scanHistory.find((chat) => chat.id === selectedHistoryChatId) ?? null;
+  const isDarkTheme = theme === "dark";
+  const selectedGoal =
+    goals.find((goal) => goal.id === selectedHistoryDetail?.skinGoal || skinGoalApiMap[goal.id] === selectedHistoryDetail?.skinGoal) ?? goals[0];
+  const selectedAnalysisResult: AnalysisResult | null = selectedHistoryChat
+    ? selectedHistoryDetail?.analysisResult ?? {
+        score: 0,
+        verdict: "good_choice",
+        verdictLabel: selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
+        summary: selectedHistoryChat.analysisSummary || "Analyse enregistrée pour ce produit.",
+        positives: [],
+        watchouts: [],
+        recommendations: selectedGoal.tips,
+        nextStep: selectedGoal.nextStep,
+        followUpQuestions: selectedGoal.questions,
+        disclaimer: "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+      }
+    : null;
+  const selectedIngredientItems = buildIngredientItems(selectedHistoryDetail?.ingredients ?? []);
+  const selectedProductName = selectedHistoryDetail?.productName || selectedHistoryChat?.productName || "Produit scanné";
+  const selectedFollowUpQuestions =
+    selectedAnalysisResult?.followUpQuestions?.length ? selectedAnalysisResult.followUpQuestions : selectedGoal.questions;
+  const conversationMessages = (selectedHistoryDetail?.conversation ?? []).filter((message, index) => !(index === 0 && message.role === "assistant"));
+
+  useEffect(() => {
+    setChatMessages(conversationMessages);
+  }, [selectedHistoryDetail?.id, selectedHistoryDetail?.updatedAt]);
+
+  const askSavedQuestion = async (rawQuestion: string) => {
+    const question = rawQuestion.trim();
+
+    if (!question || !selectedHistoryChat || !selectedAnalysisResult || isChatSending) {
+      return;
+    }
+
+    const createdAt = new Date().toISOString();
+    const userMessage: ChatMessage = {
+      id: `history-user-${chatMessageIdRef.current++}`,
+      role: "user",
+      content: question,
+      createdAt,
+    };
+
+    setChatInput("");
+    setChatMessages((messages) => [...messages, userMessage]);
+    setIsChatSending(true);
+
+    try {
+      const response = await requestScanChat({
+        question,
+        productName: selectedProductName,
+        selectedGoal,
+        ingredientItems: selectedIngredientItems,
+        analysisResult: selectedAnalysisResult,
+        scanId: selectedHistoryChat.id,
+      });
+
+      const assistantMessage: ChatMessage = {
+        id: `history-assistant-${chatMessageIdRef.current++}`,
+        role: "assistant",
+        content: response.answer,
+        createdAt: new Date().toISOString(),
+      };
+
+      setChatMessages((messages) => [...messages, assistantMessage]);
+      setSelectedHistoryDetail((current) =>
+        current
+          ? {
+              ...current,
+              promptCount: current.promptCount + 1,
+              updatedAt: assistantMessage.createdAt ?? current.updatedAt,
+              conversation: [...current.conversation, userMessage, assistantMessage],
+            }
+          : current,
+      );
+      setScanHistory((items) =>
+        items.map((item) =>
+          item.id === selectedHistoryChat.id
+            ? {
+                ...item,
+                promptCount: item.promptCount + 1,
+                updatedAt: assistantMessage.createdAt ?? item.updatedAt,
+              }
+            : item,
+        ),
+      );
+    } catch {
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `history-assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsChatSending(false);
+    }
+  };
+
+  const palette = isDarkTheme
+    ? {
+      page: "bg-[#080912] text-[#f7f1fb]",
+      overlay:
+        "bg-[radial-gradient(circle_at_62%_10%,rgba(224,128,194,0.16),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(151,210,139,0.08),transparent_24%),linear-gradient(135deg,#0d111b_0%,#070811_45%,#11101a_100%)]",
+      sidebar: "border-r border-white/[0.07] bg-[#0b0d17]/92 shadow-[18px_0_55px_rgba(0,0,0,0.20)]",
+      logo: "brightness-0 invert",
+      sidebarButton: "border-white/10 bg-white/[0.03] text-[#a8a8b8] hover:bg-white/[0.08]",
+      primaryButton: "bg-[linear-gradient(135deg,rgba(149,81,151,0.88)_0%,rgba(231,139,199,0.88)_100%)] text-white shadow-[0_16px_34px_rgba(202,105,179,0.22)]",
+      sidebarLabel: "text-[#777583]",
+      navActive: "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+      navIdle: "text-[#dbd8e4] hover:bg-white/[0.05]",
+      recentCard: "border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.07]",
+      recentActive: "border-[#e8a0d8]/45 bg-white/[0.09]",
+      recentText: "text-white",
+      recentMuted: "text-[#918f9e]",
+      premiumCard: "border-white/[0.08] bg-[linear-gradient(180deg,rgba(45,31,55,0.82)_0%,rgba(25,22,34,0.9)_100%)] shadow-[0_14px_38px_rgba(0,0,0,0.18)]",
+      premiumTitle: "text-[#f0a8d9]",
+      premiumText: "text-[#bdb7c8]",
+      premiumButton: "bg-[linear-gradient(135deg,#9b5f99_0%,#cf7db5_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.22)]",
+      headerButton: "border-white/[0.10] bg-white/[0.04] text-white hover:bg-white/[0.08]",
+      heading: "text-white",
+      subtext: "text-[#aaa6b5]",
+      orb: "border-[#d88fe1]/70 text-[#f09bd1] shadow-[0_0_42px_rgba(219,126,209,0.14)]",
+      orbRing: "border-[#a47df2]/80",
+      actionCard: "border-white/[0.13] bg-white/[0.045] hover:border-[#dca0dd]/50 hover:bg-white/[0.07]",
+      actionTitle: "text-white",
+      actionText: "text-[#aaa6b5]",
+      prompt: "border-white/[0.16] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
+      promptInput: "text-white placeholder:text-[#898693]",
+      promptMeta: "text-[#a9a5b3]",
+      iconButton: "border-white/[0.16] bg-white/[0.04] text-white",
+      featureCard: "border-white/[0.10] bg-white/[0.045] hover:bg-white/[0.07]",
+      featureTitle: "text-white",
+      featureText: "text-[#aaa6b5]",
+      detailCard: "border-white/[0.10] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
+      detailBadge: "bg-white/[0.08] text-[#f5c0e1]",
+      detailMeta: "text-[#b9b5c5]",
+    }
+    : {
+      page: "bg-[#f6f1fb] text-[#1b1a2b]",
+      overlay:
+        "bg-[radial-gradient(circle_at_60%_14%,rgba(194,128,224,0.18),transparent_24%),radial-gradient(circle_at_82%_72%,rgba(180,223,164,0.18),transparent_20%),linear-gradient(180deg,#fffdfd_0%,#f9f5ff_40%,#f4f8fb_100%)]",
+      sidebar: "border-r border-[#eadff7] bg-white/88 shadow-[18px_0_45px_rgba(103,74,151,0.10)]",
+      logo: "",
+      sidebarButton: "border-[#ebddf9] bg-[#faf6ff] text-[#6c6289] hover:bg-[#f3ecff]",
+      primaryButton: "bg-[linear-gradient(135deg,#a56ae2_0%,#e89ac7_100%)] text-white shadow-[0_16px_32px_rgba(202,105,179,0.18)]",
+      sidebarLabel: "text-[#8f86a7]",
+      navActive: "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+      navIdle: "text-[#5c5671] hover:bg-[#f6f1ff]",
+      recentCard: "border-[#ece5f7] bg-white/90 hover:bg-[#fbf8ff]",
+      recentActive: "border-[#ceafe8] bg-[#f9f2ff]",
+      recentText: "text-[#221d35]",
+      recentMuted: "text-[#7c7693]",
+      premiumCard: "border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]",
+      premiumTitle: "text-[#b1689b]",
+      premiumText: "text-[#7d7792]",
+      premiumButton: "bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]",
+      headerButton: "border-[#e7def4] bg-white/85 text-[#2a2440] hover:bg-white",
+      heading: "text-[#221d35]",
+      subtext: "text-[#726b86]",
+      orb: "border-[#d7a5dd] text-[#c76ab6] shadow-[0_0_35px_rgba(219,126,209,0.12)] bg-white/70",
+      orbRing: "border-[#c9a0ef]",
+      actionCard: "border-[#eadff7] bg-white/86 hover:border-[#dca0dd] hover:bg-white",
+      actionTitle: "text-[#241f36]",
+      actionText: "text-[#726b86]",
+      prompt: "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+      promptInput: "text-[#241f36] placeholder:text-[#928aa6]",
+      promptMeta: "text-[#7f7893]",
+      iconButton: "border-[#e5dbf4] bg-white text-[#433d58]",
+      featureCard: "border-[#eadff7] bg-white/86 hover:bg-white",
+      featureTitle: "text-[#241f36]",
+      featureText: "text-[#726b86]",
+      detailCard: "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+      detailBadge: "bg-[#f5ecff] text-[#9a56bf]",
+      detailMeta: "text-[#7d7792]",
+    };
+
+  return (
+    <main className={`h-screen overflow-hidden ${palette.page}`}>
+      <div className={`pointer-events-none fixed inset-0 ${palette.overlay}`} />
+      <div ref={workspaceRef} className="relative flex h-screen w-full">
+        <aside ref={sidebarRef} className={`flex w-[270px] shrink-0 flex-col px-5 py-4 backdrop-blur-2xl ${palette.sidebar}`}>
+          <div className="flex items-center justify-between">
+            <Image src="/logo.png" alt="SkinorAI" width={150} height={36} className={`h-8 w-auto ${palette.logo}`} priority />
+            <button type="button" className={`rounded-lg border p-1.5 transition ${palette.sidebarButton}`}>
+              <PanelLeft className="h-4 w-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedHistoryChatId(null);
+              onScanAnother();
+            }}
+            className={`mt-6 flex h-[50px] items-center gap-3 rounded-xl px-5 text-base font-medium transition hover:-translate-y-0.5 ${palette.primaryButton}`}
+          >
+            <Plus className="h-5 w-5" />
+            New Chat
+          </button>
+
+          <div className="mt-6">
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Main</p>
+            <nav className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setSelectedHistoryChatId(null)}
+                className={`relative flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${selectedHistoryChat ? palette.navIdle : palette.navActive}`}
+              >
+                {!selectedHistoryChat && <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />}
+                <CircleHelp className="h-5 w-5" />
+                Chats
+              </button>
+              <button type="button" className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}>
+                <FlaskConical className="h-5 w-5" />
+                Ingredient Library
+              </button>
+            </nav>
+          </div>
+
+          <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Recent</p>
+            <div className="mt-3 space-y-2">
+              {isHistoryLoading ? (
+                <p className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}>Loading chats...</p>
+              ) : recentChats.length > 0 ? (
+                recentChats.map((chat) => {
+                  const isActive = chat.id === selectedHistoryChatId;
+
+                  return (
+                    <button
+                      key={chat.id}
+                      type="button"
+                      onClick={() => setSelectedHistoryChatId(chat.id)}
+                      className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${isActive ? palette.recentActive : palette.recentCard}`}
+                    >
+                      <p className={`truncate text-xs font-medium ${palette.recentText}`}>{chat.productName}</p>
+                      <p className={`mt-1 text-[11px] ${palette.recentMuted}`}>{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
+                      {chat.analysisSummary && <p className={`mt-2 line-clamp-2 text-[11px] leading-5 ${palette.recentMuted}`}>{chat.analysisSummary}</p>}
+                    </button>
+                  );
+                })
+              ) : (
+                <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}>No chats yet. Start with a new scan.</p>
+              )}
+            </div>
+          </div>
+
+          <div className={`mt-4 rounded-2xl p-4 text-center ${palette.premiumCard}`}>
+            <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            <h2 className={`mt-3 text-base font-semibold ${palette.premiumTitle}`}>Unlock Premium</h2>
+            <p className={`mt-2 text-xs leading-5 ${palette.premiumText}`}>Get deeper insights, unlimited scans, and personalized routines.</p>
+            <button type="button" className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold ${palette.premiumButton}`}>
+              Upgrade to Premium
+            </button>
+          </div>
+        </aside>
+
+        <section className="relative min-w-0 flex-1 overflow-y-auto px-5 py-4 lg:px-7">
+          <header ref={headerRef} className="flex items-center justify-between">
+            <button type="button">
+              
+            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+                className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}
+              >
+                {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkTheme ? "Light" : "Dark"}
+              </button>
+              <button type="button" className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}>
+                Settings
+                <Settings className="h-4 w-4" />
+              </button>
+              <button type="button" className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}>
+                Export
+                <Download className="h-4 w-4" />
+              </button>
+            </div>
+          </header>
+
+          <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[980px] flex-col justify-start pt-6">
+            {selectedHistoryChat ? (
+              <div ref={heroRef} className="flex flex-1 flex-col py-4">
+                <div data-chat-hero className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${palette.subtext}`}>Conversation</p>
+                    <h1 className={`mt-2 text-[24px] font-medium leading-tight tracking-[-0.04em] sm:text-[32px] ${palette.heading}`}>
+                      {selectedProductName}
+                    </h1>
+                    <p className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}>
+                      Reprenez votre analyse, retrouvez le résultat précédent et continuez la discussion dans le même fil.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedHistoryChatId(null)}
+                    className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
+                  >
+                    Back to home
+                  </button>
+                </div>
+
+                <div ref={promptRef} className={`mt-5 flex flex-1 flex-col rounded-[22px] border p-5 ${palette.prompt}`}>
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <div className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.06] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"}`}>
+                        <p className="font-medium">{selectedProductName} - objectif: {selectedGoal.label}</p>
+                        <p className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}>
+                          J&apos;ai scanné ce produit pour vérifier s&apos;il est bien adapté à mon objectif peau et à ma routine.
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedAnalysisResult && (
+                      <div data-chat-card className={`rounded-[24px] border p-5 shadow-sm ${isDarkTheme ? "border-white/[0.1] bg-white/[0.05]" : "border-[#ece5fb] bg-white"}`}>
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div className="flex items-start gap-3">
+                            <span className={`mt-1 flex h-11 w-11 items-center justify-center rounded-full ${isDarkTheme ? "bg-[#1b1630] text-[#e9a2d0]" : "bg-[#f3edff] text-[#7a55ea]"}`}>
+                              <Sparkles className="h-5 w-5" />
+                            </span>
+                            <div>
+                              <div className="flex flex-wrap items-center gap-3">
+                                <h2 className={`text-xl font-bold ${palette.heading}`}>Résultat de l&apos;analyse IA</h2>
+                                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}>
+                                  {selectedAnalysisResult.verdictLabel}
+                                </span>
+                              </div>
+                              <p className={`mt-3 max-w-[760px] text-sm leading-6 ${palette.subtext}`}>{selectedAnalysisResult.summary}</p>
+                            </div>
+                          </div>
+                          <span className={`rounded-[16px] px-3 py-2 text-2xl font-bold shadow-sm ${isDarkTheme ? "bg-[#16291d] text-[#86d79f]" : "bg-[#e9faef] text-[#20a45c]"}`}>
+                            {selectedAnalysisResult.score > 0 ? `${selectedAnalysisResult.score}/10` : "--/10"}
+                          </span>
+                        </div>
+
+                        <div className="mt-5 grid gap-4 xl:grid-cols-3">
+                          <InsightCard title="Points forts" tone="green" items={selectedAnalysisResult.positives ?? []} />
+                          <InsightCard title="À surveiller" tone="orange" items={selectedAnalysisResult.watchouts ?? []} />
+                          <NextStepCard
+                            tips={selectedAnalysisResult.recommendations?.length ? selectedAnalysisResult.recommendations : selectedGoal.tips}
+                            nextStep={selectedAnalysisResult.nextStep || selectedGoal.nextStep}
+                          />
+                        </div>
+
+                        <p className={`mt-5 rounded-2xl px-4 py-3 text-xs leading-5 ${isDarkTheme ? "bg-white/[0.04] text-white/65" : "bg-[#faf7ff] text-[#68708b]"}`}>
+                          {selectedAnalysisResult.disclaimer || "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
+                        </p>
+
+                        <div className="mt-5">
+                          <h3 className={`text-base font-semibold ${palette.heading}`}>Questions à poser</h3>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {selectedFollowUpQuestions.map((question) => (
+                              <button
+                                key={question}
+                                type="button"
+                                onClick={() => void askSavedQuestion(question)}
+                                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${isDarkTheme ? "border-white/[0.1] bg-white/[0.04] text-[#f0c2df] hover:bg-white/[0.08]" : "border-[#e7defc] bg-[#faf7ff] text-[#7350e5] hover:bg-[#f1eaff]"}`}
+                              >
+                                {question}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {isConversationLoading ? (
+                      <div className="space-y-3">
+                        <div className={`h-16 rounded-2xl border ${palette.detailCard}`} />
+                        <div className={`ml-auto h-14 w-[72%] rounded-2xl border ${palette.detailCard}`} />
+                        <div className={`h-16 w-[78%] rounded-2xl border ${palette.detailCard}`} />
+                      </div>
+                    ) : chatMessages.length > 0 ? (
+                      <div className="space-y-3">
+                        {chatMessages.map((message) => (
+                          <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                            <div
+                              className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${message.role === "user"
+                                ? isDarkTheme
+                                  ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white shadow-[0_12px_28px_rgba(168,103,197,0.24)]"
+                                  : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                                : isDarkTheme
+                                  ? "border-white/[0.1] bg-white/[0.05] text-white"
+                                  : "border-[#ece5fb] bg-white text-[#59617d]"}`}
+                            >
+                              <p>{message.content}</p>
+                              <p className={`mt-2 text-[11px] ${message.role === "user" ? (isDarkTheme ? "text-white/80" : "text-[#7a6ea6]") : palette.subtext}`}>
+                                {formatScanHistoryDate(message.createdAt ?? selectedHistoryDetail?.updatedAt ?? selectedHistoryChat.updatedAt ?? new Date().toISOString())}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className={`rounded-2xl border p-4 text-sm ${palette.detailCard} ${palette.subtext}`}>
+                        Aucune question enregistrée pour ce scan pour le moment. Vous pouvez reprendre la conversation ci-dessous.
+                      </div>
+                    )}
+
+                    {isChatSending && (
+                      <div className="flex justify-start">
+                        <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}>
+                          <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                          SkinorAI réfléchit...
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={`mt-5 rounded-[22px] border p-4 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.03]" : "border-[#e8e0fb] bg-white"}`}>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <div className={`flex items-center gap-2 ${isDarkTheme ? "text-[#f0c2df]" : "text-[#7a55ea]"}`}>
+                          <Sparkles className="h-4 w-4" />
+                          <span className="text-sm font-semibold">Continuer la conversation</span>
+                        </div>
+                        <input
+                          value={chatInput}
+                          onChange={(event) => setChatInput(event.target.value)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              void askSavedQuestion(chatInput);
+                            }
+                          }}
+                          className={`mt-3 w-full border-0 bg-transparent text-sm outline-none ${palette.promptInput}`}
+                          placeholder="Posez une question sur ce produit, la routine ou les ingrédients..."
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void askSavedQuestion(chatInput)}
+                        disabled={!chatInput.trim() || isChatSending}
+                        className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Send className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div ref={heroRef} className="flex flex-1 flex-col items-center justify-start py-2 text-center">
+                <div data-chat-hero className="relative mt-1 flex justify-center">
+                  <div data-chat-orb className={`relative flex h-[82px] w-[82px] items-center justify-center rounded-full border ${palette.orb}`}>
+                    <div className={`absolute inset-1.5 rounded-full border-r-2 ${palette.orbRing}`} />
+                    <Leaf className="h-10 w-10" />
+                  </div>
+                </div>
+                <h1 data-chat-hero className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}>
+                  Ready to Understand Your Skin?
+                </h1>
+                <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
+                  Your AI skincare companion for science-backed insights and personalized recommendations.
+                </p>
+
+                <div data-chat-hero className="mt-4 grid w-full max-w-[700px] gap-4 md:grid-cols-2">
+                  <button type="button" onClick={onScanAnother} className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}>
+                    <ScanBarcode className="h-10 w-10 text-[#bce58d]" />
+                    <span>
+                      <span className={`block text-[17px] font-semibold ${palette.actionTitle}`}>Scan Product</span>
+                      <span className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}>Scan any product to analyze its ingredients and claims.</span>
+                    </span>
+                  </button>
+                  <button type="button" className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}>
+                    <Leaf className="h-7 w-7 text-[#f09ac7]" />
+                    <span>
+                      <span className={`block text-[17px] font-semibold ${palette.actionTitle}`}>Analyse Ingredients</span>
+                      <span className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}>Decode ingredients and understand what works for your skin.</span>
+                    </span>
+                  </button>
+                </div>
+
+                <div ref={cardsRef} className="mt-6 grid w-full gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {featureCards.map(([Icon, title, text]) => (
+                    <article key={title} data-chat-card className={`group min-h-[118px] rounded-2xl border p-4 text-left transition hover:-translate-y-1 ${palette.featureCard}`}>
+                      <Icon className="h-6 w-6 text-[#ec9ccc]" />
+                      <h3 className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}>{title}</h3>
+                      <p className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}>{text}</p>
+                      <ArrowRight className={`ml-auto mt-3 h-4 w-4 transition group-hover:translate-x-1 ${palette.featureText}`} />
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function SavedConversationWorkspace({
+  detail,
+  fallbackHistoryItem,
+  isConversationLoading,
+  historyItems,
+  isHistoryLoading,
+  onScanAnother,
+}: {
+  detail: ScanConversationDetail | null;
+  fallbackHistoryItem: ScanHistoryItem;
+  isConversationLoading: boolean;
+  historyItems: Array<{ id: string; name: string; date: string; active: boolean; image: string }>;
+  isHistoryLoading: boolean;
+  onScanAnother: () => void;
+}) {
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isChatSending, setIsChatSending] = useState(false);
+  const chatMessageIdRef = useRef(0);
+
+  useEffect(() => {
+    document.body.dataset.navbarHidden = "true";
+
+    return () => {
+      delete document.body.dataset.navbarHidden;
+    };
+  }, []);
+
+  const selectedGoal =
+    goals.find((goal) => goal.id === detail?.skinGoal || skinGoalApiMap[goal.id] === detail?.skinGoal) ?? goals[0];
+
+  const analysisResult: AnalysisResult = detail?.analysisResult ?? {
+    score: 0,
+    verdict: "good_choice",
+    verdictLabel: fallbackHistoryItem.analysisVerdict || "Analyse enregistrée",
+    summary: fallbackHistoryItem.analysisSummary || "Analyse enregistrée pour ce produit.",
+    positives: [],
+    watchouts: [],
+    recommendations: selectedGoal.tips,
+    nextStep: selectedGoal.nextStep,
+    followUpQuestions: selectedGoal.questions,
+    disclaimer: "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+  };
+
+  const followUpQuestions = analysisResult.followUpQuestions?.length ? analysisResult.followUpQuestions : selectedGoal.questions;
+  const restoredMessages = (detail?.conversation ?? []).filter((message, index) => !(index === 0 && message.role === "assistant"));
+  const ingredientItems = buildIngredientItems(detail?.ingredients ?? []);
+  const productName = detail?.productName || fallbackHistoryItem.productName || "Produit scanné";
+  const messageTimestamp = detail?.updatedAt || fallbackHistoryItem.updatedAt || fallbackHistoryItem.createdAt;
+
+  useEffect(() => {
+    setChatMessages(restoredMessages);
+  }, [detail?.id]);
+
+  const askQuestion = async (rawQuestion: string) => {
+    const question = rawQuestion.trim();
+
+    if (!question || !detail || isChatSending) {
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      id: `saved-user-${chatMessageIdRef.current++}`,
+      role: "user",
+      content: question,
+      createdAt: new Date().toISOString(),
+    };
+
+    setChatInput("");
+    setChatMessages((messages) => [...messages, userMessage]);
+    setIsChatSending(true);
+
+    try {
+      const response = await requestScanChat({
+        question,
+        productName,
+        selectedGoal,
+        ingredientItems,
+        analysisResult,
+        scanId: detail.id,
+      });
+
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `saved-assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: response.answer,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } catch {
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `saved-assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: "Impossible de charger la réponse pour le moment. Réessayez dans quelques instants.",
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsChatSending(false);
+    }
+  };
+
+  return (
+    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35]">
+      <div className="flex h-screen w-full bg-white/85">
+        <ResultSidebarShell historyItems={historyItems} isHistoryLoading={isHistoryLoading} onScanAnother={onScanAnother} selectedImage={null} />
+        <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="shrink-0 flex items-center justify-end border-b border-[#ede7fb] px-5 py-4 sm:px-8">
+            <div className="flex items-center gap-4 text-[#636b88]">
+              <button type="button" className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]">
+                <CircleHelp className="h-5 w-5" />
+                Aide
+              </button>
+              <button type="button" className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]">
+                <Bell className="h-5 w-5" />
+                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#8f64f2]" />
+              </button>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-[1050px]">
+              <ScanProgress currentStep={4} onStepClick={() => undefined} selectedGoalLabel={selectedGoal.label} />
+
+              <div className="mt-4 flex items-start justify-end gap-3">
+                <div className="max-w-[680px] rounded-[22px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-5 py-4 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
+                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">{productName} - objectif: {selectedGoal.label}</p>
+                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">J'ai scanné ce produit pour vérifier s'il est bien adapté à mon objectif peau et à ma routine.</p>
+                </div>
+                <div className="hidden items-center gap-3 sm:flex">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
+                    <UserRound className="h-5 w-5" />
+                  </span>
+                  <span className="text-xs text-[#868daa]">{formatScanHistoryDate(messageTimestamp)}</span>
+                </div>
+              </div>
+
+              <div className="mt-6 rounded-[28px] border border-[#ece5fb] bg-white px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
+                      <Sparkles className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h2 className="text-xl font-bold text-[#171b36]">Résultat de l'analyse IA</h2>
+                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">{analysisResult.verdictLabel || fallbackHistoryItem.analysisVerdict || "Analyse enregistrée"}</span>
+                      </div>
+                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">{analysisResult.summary || "Analyse enregistrée pour ce produit."}</p>
+                    </div>
+                  </div>
+                  <span className="rounded-[16px] bg-[#e9faef] px-3 py-2 text-2xl font-bold text-[#20a45c] shadow-sm">
+                    {analysisResult.score > 0 ? `${analysisResult.score}/10` : "--/10"}
+                  </span>
+                </div>
+
+                <div className="mt-5 grid gap-4 xl:grid-cols-3">
+                  <InsightCard title="Points forts" tone="green" items={analysisResult.positives ?? []} />
+                  <InsightCard title="À surveiller" tone="orange" items={analysisResult.watchouts ?? []} />
+                  <NextStepCard tips={analysisResult.recommendations?.length ? analysisResult.recommendations : selectedGoal.tips} nextStep={analysisResult.nextStep || selectedGoal.nextStep} />
+                </div>
+
+                <p className="mt-5 rounded-2xl bg-[#faf7ff] px-4 py-3 text-xs leading-5 text-[#68708b]">
+                  {analysisResult.disclaimer || "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
+                </p>
+
+                <div className="mt-5">
+                  <h3 className="text-base font-semibold text-[#171b36]">Questions à poser</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {followUpQuestions.map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        onClick={() => void askQuestion(question)}
+                        className="rounded-xl border border-[#e7defc] bg-[#faf7ff] px-3 py-2 text-xs font-semibold text-[#7350e5] transition hover:bg-[#f1eaff]"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3 pb-3">
+                {isConversationLoading ? (
+                  <div className="space-y-3">
+                    <div className="h-16 rounded-[22px] border border-[#ece5fb] bg-white shadow-sm" />
+                    <div className="ml-auto h-16 w-[72%] rounded-[22px] border border-[#ece5fb] bg-[#f7f2ff] shadow-sm" />
+                  </div>
+                ) : (
+                  chatMessages.map((message) => (
+                    <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
+                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                          : "border-[#ece5fb] bg-white text-[#59617d]"
+                          }`}
+                      >
+                        {message.content}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {isChatSending && (
+                  <div className="flex justify-start">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#ece5fb] bg-white px-4 py-2 text-xs font-medium text-[#7a55ea] shadow-sm">
+                      <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                      SkinorAI réfléchit...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-[#ede7fb] bg-white/90 px-4 py-3 shadow-[0_-14px_35px_rgba(90,66,165,0.06)] backdrop-blur sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-[1050px] rounded-[24px] border border-[#e8e0fb] bg-white px-4 py-4 shadow-[0_12px_35px_rgba(90,66,165,0.06)] sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[#7a55ea]">
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Posez une question sur ce produit...</span>
+                  </div>
+                  <input
+                    value={chatInput}
+                    onChange={(event) => setChatInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void askQuestion(chatInput);
+                      }
+                    }}
+                    className="mt-3 w-full border-0 bg-transparent text-sm text-[#171b36] outline-none placeholder:text-[#98a0bc]"
+                    placeholder="Compatibilité, usage, sensibilité, routine..."
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void askQuestion(chatInput)}
+                  disabled={!chatInput.trim() || isChatSending || !detail}
+                  className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
 function ResultWorkspace({
   analysisResult,
+  analysisError,
   currentStep,
+  ingredientItems,
+  productName,
   selectedGoal,
   selectedImage,
+  scanId,
+  hasActivePlan,
+  currentScanPromptCount,
+  upgradeDialogReason,
+  freeScansUsed,
+  freeScansRemaining,
+  onPromptConsumed,
+  onQuotaUpdated,
+  onUpgradeRequired,
+  onUpgradeDismiss,
+  onUpgrade,
   onChangeGoal,
   onScanAnother,
 }: {
   analysisResult: AnalysisResult;
+  analysisError: string;
   currentStep: number;
+  ingredientItems: IngredientItem[];
+  productName: string;
   selectedGoal: SkinGoal;
   selectedImage: UploadedImage | null;
+  scanId: string | null;
+  hasActivePlan: boolean;
+  currentScanPromptCount: number;
+  upgradeDialogReason: UpgradeDialogReason | null;
+  freeScansUsed: number;
+  freeScansRemaining: number;
+  onPromptConsumed: () => void;
+  onQuotaUpdated: (quota?: QuotaStatus) => void;
+  onUpgradeRequired: (reason: UpgradeDialogReason) => void;
+  onUpgradeDismiss: () => void;
+  onUpgrade: () => void;
   onChangeGoal: () => void;
   onScanAnother: () => void;
 }) {
-  const productName = formatProductName(selectedImage?.file.name ?? null);
-  const historyItems = [
-    { name: productName, date: "Aujourd hui · 10:24", active: true, image: selectedImage?.url ?? "/cleanser.png" },
-    { name: "Sunscreen SPF 50", date: "Hier · 14:32", active: false, image: "/cleanser.png" },
-    { name: "Vitamin C Serum", date: "2 mai · 09:15", active: false, image: "/cleanser.png" },
-    { name: "Retinol Night Cream", date: "28 avril · 21:08", active: false, image: "/cleanser.png" },
-  ];
+  useEffect(() => {
+    document.body.dataset.navbarHidden = "true";
+
+    return () => {
+      delete document.body.dataset.navbarHidden;
+    };
+  }, []);
+
+  const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: "assistant-intro",
+      role: "assistant",
+      content: "Je peux maintenant repondre a vos questions sur ce resultat, la routine, les ingredients a surveiller ou la frequence d utilisation.",
+    },
+  ]);
+  const [isChatSending, setIsChatSending] = useState(false);
+  const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+  const chatMessageIdRef = useRef(0);
+  const freePromptsRemaining = Math.max(0, FREE_PROMPT_LIMIT - currentScanPromptCount);
+  const historyItems = scanHistory.map((item) => ({
+    id: item.id,
+    name: item.productName,
+    date: formatScanHistoryDate(item.updatedAt || item.createdAt),
+    active: item.id === scanId,
+    image: item.id === scanId ? selectedImage?.url ?? "/cleanser.png" : "/cleanser.png",
+  }));
+  useEffect(() => {
+    let isCancelled = false;
+
+    const loadHistory = async () => {
+      setIsHistoryLoading(true);
+
+      try {
+        const scans = await requestScanHistory();
+        if (!isCancelled) {
+          setScanHistory(scans);
+        }
+      } catch {
+        if (!isCancelled) {
+          setScanHistory([]);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsHistoryLoading(false);
+        }
+      }
+    };
+
+    void loadHistory();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [scanId]);
+
+  const askQuestion = async (rawQuestion: string) => {
+    const question = rawQuestion.trim();
+
+    if (!question || isChatSending) {
+      return;
+    }
+
+    if (!hasActivePlan && currentScanPromptCount >= FREE_PROMPT_LIMIT) {
+      onUpgradeRequired("prompt-limit");
+      return;
+    }
+
+    const userMessage: ChatMessage = {
+      id: `user-${chatMessageIdRef.current++}`,
+      role: "user",
+      content: question,
+    };
+
+    setChatInput("");
+    setChatMessages((messages) => [...messages, userMessage]);
+    setIsChatSending(true);
+
+    try {
+      const response = await requestScanChat({
+        question,
+        productName,
+        selectedGoal,
+        ingredientItems,
+        analysisResult,
+        scanId,
+      });
+
+      onQuotaUpdated(response.quota);
+      if (!response.quota) {
+        onPromptConsumed();
+      }
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: response.answer,
+        },
+      ]);
+    } catch (error) {
+      if (error instanceof UpgradeRequiredError) {
+        onQuotaUpdated(error.quota);
+        onUpgradeRequired(error.reason);
+        return;
+      }
+
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: "Impossible de repondre pour le moment. Reessayez dans quelques instants.",
+        },
+      ]);
+    } finally {
+      setIsChatSending(false);
+    }
+  };
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] p-2 text-[#161a35] sm:p-4">
-      <div className="mx-auto flex min-h-[calc(100vh-1rem)] max-w-[1780px] overflow-hidden rounded-[34px] border border-[#e8e2fa] bg-white/85 shadow-[0_28px_80px_rgba(86,63,154,0.10)] backdrop-blur-xl sm:min-h-[calc(100vh-2rem)]">
-        <ResultSidebarShell historyItems={historyItems} onScanAnother={onScanAnother} selectedImage={selectedImage} />
-        <section className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center justify-between border-b border-[#ede7fb] px-5 py-5 sm:px-8">
+    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35]">
+      <div className="flex h-screen w-full bg-white/85">
+        <ResultSidebarShell historyItems={historyItems} isHistoryLoading={isHistoryLoading} onScanAnother={onScanAnother} selectedImage={selectedImage} />
+        <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
+          <div className="shrink-0 flex items-center justify-between border-b border-[#ede7fb] px-5 py-4 sm:px-8">
             <button
               type="button"
               onClick={onChangeGoal}
@@ -1127,56 +2671,67 @@ function ResultWorkspace({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-7 sm:px-8 lg:px-10">
-            <div className="mx-auto max-w-[1080px]">
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-[1050px]">
               <ScanProgress currentStep={currentStep} onStepClick={() => undefined} selectedGoalLabel={selectedGoal.label} />
 
-              <div className="mt-6 flex items-start justify-end gap-4">
-                <div className="max-w-[720px] rounded-[26px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-6 py-5 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
-                  <p className="text-[15px] font-semibold text-[#1a1e39] sm:text-[17px]">{productName} - objectif: {selectedGoal.label}</p>
-                  <p className="mt-2 text-sm leading-7 text-[#69718f] sm:text-base">J ai scanne ce produit pour verifier s il est bien adapte a mon objectif peau et a ma routine.</p>
+              {analysisError && (
+                <p className="mt-4 rounded-2xl border border-[#ffe3a8] bg-[#fffaf0] px-4 py-3 text-xs font-medium text-[#9b6500]">
+                  {analysisError}
+                </p>
+              )}
+
+              <div className="mt-4 flex items-start justify-end gap-3">
+                <div className="max-w-[680px] rounded-[22px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-5 py-4 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
+                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">{productName} - objectif: {selectedGoal.label}</p>
+                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">J'ai scanné ce produit pour vérifier s'il est bien adapté à mon objectif peau et à ma routine.</p>
                 </div>
-                <div className="hidden items-center gap-4 sm:flex">
-                  <span className="flex h-14 w-14 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
-                    <UserRound className="h-7 w-7" />
+                <div className="hidden items-center gap-3 sm:flex">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
+                    <UserRound className="h-5 w-5" />
                   </span>
-                  <span className="text-sm text-[#868daa]">10:24</span>
+                  <span className="text-xs text-[#868daa]">10:24</span>
                 </div>
               </div>
 
-              <div className="mt-10 rounded-[34px] border border-[#ece5fb] bg-white px-5 py-6 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-7 sm:py-8">
+              <div className="mt-6 rounded-[28px] border border-[#ece5fb] bg-white px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex items-start gap-4">
-                    <span className="mt-1 flex h-14 w-14 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
-                      <Sparkles className="h-7 w-7" />
+                  <div className="flex items-start gap-3">
+                    <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
+                      <Sparkles className="h-5 w-5" />
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-2xl font-bold text-[#171b36]">Resultat de l analyse IA</h2>
-                        <span className="rounded-full bg-[#e7f8ec] px-4 py-2 text-sm font-semibold text-[#21a35c]">{analysisResult.verdict}</span>
+                        <h2 className="text-xl font-bold text-[#171b36]">Résultat de l'analyse IA</h2>
+                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">{analysisResult.verdictLabel}</span>
                       </div>
-                      <p className="mt-4 max-w-[780px] text-base leading-8 text-[#5f6784]">{analysisResult.summary}</p>
+                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">{analysisResult.summary}</p>
                     </div>
                   </div>
-                  <span className="rounded-[20px] bg-[#e9faef] px-4 py-3 text-3xl font-bold text-[#20a45c] shadow-sm">
+                  <span className="rounded-[16px] bg-[#e9faef] px-3 py-2 text-2xl font-bold text-[#20a45c] shadow-sm">
                     {analysisResult.score}/10
                   </span>
                 </div>
 
-                <div className="mt-8 grid gap-4 xl:grid-cols-3">
+                <div className="mt-5 grid gap-4 xl:grid-cols-3">
                   <InsightCard title="Points forts" tone="green" items={analysisResult.positives} />
-                  <InsightCard title="A surveiller" tone="orange" items={analysisResult.watchouts} />
-                  <NextStepCard tips={analysisResult.tips} nextStep={analysisResult.nextStep} />
+                  <InsightCard title="À surveiller" tone="orange" items={analysisResult.watchouts} />
+                  <NextStepCard tips={analysisResult.recommendations} nextStep={analysisResult.nextStep} />
                 </div>
 
-                <div className="mt-8">
-                  <h3 className="text-lg font-semibold text-[#171b36]">Questions a poser</h3>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    {analysisResult.questions.map((question) => (
+                <p className="mt-5 rounded-2xl bg-[#faf7ff] px-4 py-3 text-xs leading-5 text-[#68708b]">
+                  {analysisResult.disclaimer}
+                </p>
+
+                <div className="mt-5">
+                  <h3 className="text-base font-semibold text-[#171b36]">Questions à poser</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {analysisResult.followUpQuestions.map((question) => (
                       <button
                         key={question}
                         type="button"
-                        className="rounded-2xl border border-[#e7defc] bg-[#faf7ff] px-4 py-3 text-sm font-semibold text-[#7350e5] transition hover:bg-[#f1eaff]"
+                        onClick={() => void askQuestion(question)}
+                        className="rounded-xl border border-[#e7defc] bg-[#faf7ff] px-3 py-2 text-xs font-semibold text-[#7350e5] transition hover:bg-[#f1eaff]"
                       >
                         {question}
                       </button>
@@ -1185,37 +2740,92 @@ function ResultWorkspace({
                 </div>
               </div>
 
-              <div className="mt-8 rounded-[30px] border border-[#e8e0fb] bg-white px-5 py-5 shadow-[0_18px_45px_rgba(90,66,165,0.06)] sm:px-6">
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-3 text-[#7a55ea]">
-                      <Sparkles className="h-5 w-5" />
-                      <span className="font-semibold">Posez une question sur ce produit...</span>
-                    </div>
-                    <input
-                      className="mt-4 w-full border-0 bg-transparent text-base text-[#171b36] outline-none placeholder:text-[#98a0bc]"
-                      placeholder="Compatibilite, usage, sensibilite, routine..."
-                    />
-                    <div className="mt-5 flex flex-wrap gap-3">
-                      <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-4 py-2 text-sm font-medium text-[#6a7290]">
-                        <Paperclip className="h-4 w-4" />
-                        Joindre une image
-                      </button>
-                      <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-4 py-2 text-sm font-medium text-[#6a7290]">
-                        <Sparkles className="h-4 w-4" />
-                        Exemples de questions
-                      </button>
+              <div className="mt-5 space-y-3 pb-3">
+                {chatMessages.map((message) => (
+                  <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
+                        ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                        : "border-[#ece5fb] bg-white text-[#59617d]"
+                        }`}
+                    >
+                      {message.content}
                     </div>
                   </div>
-                  <button type="button" className="ml-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_18px_35px_rgba(112,75,225,0.28)]">
-                    <Send className="h-7 w-7" />
-                  </button>
+                ))}
+
+                {isChatSending && (
+                  <div className="flex justify-start">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#ece5fb] bg-white px-4 py-2 text-xs font-medium text-[#7a55ea] shadow-sm">
+                      <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                      SkinorAI reflechit...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-[#ede7fb] bg-white/90 px-4 py-3 shadow-[0_-14px_35px_rgba(90,66,165,0.06)] backdrop-blur sm:px-8 lg:px-10">
+            <div className="mx-auto max-w-[1050px] rounded-[24px] border border-[#e8e0fb] bg-white px-4 py-4 shadow-[0_12px_35px_rgba(90,66,165,0.06)] sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-[#7a55ea]">
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-sm font-semibold">Posez une question sur ce produit...</span>
+                  </div>
+                  <input
+                    value={chatInput}
+                    onChange={(event) => setChatInput(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void askQuestion(chatInput);
+                      }
+                    }}
+                    className="mt-3 w-full border-0 bg-transparent text-sm text-[#171b36] outline-none placeholder:text-[#98a0bc]"
+                    placeholder="Compatibilite, usage, sensibilite, routine..."
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]">
+                      <Paperclip className="h-3.5 w-3.5" />
+                      Joindre une image
+                    </button>
+                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Exemples de questions
+                    </button>
+                  </div>
+                  {!hasActivePlan && (
+                    <p className="mt-3 text-xs font-medium text-[#7a7893]">
+                      {freePromptsRemaining > 0
+                        ? `${freePromptsRemaining} question gratuite restante pour ce scan.`
+                        : "Votre question gratuite est utilisee. Passez au plan Pro pour continuer."}
+                    </p>
+                  )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => void askQuestion(chatInput)}
+                  disabled={!chatInput.trim() || isChatSending}
+                  className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isChatSending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                </button>
               </div>
             </div>
           </div>
         </section>
       </div>
+      {upgradeDialogReason && (
+        <UpgradePlanDialog
+          reason={upgradeDialogReason}
+          scansUsed={freeScansUsed}
+          scansRemaining={freeScansRemaining}
+          onClose={onUpgradeDismiss}
+          onUpgrade={onUpgrade}
+        />
+      )}
     </main>
   );
 }
@@ -1250,14 +2860,14 @@ function HowItWorksCard() {
   ] as const;
 
   return (
-    <Panel className="min-h-[500px] px-8 py-9">
+    <Panel className="min-h-[420px] px-7 py-7">
       <h2 className="flex items-center justify-between text-2xl font-bold">
         Comment ca marche
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
-      <div className="mt-10 space-y-9">
+      <div className="mt-7 space-y-6">
         {items.map(([Icon, title, text], index) => (
-          <div key={title} className="relative grid grid-cols-[34px_64px_1fr] gap-5">
+          <div key={title} className="relative grid grid-cols-[28px_56px_1fr] gap-4">
             {/* Step number + line */}
             <div className="relative flex justify-center">
               {index !== items.length - 1 && (
@@ -1270,17 +2880,17 @@ function HowItWorksCard() {
             </div>
 
             {/* Icon */}
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#e5dcff] bg-[#f6f1ff] text-[#7548e8] shadow-[0_8px_18px_rgba(117,72,232,0.12)]">
-              <Icon className="h-8 w-8" strokeWidth={2.5} />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e5dcff] bg-[#f6f1ff] text-[#7548e8] shadow-[0_8px_18px_rgba(117,72,232,0.12)]">
+              <Icon className="h-7 w-7" strokeWidth={2.5} />
             </div>
 
             {/* Text */}
             <div className="pt-1">
-              <h3 className="text-[15px] font-extrabold leading-6 text-[#101632]">
+              <h3 className="text-[14px] font-extrabold leading-5 text-[#101632]">
                 {title}
               </h3>
 
-              <p className="mt-2 max-w-[220px] text-[15px] leading-6 text-[#66708f]">
+              <p className="mt-1.5 max-w-[210px] text-[14px] leading-5 text-[#66708f]">
                 {text}
               </p>
             </div>
@@ -1304,10 +2914,10 @@ function TipsCard() {
         Conseils photo
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
-      <div className="mt-10 space-y-9">
+      <div className="mt-7 space-y-6">
         {tips.map(([Icon, title, text]) => (
           <div key={title} className="flex gap-5">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl border border-[#e6ddff] bg-[#f5f0ff] text-[#7548e8]">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#e6ddff] bg-[#f5f0ff] text-[#7548e8]">
               <Icon className="h-8 w-8" />
             </span>
             <span>
@@ -1464,6 +3074,82 @@ function ManualIngredientsDialog({
   );
 }
 
+function UpgradePlanDialog({
+  reason,
+  scansUsed,
+  scansRemaining,
+  onClose,
+  onUpgrade,
+}: {
+  reason: UpgradeDialogReason;
+  scansUsed: number;
+  scansRemaining: number;
+  onClose: () => void;
+  onUpgrade: () => void;
+}) {
+  const isScanLimit = reason === "scan-limit";
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="upgrade-plan-title"
+        className="w-full max-w-md rounded-[32px] border border-white/70 bg-white p-7 text-[#171b36] shadow-[0_35px_90px_rgba(42,22,84,0.3)]"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <span className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-[#f3edff] text-[#7a55ea] shadow-[0_14px_28px_rgba(112,75,225,0.16)]">
+            <Sparkles className="h-6 w-6" />
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f5f1ff] text-[#6f3fe4] transition hover:bg-[#ede5ff]"
+            aria-label="Fermer la fenetre"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">Plan Pro</p>
+        <h2 id="upgrade-plan-title" className="mt-2 text-2xl font-bold">
+          {isScanLimit ? "Vos 3 scans gratuits sont termines" : "Votre question gratuite est utilisee"}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[#66708f]">
+          {isScanLimit
+            ? "Passez au plan Pro pour continuer a analyser de nouveaux produits avec SkinorAI."
+            : "Le plan Pro debloque les questions illimitees apres chaque scan produit."}
+        </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Scans gratuits</p>
+            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{Math.min(scansUsed, FREE_SCAN_LIMIT)}/{FREE_SCAN_LIMIT}</p>
+          </div>
+          <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Restants</p>
+            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{scansRemaining}</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onUpgrade}
+          className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-[#8c57eb] via-[#b674f4] to-[#f0a1d3] px-6 text-sm font-bold text-white shadow-[0_18px_36px_rgba(117,72,232,0.24)] transition hover:-translate-y-0.5"
+        >
+          Passer au plan Pro
+        </button>
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-3 inline-flex h-11 w-full items-center justify-center rounded-full border border-[#ddd6f6] bg-white px-6 text-sm font-semibold text-[#4f5473] transition hover:bg-[#faf9ff]"
+        >
+          Plus tard
+        </button>
+      </div>
+    </div>
+  );
+}
 function ProductStill() {
   return (
     <div className="relative h-56 w-72">
@@ -1476,16 +3162,49 @@ function ProductStill() {
 
 function ResultSidebarShell({
   historyItems,
+  isHistoryLoading,
   onScanAnother,
   selectedImage,
 }: {
-  historyItems: Array<{ name: string; date: string; active: boolean; image: string }>;
+  historyItems: Array<{ id: string; name: string; date: string; active: boolean; image: string }>;
+  isHistoryLoading: boolean;
   onScanAnother: () => void;
   selectedImage: UploadedImage | null;
 }) {
+  const { user, logout } = useAuth();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const displayName = user?.name?.trim() || user?.email || "Compte";
+
+  useEffect(() => {
+    if (!isProfileMenuOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isProfileMenuOpen]);
+
   return (
-    <aside className="hidden w-[320px] shrink-0 border-r border-[#ede7fb] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94)_0%,_rgba(249,245,255,0.92)_100%)] lg:flex lg:flex-col">
-      <div className="border-b border-[#ede7fb] px-6 py-8">
+    <aside className="hidden h-screen w-[320px] shrink-0 border-r border-[#ede7fb] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94)_0%,_rgba(249,245,255,0.92)_100%)] lg:flex lg:flex-col">
+      <div className="border-b border-[#ede7fb] px-6 py-6">
         <div className="flex items-center justify-between">
           <Image src="/logo.png" alt="SkinorAI" width={170} height={40} className="h-10 w-auto" priority />
           <button type="button" className="rounded-full p-2 text-[#6c7190] transition hover:bg-[#f5f1ff]">
@@ -1496,57 +3215,109 @@ function ResultSidebarShell({
         <button
           type="button"
           onClick={onScanAnother}
-          className="mt-8 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-4 text-base font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
+          className="mt-7 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
         >
           <Plus className="h-5 w-5" />
           Nouveau scan
         </button>
 
-        <div className="mt-8 flex items-center gap-3 rounded-2xl border border-[#e8e0fb] bg-white px-4 py-3 text-[#8a90aa]">
+        <div className="mt-7 flex items-center gap-3 rounded-2xl border border-[#e8e0fb] bg-white px-4 py-3 text-[#8a90aa]">
           <Search className="h-5 w-5" />
           <span className="text-sm">Rechercher un scan...</span>
         </div>
       </div>
 
-      <div className="flex-1 px-5 py-6">
-        <h3 className="flex items-center gap-2 text-lg font-semibold text-[#171b36]">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+        <h3 className="flex items-center gap-2 text-base font-semibold text-[#171b36]">
           <Clock3 className="h-5 w-5 text-[#7260ad]" />
           Historique
         </h3>
 
-        <div className="mt-6 space-y-3">
-          {historyItems.map((item) => (
-            <div
-              key={`${item.name}-${item.date}`}
-              className={`flex items-center gap-3 rounded-[24px] border px-3 py-3 shadow-sm ${item.active ? "border-[#e6ddfb] bg-[#f8f4ff]" : "border-transparent bg-white/70"}`}
-            >
-              <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-[#efe7fb] bg-white">
-                <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized={item.image === selectedImage?.url} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold text-[#1b1f39]">{item.name}</p>
-                <p className="mt-1 text-sm text-[#7b829e]">{item.date}</p>
-              </div>
-              <button type="button" className="rounded-full p-2 text-[#7680a0] transition hover:bg-white">
-                <MoreVertical className="h-4 w-4" />
-              </button>
+        <div className="mt-5 space-y-3">
+          {isHistoryLoading ? (
+            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-sm text-[#7b829e]">
+              Chargement de l historique...
             </div>
-          ))}
+          ) : historyItems.length > 0 ? (
+            historyItems.map((item) => (
+              <div
+                key={item.id}
+                className={`flex items-center gap-3 rounded-[22px] border px-3 py-2.5 shadow-sm ${item.active ? "border-[#e6ddfb] bg-[#f8f4ff]" : "border-transparent bg-white/70"}`}
+              >
+                <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[#efe7fb] bg-white">
+                  <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized={item.image === selectedImage?.url} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-[#1b1f39]">{item.name}</p>
+                  <p className="mt-1 text-xs text-[#7b829e]">{item.date}</p>
+                </div>
+                <button type="button" className="rounded-full p-2 text-[#7680a0] transition hover:bg-white">
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-sm leading-6 text-[#7b829e]">
+              Aucun scan enregistre pour le moment.
+            </div>
+          )}
         </div>
 
-        <button type="button" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6f49e2] transition hover:text-[#5d39cf]">
-          Voir tous les scans
-          <ArrowRight className="h-4 w-4" />
-        </button>
+        {historyItems.length > 0 && (
+          <button type="button" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6f49e2] transition hover:text-[#5d39cf]">
+            Voir tous les scans
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        )}
       </div>
 
-      <div className="mt-auto flex items-center gap-3 border-t border-[#ede7fb] px-5 py-5">
-        <Image src="/people.png" alt="Clara" width={44} height={44} className="h-11 w-11 rounded-full object-cover object-left" />
-        <div className="flex-1">
-          <p className="font-semibold text-[#171b36]">Clara</p>
-          <p className="text-sm font-medium text-[#7a55ea]">Plan Pro</p>
+      <div ref={profileMenuRef} className="relative mt-auto border-t border-[#ede7fb] px-4 py-4">
+        <button
+          type="button"
+          onClick={() => setIsProfileMenuOpen((current) => !current)}
+          className="flex w-full items-center gap-3 rounded-[22px] px-2 py-2 text-left transition hover:bg-white/70"
+          aria-haspopup="menu"
+          aria-expanded={isProfileMenuOpen}
+        >
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#b585ff] to-[#8b5cf6] text-white shadow-sm">
+            <UserRound className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate font-semibold text-[#171b36]">{displayName}</span>
+            <span className="block text-sm font-medium text-[#7a55ea]">Plan Pro</span>
+          </span>
+          <ChevronDown className={`h-4 w-4 text-[#6e7693] transition ${isProfileMenuOpen ? "rotate-180" : "rotate-0"}`} />
+        </button>
+
+        <div
+          className={`absolute bottom-[calc(100%+8px)] left-4 right-4 rounded-[24px] border border-[#efebe7] bg-[#fbf9f6] p-3 shadow-[0_24px_65px_rgba(15,23,42,0.14)] transition-all ${isProfileMenuOpen ? "visible translate-y-0 opacity-100" : "invisible translate-y-2 opacity-0"}`}
+          role="menu"
+        >
+          <div className="rounded-[20px] bg-white px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
+            <p className="truncate text-sm font-semibold text-[#18181b]">{displayName}</p>
+            <p className="mt-1 truncate text-xs text-[#6b7280]">{user?.email}</p>
+          </div>
+
+          <div className="mt-3 overflow-hidden rounded-[20px] border border-[#efebe7] bg-white">
+            <button
+              type="button"
+              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
+              role="menuitem"
+            >
+              <Settings className="h-4 w-4 text-[#555]" />
+              Settings
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="flex w-full items-center gap-3 border-t border-[#f1ede8] px-4 py-3 text-left text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
+              role="menuitem"
+            >
+              <LogOut className="h-4 w-4 text-[#555]" />
+              Logout
+            </button>
+          </div>
         </div>
-        <ChevronDown className="h-4 w-4 text-[#6e7693]" />
       </div>
     </aside>
   );
@@ -1559,32 +3330,34 @@ function InsightCard({
 }: {
   title: string;
   tone: "green" | "orange";
-  items: ResultDetail[];
+  items: PositiveDetail[] | WatchoutDetail[];
 }) {
   const isGreen = tone === "green";
   return (
-    <section className={`rounded-[28px] border p-6 ${isGreen ? "border-[#ddf1e6] bg-[#fcfffd]" : "border-[#f5e5cb] bg-[#fffdf9]"}`}>
-      <h3 className="flex items-center gap-3 text-xl font-bold">
-        <CheckCircle2 className={`h-7 w-7 ${isGreen ? "text-[#55c987]" : "text-[#ffae4f]"}`} />
+    <section className={`rounded-[24px] border p-5 ${isGreen ? "border-[#ddf1e6] bg-[#fcfffd]" : "border-[#f5e5cb] bg-[#fffdf9]"}`}>
+      <h3 className="flex items-center gap-2.5 text-lg font-bold">
+        <CheckCircle2 className={`h-6 w-6 ${isGreen ? "text-[#55c987]" : "text-[#ffae4f]"}`} />
         {title}
-        <span className={`rounded-full px-3 py-1 text-sm ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>{items.length}</span>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>{items.length}</span>
       </h3>
       {items.length > 0 ? (
-        <div className="mt-5 space-y-5">
+        <div className="mt-4 space-y-4">
           {items.map((item) => (
-            <div key={item.name} className="flex gap-3">
-              <span className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${isGreen ? "bg-[#e7f8ec] text-[#20a45c]" : "bg-[#fff2df] text-[#ff9d2f]"}`}>
-                {isGreen ? <Check className="h-4 w-4" /> : <CircleHelp className="h-4 w-4" />}
+            <div key={item.ingredient} className="flex gap-3">
+              <span className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isGreen ? "bg-[#e7f8ec] text-[#20a45c]" : "bg-[#fff2df] text-[#ff9d2f]"}`}>
+                {isGreen ? <Check className="h-3.5 w-3.5" /> : <CircleHelp className="h-3.5 w-3.5" />}
               </span>
               <div>
-                <p className="font-semibold text-[#171b36]">{item.name}</p>
-                <p className="mt-1 text-sm leading-6 text-[#66708f]">{item.note}</p>
+                <p className="text-sm font-semibold text-[#171b36]">{item.ingredient}</p>
+                <p className="mt-1 text-xs leading-5 text-[#66708f]">{item.reason}</p>
+                {"tag" in item && <p className="mt-1 text-[11px] font-semibold text-[#20a45c]">{item.tag}</p>}
+                {"severity" in item && <p className="mt-1 text-[11px] font-semibold text-[#ad6b00]">Risque {item.severity}</p>}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="mt-5 text-[#66708f]">No major {isGreen ? "positives" : "watchouts"} were identified from the current ingredient list.</p>
+        <p className="mt-4 text-sm leading-6 text-[#66708f]">{isGreen ? "Aucun point fort spécifique détecté pour le moment." : "Aucun ingrédient préoccupant détecté pour le moment."}</p>
       )}
     </section>
   );
@@ -1598,22 +3371,66 @@ function NextStepCard({
   nextStep: string;
 }) {
   return (
-    <section className="rounded-[28px] border border-[#e8defc] bg-[#fefcff] p-6">
-      <h3 className="flex items-center gap-3 text-xl font-bold text-[#171b36]">
-        <Sparkles className="h-6 w-6 text-[#7a55ea]" />
-        Prochaine etape
+    <section className="rounded-[24px] border border-[#e8defc] bg-[#fefcff] p-5">
+      <h3 className="flex items-center gap-2.5 text-lg font-bold text-[#171b36]">
+        <Sparkles className="h-5 w-5 text-[#7a55ea]" />
+        Prochaine étape
       </h3>
-      <p className="mt-4 text-sm leading-7 text-[#66708f]">{nextStep}</p>
-      <div className="mt-5 space-y-4">
+      <p className="mt-3 text-xs leading-6 text-[#66708f]">{nextStep}</p>
+      <div className="mt-4 space-y-3">
         {tips.map((tip, index) => (
-          <div key={tip} className="flex gap-3 border-t border-[#f0e9fd] pt-4 first:border-t-0 first:pt-0">
-            <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
-              {index === 0 ? <Clock3 className="h-4 w-4" /> : index === 1 ? <ShieldCheck className="h-4 w-4" /> : <Droplet className="h-4 w-4" />}
+          <div key={tip} className="flex gap-3 border-t border-[#f0e9fd] pt-3 first:border-t-0 first:pt-0">
+            <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
+              {index === 0 ? <Clock3 className="h-3.5 w-3.5" /> : index === 1 ? <ShieldCheck className="h-3.5 w-3.5" /> : <Droplet className="h-3.5 w-3.5" />}
             </span>
-            <p className="text-sm leading-7 text-[#535a78]">{tip}</p>
+            <p className="text-xs leading-6 text-[#535a78]">{tip}</p>
           </div>
         ))}
       </div>
     </section>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

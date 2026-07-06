@@ -187,14 +187,14 @@ export default function LoginPage() {
           <div className="pointer-events-none absolute bottom-[-8rem] right-[-4rem] hidden h-[470px] w-[250px] rotate-12 rounded-[50%] border border-[#b38cff]/35 lg:block" />
           <div className="pointer-events-none absolute bottom-10 right-2 hidden h-[380px] w-[170px] -rotate-12 rounded-[50%] border border-[#b38cff]/35 lg:block" />
 
-          <button
+          {/* <button
             type="button"
             className="absolute right-4 top-4 z-10 inline-flex h-10 items-center gap-2 rounded-full border border-[#dcd7e8] bg-white/70 px-4 text-xs font-bold text-[#111a34] shadow-[0_12px_32px_rgba(96,72,141,0.08)] backdrop-blur sm:right-8 sm:text-sm"
           >
             <Globe2 className="h-4 w-4" />
             Francais
             <ChevronDown className="h-4 w-4" />
-          </button>
+          </button> */}
 
           <form
             onSubmit={handleSubmit}
@@ -203,10 +203,10 @@ export default function LoginPage() {
             <div className="text-center">
               <h2 className="inline-flex items-center justify-center gap-2 text-[30px] font-semibold leading-none text-[#101a35] sm:text-[38px]">
                 Bienvenue
-                <Sparkles
+                {/* <Sparkles
                   aria-hidden="true"
                   className="h-6 w-6 text-[#8e54ff] sm:h-7 sm:w-7"
-                />
+                /> */}
               </h2>
               <p className="mt-2.5 text-sm font-medium text-[#65708a]">
                 {authMode === "register"
@@ -219,7 +219,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => switchMode("login")}
-                className={`border-b-2 pb-3 transition ${authMode === "login"
+                className={`border-b-2 pb-3 cursor-pointer transition ${authMode === "login"
                   ? "border-[#7c3cff] text-[#7c3cff]"
                   : "border-transparent text-[#536079] hover:text-[#7c3cff]"
                   }`}
@@ -229,7 +229,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => switchMode("register")}
-                className={`border-b-2 pb-3 transition ${authMode === "register"
+                className={`border-b-2 pb-3 cursor-pointer transition ${authMode === "register"
                   ? "border-[#7c3cff] text-[#7c3cff]"
                   : "border-transparent text-[#536079] hover:text-[#7c3cff]"
                   }`}

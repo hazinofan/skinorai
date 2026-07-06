@@ -82,10 +82,25 @@ const goals: SkinGoal[] = [
     image: "/icons/hydratation.png",
     accentLabel: "hydrater et repulper",
     icon: Droplet,
-    positiveMatches: ["glycerin", "hyaluron", "panthenol", "betaine", "urea", "aloe"],
-    tips: ["Appliquez sur peau legerement humide.", "Scellez ensuite avec une creme hydratante.", "Utilisez un SPF le matin."],
-    questions: ["Puis-je utiliser ce produit avec du retinol ?", "Est-ce un bon choix pour une peau deshydratee ?"],
-    nextStep: "Utilisez 2 a 3 fois par semaine au debut, puis augmentez si votre peau reste confortable.",
+    positiveMatches: [
+      "glycerin",
+      "hyaluron",
+      "panthenol",
+      "betaine",
+      "urea",
+      "aloe",
+    ],
+    tips: [
+      "Appliquez sur peau legerement humide.",
+      "Scellez ensuite avec une creme hydratante.",
+      "Utilisez un SPF le matin.",
+    ],
+    questions: [
+      "Puis-je utiliser ce produit avec du retinol ?",
+      "Est-ce un bon choix pour une peau deshydratee ?",
+    ],
+    nextStep:
+      "Utilisez 2 a 3 fois par semaine au debut, puis augmentez si votre peau reste confortable.",
   },
   {
     id: "acne",
@@ -93,10 +108,25 @@ const goals: SkinGoal[] = [
     image: "/icons/acne.png",
     accentLabel: "cibler les imperfections",
     icon: Sparkles,
-    positiveMatches: ["salicy", "niacinamide", "zinc", "sulfur", "tea tree", "azela"],
-    tips: ["Introduisez le produit progressivement.", "Evitez de le superposer avec trop d actifs irritants.", "Hydratez bien la peau pour proteger la barriere."],
-    questions: ["Ce produit aide-t-il pour les boutons inflammatoires ?", "Puis-je l utiliser le meme jour qu un exfoliant ?"],
-    nextStep: "Commencez doucement et observez si la formule aide sans augmenter la sensibilite.",
+    positiveMatches: [
+      "salicy",
+      "niacinamide",
+      "zinc",
+      "sulfur",
+      "tea tree",
+      "azela",
+    ],
+    tips: [
+      "Introduisez le produit progressivement.",
+      "Evitez de le superposer avec trop d actifs irritants.",
+      "Hydratez bien la peau pour proteger la barriere.",
+    ],
+    questions: [
+      "Ce produit aide-t-il pour les boutons inflammatoires ?",
+      "Puis-je l utiliser le meme jour qu un exfoliant ?",
+    ],
+    nextStep:
+      "Commencez doucement et observez si la formule aide sans augmenter la sensibilite.",
   },
   {
     id: "barrier",
@@ -104,10 +134,25 @@ const goals: SkinGoal[] = [
     image: "/icons/reparation.png",
     accentLabel: "renforcer la barriere cutanee",
     icon: ShieldCheck,
-    positiveMatches: ["ceramide", "panthenol", "squalane", "cholesterol", "centella", "oat"],
-    tips: ["Favorisez une routine simple pendant quelques jours.", "Evitez les exfoliants forts si la peau est reactive.", "Appliquez sur peau propre avec des gestes doux."],
-    questions: ["Est-ce adapte apres une irritation ?", "Ce produit soutient-il une barriere abimee ?"],
-    nextStep: "Associez-le a des formules simples et evitez les actifs trop puissants le meme jour.",
+    positiveMatches: [
+      "ceramide",
+      "panthenol",
+      "squalane",
+      "cholesterol",
+      "centella",
+      "oat",
+    ],
+    tips: [
+      "Favorisez une routine simple pendant quelques jours.",
+      "Evitez les exfoliants forts si la peau est reactive.",
+      "Appliquez sur peau propre avec des gestes doux.",
+    ],
+    questions: [
+      "Est-ce adapte apres une irritation ?",
+      "Ce produit soutient-il une barriere abimee ?",
+    ],
+    nextStep:
+      "Associez-le a des formules simples et evitez les actifs trop puissants le meme jour.",
   },
   {
     id: "redness",
@@ -115,10 +160,25 @@ const goals: SkinGoal[] = [
     image: "/icons/rougeurs.png",
     accentLabel: "apaiser les rougeurs",
     icon: Lightbulb,
-    positiveMatches: ["allantoin", "centella", "panthenol", "bisabolol", "aloe", "oat"],
-    tips: ["Testez d abord sur une petite zone.", "Evitez l eau trop chaude apres application.", "Associez-le a une routine tres douce."],
-    questions: ["Ce produit convient-il a une peau sensible ?", "Y a-t-il des ingredients qui peuvent aggraver les rougeurs ?"],
-    nextStep: "Si votre peau reagit facilement, utilisez-le seul pendant quelques jours pour evaluer la tolerance.",
+    positiveMatches: [
+      "allantoin",
+      "centella",
+      "panthenol",
+      "bisabolol",
+      "aloe",
+      "oat",
+    ],
+    tips: [
+      "Testez d abord sur une petite zone.",
+      "Evitez l eau trop chaude apres application.",
+      "Associez-le a une routine tres douce.",
+    ],
+    questions: [
+      "Ce produit convient-il a une peau sensible ?",
+      "Y a-t-il des ingredients qui peuvent aggraver les rougeurs ?",
+    ],
+    nextStep:
+      "Si votre peau reagit facilement, utilisez-le seul pendant quelques jours pour evaluer la tolerance.",
   },
   {
     id: "oily",
@@ -126,10 +186,25 @@ const goals: SkinGoal[] = [
     image: "/icons/hydratation.png",
     accentLabel: "equilibrer l exces de sebum",
     icon: Target,
-    positiveMatches: ["niacinamide", "zinc", "salicy", "green tea", "clay", "tea tree"],
-    tips: ["Appliquez en fine couche pour eviter l effet lourd.", "Ne sautez pas l hydratation meme si la peau est grasse.", "Surveillez si le produit laisse un fini confortable."],
-    questions: ["Ce produit risque-t-il de boucher les pores ?", "Est-ce une bonne option pour limiter la brillance ?"],
-    nextStep: "Observez le fini sur la zone T et combinez-le avec une routine legere et non comedogene.",
+    positiveMatches: [
+      "niacinamide",
+      "zinc",
+      "salicy",
+      "green tea",
+      "clay",
+      "tea tree",
+    ],
+    tips: [
+      "Appliquez en fine couche pour eviter l effet lourd.",
+      "Ne sautez pas l hydratation meme si la peau est grasse.",
+      "Surveillez si le produit laisse un fini confortable.",
+    ],
+    questions: [
+      "Ce produit risque-t-il de boucher les pores ?",
+      "Est-ce une bonne option pour limiter la brillance ?",
+    ],
+    nextStep:
+      "Observez le fini sur la zone T et combinez-le avec une routine legere et non comedogene.",
   },
   {
     id: "morning",
@@ -137,10 +212,25 @@ const goals: SkinGoal[] = [
     image: "/icons/routine-matin.png",
     accentLabel: "optimiser la routine du matin",
     icon: Zap,
-    positiveMatches: ["vitamin c", "niacinamide", "caffeine", "green tea", "hyaluron", "glycerin"],
-    tips: ["Superposez du plus leger au plus riche.", "Terminez toujours par un SPF.", "Gardez la routine simple pour gagner du temps le matin."],
-    questions: ["Ce produit se combine-t-il bien avec la vitamine C ?", "Est-ce une bonne etape avant la creme solaire ?"],
-    nextStep: "Utilisez-le dans une routine courte et verifiez qu il se superpose bien sous la protection solaire.",
+    positiveMatches: [
+      "vitamin c",
+      "niacinamide",
+      "caffeine",
+      "green tea",
+      "hyaluron",
+      "glycerin",
+    ],
+    tips: [
+      "Superposez du plus leger au plus riche.",
+      "Terminez toujours par un SPF.",
+      "Gardez la routine simple pour gagner du temps le matin.",
+    ],
+    questions: [
+      "Ce produit se combine-t-il bien avec la vitamine C ?",
+      "Est-ce une bonne etape avant la creme solaire ?",
+    ],
+    nextStep:
+      "Utilisez-le dans une routine courte et verifiez qu il se superpose bien sous la protection solaire.",
   },
 ];
 
@@ -157,7 +247,11 @@ type UploadedImage = {
   url: string;
 };
 
-type ScanVerdict = "excellent_match" | "good_choice" | "use_with_caution" | "not_ideal";
+type ScanVerdict =
+  | "excellent_match"
+  | "good_choice"
+  | "use_with_caution"
+  | "not_ideal";
 
 type PositiveDetail = {
   ingredient: string;
@@ -239,12 +333,17 @@ type UpgradeDialogReason = "scan-limit" | "prompt-limit";
 
 const FREE_SCAN_LIMIT = 3;
 const FREE_PROMPT_LIMIT = 1;
+const CHAT_TITLE_STORAGE_KEY = "skinorai_chat_titles";
 
 class UpgradeRequiredError extends Error {
   reason: UpgradeDialogReason;
   quota?: QuotaStatus;
 
-  constructor(reason: UpgradeDialogReason, message: string, quota?: QuotaStatus) {
+  constructor(
+    reason: UpgradeDialogReason,
+    message: string,
+    quota?: QuotaStatus,
+  ) {
     super(message);
     this.name = "UpgradeRequiredError";
     this.reason = reason;
@@ -252,7 +351,14 @@ class UpgradeRequiredError extends Error {
   }
 }
 
-const watchTerms = ["parfum", "fragrance", "alcohol", "denat", "essential oil", "citric acid"];
+const watchTerms = [
+  "parfum",
+  "fragrance",
+  "alcohol",
+  "denat",
+  "essential oil",
+  "citric acid",
+];
 
 function buildIngredientItems(names: string[]): IngredientItem[] {
   return names.map((name) => {
@@ -400,24 +506,31 @@ function requestScanAnalysis({
   });
 }
 
-async function requestIngredientExtraction(file: File): Promise<ExtractIngredientsResponse> {
+async function requestIngredientExtraction(
+  file: File,
+): Promise<ExtractIngredientsResponse> {
   const formData = new FormData();
   formData.append("file", file);
   const token = getStoredAuthToken();
 
-  const response = await fetch(`${API_BASE_URL}/api/scans/extract-ingredients`, {
-    method: "POST",
-    headers: {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  const response = await fetch(
+    `${API_BASE_URL}/api/scans/extract-ingredients`,
+    {
+      method: "POST",
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
     },
-    body: formData,
-  });
+  );
 
   if (!response.ok) {
     let message = `OCR request failed with status ${response.status}`;
 
     try {
-      const errorBody = (await response.json()) as { message?: string | string[] };
+      const errorBody = (await response.json()) as {
+        message?: string | string[];
+      };
       if (Array.isArray(errorBody.message)) {
         message = errorBody.message.join(" ");
       } else if (errorBody.message) {
@@ -458,10 +571,17 @@ function requestScanChat({
   });
 }
 
-function buildFallbackChatAnswer(question: string, selectedGoal: SkinGoal, analysisResult: AnalysisResult) {
+function buildFallbackChatAnswer(
+  question: string,
+  selectedGoal: SkinGoal,
+  analysisResult: AnalysisResult,
+) {
   const loweredQuestion = question.toLowerCase();
 
-  if (loweredQuestion.includes("irrit") || loweredQuestion.includes("sensible")) {
+  if (
+    loweredQuestion.includes("irrit") ||
+    loweredQuestion.includes("sensible")
+  ) {
     return analysisResult.watchouts.length > 0
       ? `Avancez doucement: ${analysisResult.watchouts.map((item) => item.ingredient).join(", ")} meritent un test localise avant usage regulier.`
       : "La formule ne montre pas de gros signal irritant dans cette analyse, mais faites un test localise si votre peau reagit vite.";
@@ -492,20 +612,28 @@ export default function ScanPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisRequestId, setAnalysisRequestId] = useState(0);
   const [isResultReady, setIsResultReady] = useState(false);
-  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null,
+  );
   const [activeScanId, setActiveScanId] = useState<string | null>(null);
+  const [chatScanIdToOpen, setChatScanIdToOpen] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState("");
   const [planStatus, setPlanStatus] = useState<PlanStatus>("free");
   const [freeScansUsed, setFreeScansUsed] = useState(0);
   const [currentScanPromptCount, setCurrentScanPromptCount] = useState(0);
-  const [upgradeDialogReason, setUpgradeDialogReason] = useState<UpgradeDialogReason | null>(null);
+  const [upgradeDialogReason, setUpgradeDialogReason] =
+    useState<UpgradeDialogReason | null>(null);
   const uploadedImagesRef = useRef<UploadedImage[]>([]);
 
-  const hasManualIngredients = parseIngredientText(manualIngredientsInput).length > 0;
+  const hasManualIngredients =
+    parseIngredientText(manualIngredientsInput).length > 0;
   const hasStepTwoData = ingredientItems.length > 0 || hasManualIngredients;
-  const selectedGoal = goals.find((goal) => goal.id === selectedGoalId) ?? goals[0];
+  const selectedGoal =
+    goals.find((goal) => goal.id === selectedGoalId) ?? goals[0];
   const hasActivePlan = planStatus === "pro";
-  const freeScansRemaining = hasActivePlan ? 999999 : Math.max(0, FREE_SCAN_LIMIT - freeScansUsed);
+  const freeScansRemaining = hasActivePlan
+    ? 999999
+    : Math.max(0, FREE_SCAN_LIMIT - freeScansUsed);
 
   const applyQuotaStatus = (quota?: QuotaStatus) => {
     if (!quota) {
@@ -524,7 +652,9 @@ export default function ScanPage() {
     const nextStep = Math.min(Math.max(step, 1), 4);
 
     if (nextStep >= 3 && currentStep <= 2 && !hasStepTwoData) {
-      setStepTwoError("Ajoutez au moins une image ou collez vos ingredients avant de continuer.");
+      setStepTwoError(
+        "Ajoutez au moins une image ou collez vos ingredients avant de continuer.",
+      );
       return;
     }
 
@@ -536,11 +666,16 @@ export default function ScanPage() {
     }
     setCurrentStep(nextStep);
   };
-  const selectedImage = uploadedImages.find((image) => image.id === selectedImageId) ?? uploadedImages[0] ?? null;
+  const selectedImage =
+    uploadedImages.find((image) => image.id === selectedImageId) ??
+    uploadedImages[0] ??
+    null;
   const productName = formatProductName(selectedImage?.file.name ?? null);
 
   const resetFlow = () => {
-    uploadedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
+    uploadedImagesRef.current.forEach((image) =>
+      URL.revokeObjectURL(image.url),
+    );
     uploadedImagesRef.current = [];
     setUploadedImages([]);
     setSelectedImageId(null);
@@ -555,6 +690,7 @@ export default function ScanPage() {
     setIsResultReady(false);
     setAnalysisResult(null);
     setActiveScanId(null);
+    setChatScanIdToOpen(null);
     setAnalysisError("");
     setCurrentScanPromptCount(0);
     setUpgradeDialogReason(null);
@@ -572,7 +708,9 @@ export default function ScanPage() {
 
   useEffect(() => {
     return () => {
-      uploadedImagesRef.current.forEach((image) => URL.revokeObjectURL(image.url));
+      uploadedImagesRef.current.forEach((image) =>
+        URL.revokeObjectURL(image.url),
+      );
     };
   }, []);
 
@@ -601,7 +739,6 @@ export default function ScanPage() {
     delete document.body.dataset.navbarHidden;
   }, [currentStep, isResultReady, isWizardOpen]);
 
-
   useEffect(() => {
     if (currentStep !== 4 || isResultReady) {
       return;
@@ -625,6 +762,7 @@ export default function ScanPage() {
 
         setAnalysisResult(response);
         setActiveScanId(response.scanId ?? null);
+        setChatScanIdToOpen(response.scanId ?? null);
         applyQuotaStatus(response.quota);
         didAnalyze = true;
       } catch (error) {
@@ -637,14 +775,23 @@ export default function ScanPage() {
           setUpgradeDialogReason(error.reason);
           setCurrentStep(3);
         } else {
-          setAnalysisError("Impossible de generer l analyse IA pour le moment. Verifiez le backend et reessayez.");
+          setAnalysisError(
+            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et reessayez.",
+          );
         }
         setAnalysisResult(null);
         setActiveScanId(null);
+        setChatScanIdToOpen(null);
       } finally {
         if (!isCancelled) {
           setIsAnalyzing(false);
-          setIsResultReady(didAnalyze);
+          if (didAnalyze) {
+            setIsWizardOpen(false);
+            setCurrentStep(1);
+            setIsResultReady(false);
+          } else {
+            setIsResultReady(false);
+          }
         }
       }
     }, 700);
@@ -653,12 +800,24 @@ export default function ScanPage() {
       isCancelled = true;
       window.clearTimeout(timeout);
     };
-  }, [analysisRequestId, currentStep, ingredientItems, isResultReady, manualIngredientsInput, productName, selectedGoal]);
+  }, [
+    analysisRequestId,
+    currentStep,
+    ingredientItems,
+    isResultReady,
+    manualIngredientsInput,
+    productName,
+    selectedGoal,
+  ]);
 
   const addFiles = async (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter((file) => ["image/jpeg", "image/png", "image/webp"].includes(file.type));
+    const validFiles = Array.from(files).filter((file) =>
+      ["image/jpeg", "image/png", "image/webp"].includes(file.type),
+    );
     if (!validFiles.length) {
-      setStepTwoError("Ajoutez une image JPG, PNG ou WEBP pour lancer l extraction OCR.");
+      setStepTwoError(
+        "Ajoutez une image JPG, PNG ou WEBP pour lancer l extraction OCR.",
+      );
       return;
     }
 
@@ -675,8 +834,12 @@ export default function ScanPage() {
     setIsExtractingIngredients(true);
 
     try {
-      const extractionResults = await Promise.all(validFiles.map((file) => requestIngredientExtraction(file)));
-      const detectedIngredients = extractionResults.flatMap((result) => result.ingredients);
+      const extractionResults = await Promise.all(
+        validFiles.map((file) => requestIngredientExtraction(file)),
+      );
+      const detectedIngredients = extractionResults.flatMap(
+        (result) => result.ingredients,
+      );
       const detectedIngredientsText = extractionResults
         .map((result) => result.ingredientsText)
         .filter(Boolean)
@@ -693,7 +856,9 @@ export default function ScanPage() {
 
       if (!detectedIngredients.length) {
         setIngredientItems([]);
-        setStepTwoError("OCR termine, mais aucun ingredient clair n a ete detecte. Collez ou corrigez la liste manuellement.");
+        setStepTwoError(
+          "OCR termine, mais aucun ingredient clair n a ete detecte. Collez ou corrigez la liste manuellement.",
+        );
         return;
       }
 
@@ -702,7 +867,11 @@ export default function ScanPage() {
       setCurrentStep(3);
     } catch (error) {
       setIngredientItems([]);
-      setStepTwoError(error instanceof Error ? error.message : "Impossible d extraire les ingredients depuis cette image.");
+      setStepTwoError(
+        error instanceof Error
+          ? error.message
+          : "Impossible d extraire les ingredients depuis cette image.",
+      );
     } finally {
       setIsExtractingIngredients(false);
     }
@@ -755,7 +924,9 @@ export default function ScanPage() {
     const parsedIngredients = parseIngredientText(manualIngredientsInput);
 
     if (!parsedIngredients.length) {
-      setStepTwoError("Confirmez au moins un ingredient avant de lancer l analyse.");
+      setStepTwoError(
+        "Confirmez au moins un ingredient avant de lancer l analyse.",
+      );
       return;
     }
 
@@ -767,57 +938,35 @@ export default function ScanPage() {
 
   if (!isAuthReady || !token) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fbfaff] px-4 text-[#111631]">
+      <main className="flex min-h-screen items-center justify-center bg-[#fbfaff] px-4 text-[#111631] [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed">
         <div className="rounded-[28px] border border-[#e8e0fb] bg-white px-8 py-7 text-center shadow-[0_24px_60px_rgba(90,66,165,0.10)]">
           <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-[#7548e8]" />
-          <h1 className="mt-4 text-xl font-bold">Verification de votre session...</h1>
-          <p className="mt-2 text-sm text-[#66708f]">Redirection vers la connexion si necessaire.</p>
+          <h1 className="mt-4 text-xl font-bold">
+            Verification de votre session...
+          </h1>
+          <p className="mt-2 text-sm text-[#66708f]">
+            Redirection vers la connexion si necessaire.
+          </p>
         </div>
       </main>
     );
   }
 
-  if (!isWizardOpen && !isResultReady) {
-    return <ChatWorkspace onScanAnother={startNewScan} />;
-  }
-
-  if (isResultReady && analysisResult) {
+  if (!isWizardOpen) {
     return (
-      <ResultWorkspace
-        analysisResult={analysisResult}
-        analysisError={analysisError}
-        currentStep={currentStep}
-        ingredientItems={ingredientItems}
-        productName={productName}
-        selectedGoal={selectedGoal}
-        selectedImage={selectedImage}
-        scanId={activeScanId}
-        hasActivePlan={hasActivePlan}
-        currentScanPromptCount={currentScanPromptCount}
-        upgradeDialogReason={upgradeDialogReason}
-        freeScansUsed={freeScansUsed}
-        freeScansRemaining={freeScansRemaining}
-        onPromptConsumed={() => setCurrentScanPromptCount((count) => count + 1)}
-        onQuotaUpdated={applyQuotaStatus}
-        onUpgradeRequired={setUpgradeDialogReason}
-        onUpgradeDismiss={() => setUpgradeDialogReason(null)}
-        onUpgrade={activatePlan}
-        onChangeGoal={() => {
-          setIsResultReady(false);
-          setAnalysisResult(null);
-          setActiveScanId(null);
-          setCurrentStep(1);
-        }}
+      <ChatWorkspace
         onScanAnother={startNewScan}
+        initialSelectedChatId={chatScanIdToOpen}
       />
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#fbfaff] text-[#111631]">
-
+    <main className="min-h-screen bg-[#fbfaff] text-[#111631] [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed">
       <section className="relative overflow-hidden border-t border-[#ece8f7] bg-[radial-gradient(circle_at_83%_18%,_rgba(149,105,255,0.16),_transparent_26%),linear-gradient(180deg,_#ffffff_0%,_#fbfaff_42%,_#ffffff_100%)] px-4 pb-6 pt-24 sm:px-6 lg:flex lg:min-h-[calc(100svh-72px)] lg:items-center lg:px-10 lg:pt-20">
-        <div className={`pointer-events-none absolute right-[8%] top-12 hidden lg:block ${currentStep === 1 || currentStep === 4 ? "opacity-0" : "opacity-100"}`}>
+        <div
+          className={`pointer-events-none absolute right-[8%] top-12 hidden lg:block ${currentStep === 1 || currentStep === 4 ? "opacity-0" : "opacity-100"}`}
+        >
           <ProductStill />
         </div>
 
@@ -834,7 +983,11 @@ export default function ScanPage() {
           </div>
 
           <div className="mt-6">
-            <ScanProgress currentStep={currentStep} onStepClick={goToStep} selectedGoalLabel={selectedGoal.label} />
+            <ScanProgress
+              currentStep={currentStep}
+              onStepClick={goToStep}
+              selectedGoalLabel={selectedGoal.label}
+            />
 
             <Stepper
               activeStep={currentStep - 1}
@@ -847,7 +1000,10 @@ export default function ScanPage() {
               }}
             >
               <StepperPanel header={stepLabels[0]}>
-                <GoalStep selectedGoalId={selectedGoalId} onSelectGoal={setSelectedGoalId} />
+                <GoalStep
+                  selectedGoalId={selectedGoalId}
+                  onSelectGoal={setSelectedGoalId}
+                />
               </StepperPanel>
               <StepperPanel header={stepLabels[1]}>
                 <UploadStep
@@ -904,13 +1060,18 @@ export default function ScanPage() {
                 <button
                   type="button"
                   onClick={() => goToStep(currentStep + 1)}
-                  disabled={currentStep === 2 && (!hasStepTwoData || isExtractingIngredients)}
-                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${currentStep === 2 && (!hasStepTwoData || isExtractingIngredients) ? "cursor-not-allowed opacity-55" : "cursor-pointer"
-                    }`}
+                  disabled={
+                    currentStep === 2 &&
+                    (!hasStepTwoData || isExtractingIngredients)
+                  }
+                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${
+                    currentStep === 2 &&
+                    (!hasStepTwoData || isExtractingIngredients)
+                      ? "cursor-not-allowed opacity-55"
+                      : "cursor-pointer"
+                  }`}
                 >
-                  <span
-                    className="absolute h-0 w-0 rounded-full bg-[#8d68ef] transition-all duration-500 ease-out group-hover:h-56 group-hover:w-56"
-                  ></span>
+                  <span className="absolute h-0 w-0 rounded-full bg-[#8d68ef] transition-all duration-500 ease-out group-hover:h-56 group-hover:w-56"></span>
                   <span className="absolute bottom-0 left-0 h-full -ml-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -939,12 +1100,11 @@ export default function ScanPage() {
                       ></path>
                     </svg>
                   </span>
-                  <span
-                    className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-white/30"
-                  ></span>
-                  <span className="relative text-base font-semibold">Continuer </span>
+                  <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-white/30"></span>
+                  <span className="relative text-base font-semibold">
+                    Continuer{" "}
+                  </span>
                 </button>
-
               </div>
             )}
           </div>
@@ -952,7 +1112,8 @@ export default function ScanPage() {
           {currentStep !== 4 && (
             <p className="mt-4 flex items-center justify-center gap-2 text-sm text-[#727a99]">
               <Lock className="h-4 w-4" />
-              Vos photos sont privees et securisees. Elles ne sont utilisees que pour l analyse.
+              Vos photos sont privees et securisees. Elles ne sont utilisees que
+              pour l analyse.
             </p>
           )}
         </div>
@@ -1038,30 +1199,35 @@ function ScanProgress({
               aria-label={`Aller a l etape ${step}`}
             >
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition ${isComplete
-                  ? "border-[#7548e8] bg-[#7548e8] text-white"
-                  : isActive
-                    ? "border-[#7548e8] bg-gradient-to-b from-[#8d5df4] to-[#6c35d8] text-white"
-                    : "border-[#d9ddec] bg-white text-[#5f6780]"
-                  }`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition ${
+                  isComplete
+                    ? "border-[#7548e8] bg-[#7548e8] text-white"
+                    : isActive
+                      ? "border-[#7548e8] bg-gradient-to-b from-[#8d5df4] to-[#6c35d8] text-white"
+                      : "border-[#d9ddec] bg-white text-[#5f6780]"
+                }`}
               >
                 {isComplete ? <Check className="h-5 w-5" /> : step}
               </span>
               <span
-                className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
-                  }`}
+                className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${
+                  currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
+                }`}
               >
                 {label}
                 {step === 1 && (
-                  <span className="mt-1 block text-xs font-medium text-[#7f86a3]">{selectedGoalLabel}</span>
+                  <span className="mt-1 block text-xs font-medium text-[#7f86a3]">
+                    {selectedGoalLabel}
+                  </span>
                 )}
               </span>
             </button>
             {step < stepLabels.length && (
               <span className="mx-2 h-0.5 flex-1 rounded bg-[#dfe2ee]">
                 <span
-                  className={`block h-full rounded bg-[#7548e8] transition-all ${currentStep > step ? "w-full" : "w-0"
-                    }`}
+                  className={`block h-full rounded bg-[#7548e8] transition-all ${
+                    currentStep > step ? "w-full" : "w-0"
+                  }`}
                 />
               </span>
             )}
@@ -1080,9 +1246,13 @@ function GoalStep({
   onSelectGoal: (goalId: string) => void;
 }) {
   return (
-    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center lg:justify-center">
+    <div className="mx-auto mt-9 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center lg:justify-center">
       <Panel className="min-h-[420px] px-7 pb-20 pt-6">
-        <StepTitle number="1" title="Choisissez votre objectif peau" description="Selectionnez votre priorite du moment pour personnaliser l analyse." />
+        <StepTitle
+          number="1"
+          title="Choisissez votre objectif peau"
+          description="Selectionnez votre priorite du moment pour personnaliser l analyse."
+        />
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal) => {
             const isSelected = goal.id === selectedGoalId;
@@ -1091,10 +1261,11 @@ function GoalStep({
                 key={goal.label}
                 type="button"
                 onClick={() => onSelectGoal(goal.id)}
-                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${isSelected
-                  ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
-                  : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
-                  }`}
+                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${
+                  isSelected
+                    ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
+                    : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
+                }`}
               >
                 {isSelected && (
                   <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#7947e6] text-white">
@@ -1110,8 +1281,12 @@ function GoalStep({
                     className="h-14 w-14 object-contain drop-shadow-[0_8px_16px_rgba(124,86,238,0.16)]"
                   />
                 </span>
-                <span className="mt-3 text-[15px] font-semibold">{goal.label}</span>
-                <span className="mt-1 text-xs text-[#7a819e]">{goal.accentLabel}</span>
+                <span className="mt-3 text-[15px] font-semibold">
+                  {goal.label}
+                </span>
+                <span className="mt-1 text-xs text-[#7a819e]">
+                  {goal.accentLabel}
+                </span>
               </button>
             );
           })}
@@ -1164,9 +1339,13 @@ function UploadStep({
   };
 
   return (
-    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
+    <div className="mx-auto mt-9 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
       <Panel>
-        <StepTitle number="2" title="Importez l etiquette du produit" description="Prenez une photo claire de la liste d ingredients pour que notre IA puisse l analyser." />
+        <StepTitle
+          number="2"
+          title="Importez l etiquette du produit"
+          description="Prenez une photo claire de la liste d ingredients pour que notre IA puisse l analyser."
+        />
         <div className="mt-7 grid gap-7 xl:grid-cols-[minmax(0,1fr)_260px]">
           <div>
             <input
@@ -1187,24 +1366,31 @@ function UploadStep({
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`flex min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isExtractingIngredients ? "cursor-wait opacity-80" : "cursor-pointer"} ${isDragging
-                ? "border-[#8f68f2] bg-[#f4edff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all shadow-[0_22px_45px_rgba(123,86,238,0.14)]"
-                : "border-[#bda7ff] bg-[#fbf8ff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all"
-                }`}
+              className={`flex min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isExtractingIngredients ? "cursor-wait opacity-80" : "cursor-pointer"} ${
+                isDragging
+                  ? "border-[#8f68f2] bg-[#f4edff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all shadow-[0_22px_45px_rgba(123,86,238,0.14)]"
+                  : "border-[#bda7ff] bg-[#fbf8ff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all"
+              }`}
             >
               {isExtractingIngredients ? (
                 <LoaderCircle className="h-14 w-14 animate-spin text-[#9b77f5]" />
               ) : (
                 <UploadCloud className="h-14 w-14 text-[#9b77f5]" />
               )}
-              <span className="mt-5 text-xl font-bold">
-                {isExtractingIngredients ? "Extraction OCR en cours..." : "Glissez-deposez votre image ici"}
+              <span className="mt-5 text-lg font-bold">
+                {isExtractingIngredients
+                  ? "Extraction OCR en cours..."
+                  : "Glissez-deposez votre image ici"}
               </span>
-              <span className="mt-2 text-lg font-semibold text-[#6f3fe4]">
-                {isExtractingIngredients ? "Google Vision lit l etiquette" : "ou cliquez pour parcourir"}
+              <span className="mt-2 text-base font-semibold text-[#6f3fe4]">
+                {isExtractingIngredients
+                  ? "Google Vision lit l etiquette"
+                  : "ou cliquez pour parcourir"}
               </span>
-              <span className="mt-5 text-sm text-[#727a99]">Formats acceptes : JPG, PNG, WEBP</span>
-              <span className="mt-5 flex items-center gap-2 text-sm text-[#727a99]">
+              <span className="mt-5 text-xs text-[#727a99]">
+                Formats acceptes : JPG, PNG, WEBP
+              </span>
+              <span className="mt-5 flex items-center gap-2 text-xs text-[#727a99]">
                 <Lock className="h-4 w-4" />
                 Vos images sont privees et securisees.
               </span>
@@ -1213,13 +1399,19 @@ function UploadStep({
               <div className="mt-5 rounded-2xl border border-[#e6defa] bg-white p-4 shadow-sm">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="font-bold text-[#161933]">Images ajoutees</p>
-                    <p className="text-sm text-[#727a99]">{uploadedImages.length} image{uploadedImages.length > 1 ? "s" : ""} prete{uploadedImages.length > 1 ? "s" : ""} pour l analyse.</p>
+                    <p className="text-sm font-bold text-[#161933]">
+                      Images ajoutees
+                    </p>
+                    <p className="text-xs text-[#727a99]">
+                      {uploadedImages.length} image
+                      {uploadedImages.length > 1 ? "s" : ""} prete
+                      {uploadedImages.length > 1 ? "s" : ""} pour l analyse.
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="inline-flex items-center gap-2 rounded-full border border-[#dfd2ff] bg-[#faf6ff] px-4 py-2 text-sm font-semibold text-[#7548e8] transition hover:bg-[#f3edff]"
+                    className="inline-flex items-center gap-2 rounded-full border border-[#dfd2ff] bg-[#faf6ff] px-4 py-2 text-xs font-semibold text-[#7548e8] transition hover:bg-[#f3edff]"
                   >
                     <Plus className="h-4 w-4" />
                     Ajouter des images
@@ -1231,8 +1423,11 @@ function UploadStep({
                     return (
                       <div
                         key={image.id}
-                        className={`group relative overflow-hidden rounded-2xl border bg-[#faf8ff] ${isSelected ? "border-[#8d68ef] ring-2 ring-[#eadfff]" : "border-[#ece5ff]"
-                          }`}
+                        className={`group relative overflow-hidden rounded-2xl border bg-[#faf8ff] ${
+                          isSelected
+                            ? "border-[#8d68ef] ring-2 ring-[#eadfff]"
+                            : "border-[#ece5ff]"
+                        }`}
                       >
                         <button
                           type="button"
@@ -1240,11 +1435,22 @@ function UploadStep({
                           className="block w-full text-left"
                         >
                           <div className="relative h-28 w-full bg-[#f3ecff]">
-                            <Image src={image.url} alt={image.file.name} fill className="object-cover" unoptimized />
+                            <Image
+                              src={image.url}
+                              alt={image.file.name}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
                           </div>
                           <div className="p-3">
-                            <p className="truncate text-sm font-semibold text-[#1d2140]">{image.file.name}</p>
-                            <p className="mt-1 text-xs text-[#727a99]">{Math.max(1, Math.round(image.file.size / 1024))} KB</p>
+                            <p className="truncate text-xs font-semibold text-[#1d2140]">
+                              {image.file.name}
+                            </p>
+                            <p className="mt-1 text-xs text-[#727a99]">
+                              {Math.max(1, Math.round(image.file.size / 1024))}{" "}
+                              KB
+                            </p>
                           </div>
                         </button>
                         <button
@@ -1261,7 +1467,7 @@ function UploadStep({
                 </div>
               </div>
             )}
-            <div className="my-5 flex items-center gap-4 text-sm font-semibold text-[#8a91aa]">
+            <div className="my-5 flex items-center gap-4 text-xs font-semibold text-[#8a91aa]">
               <span className="h-px flex-1 bg-[#e6e8f2]" />
               OU
               <span className="h-px flex-1 bg-[#e6e8f2]" />
@@ -1275,25 +1481,33 @@ function UploadStep({
                 <TextCursorInput className="h-6 w-6" />
               </span>
               <span className="min-w-0 flex-1 cursor-pointer">
-                <span className="block font-bold">Ou collez la liste d ingredients manuellement</span>
-                <span className="block text-sm text-[#727a99]">Copiez/collez la liste d ingredients depuis l emballage ou le site du produit.</span>
+                <span className="block text-sm font-bold">
+                  Ou collez la liste d ingredients manuellement
+                </span>
+                <span className="block text-xs text-[#727a99]">
+                  Copiez/collez la liste d ingredients depuis l emballage ou le
+                  site du produit.
+                </span>
               </span>
               <ChevronRight className="h-5 w-5" />
             </button>
             {stepTwoError && (
-              <p className="mt-4 rounded-2xl border border-[#ffd7dd] bg-[#fff7f8] px-4 py-3 text-sm font-medium text-[#c6405f]">
+              <p className="mt-4 rounded-2xl border border-[#ffd7dd] bg-[#fff7f8] px-4 py-3 text-xs font-medium text-[#c6405f]">
                 {stepTwoError}
               </p>
             )}
             {ocrWarnings.length > 0 && (
-              <div className="mt-4 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-sm font-medium text-[#9b6500]">
+              <div className="mt-4 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-xs font-medium text-[#9b6500]">
                 {ocrWarnings.map((warning) => (
                   <p key={warning}>{warning}</p>
                 ))}
               </div>
             )}
           </div>
-          <PhotoPreview selectedImage={selectedImage} imageCount={uploadedImages.length} />
+          <PhotoPreview
+            selectedImage={selectedImage}
+            imageCount={uploadedImages.length}
+          />
         </div>
       </Panel>
 
@@ -1324,19 +1538,27 @@ function IngredientsStep({
   const rightColumn = ingredientItems.slice(midpoint);
 
   return (
-    <div className="mx-auto mt-4 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
+    <div className="mx-auto mt-9 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center">
       <Panel className="px-8 py-7">
-        <StepTitle number="3" title="Confirmez les ingredients" description="Corrigez la liste OCR si necessaire. Ce sont ces ingredients confirmes qui seront analyses ensuite." />
+        <StepTitle
+          number="3"
+          title="Confirmez les ingredients"
+          description="Corrigez la liste OCR si necessaire. Ce sont ces ingredients confirmes qui seront analyses ensuite."
+        />
         <div className="mt-7 overflow-hidden rounded-[30px] border border-[#ece7fb] bg-white">
           <div className="grid gap-8 px-6 py-6 xl:grid-cols-1 xl:px-7">
             <div className="min-w-0">
               <div className="mb-5 flex flex-wrap items-center gap-3">
-                <h2 className="text-lg font-bold text-[#171b36]">Liste editable des ingredients (INCI)</h2>
-                <span className="rounded-full bg-[#f2ebff] px-3 py-1 text-sm font-semibold text-[#7c57eb]">{ingredientItems.length} ingredients detectes</span>
+                <h2 className="text-base font-bold text-[#171b36]">
+                  Liste editable des ingredients (INCI)
+                </h2>
+                <span className="rounded-full bg-[#f2ebff] px-3 py-1 text-xs font-semibold text-[#7c57eb]">
+                  {ingredientItems.length} ingredients detectes
+                </span>
               </div>
 
               {ocrWarnings.length > 0 && (
-                <div className="mb-5 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-sm font-medium text-[#9b6500]">
+                <div className="mb-5 space-y-2 rounded-2xl border border-[#ffe7ba] bg-[#fffaf2] px-4 py-3 text-xs font-medium text-[#9b6500]">
                   {ocrWarnings.map((warning) => (
                     <p key={warning}>{warning}</p>
                   ))}
@@ -1347,17 +1569,18 @@ function IngredientsStep({
                 value={ingredientText}
                 onChange={(event) => onIngredientTextChange(event.target.value)}
                 placeholder="Ex: Aqua (Water), Glycerin, Niacinamide..."
-                className="min-h-[180px] w-full rounded-[24px] border border-[#dfd7f4] bg-[#fcfbff] px-5 py-4 text-[15px] leading-7 text-[#1d2140] outline-none transition placeholder:text-[#9aa1ba] focus:border-[#9b75f2] focus:ring-4 focus:ring-[#efe7ff]"
+                className="min-h-[180px] w-full rounded-[24px] border border-[#dfd7f4] bg-[#fcfbff] px-5 py-4 text-sm leading-6 text-[#1d2140] outline-none transition placeholder:text-[#9aa1ba] focus:border-[#9b75f2] focus:ring-4 focus:ring-[#efe7ff]"
               />
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#faf7ff] px-4 py-3">
-                <p className="text-sm text-[#66708f]">
-                  Modifiez les virgules, noms ou retours a la ligne avant de confirmer.
+                <p className="text-xs text-[#66708f]">
+                  Modifiez les virgules, noms ou retours a la ligne avant de
+                  confirmer.
                 </p>
                 <button
                   type="button"
                   onClick={onOpenManualDialog}
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#7b57ea] transition hover:text-[#5d39cf]"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-[#7b57ea] transition hover:text-[#5d39cf]"
                 >
                   <Pencil className="h-4 w-4" />
                   Ouvrir l editeur large
@@ -1365,23 +1588,32 @@ function IngredientsStep({
               </div>
 
               {ocrRawText && (
-                <details className="mt-4 rounded-2xl border border-[#ece7fb] bg-[#fbfaff] px-4 py-3 text-sm text-[#66708f]">
-                  <summary className="cursor-pointer font-semibold text-[#6f49e2]">Voir le texte OCR brut</summary>
-                  <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#4f5473]">{ocrRawText}</pre>
+                <details className="mt-4 rounded-2xl border border-[#ece7fb] bg-[#fbfaff] px-4 py-3 text-xs text-[#66708f]">
+                  <summary className="cursor-pointer font-semibold text-[#6f49e2]">
+                    Voir le texte OCR brut
+                  </summary>
+                  <pre className="mt-3 max-h-56 overflow-auto whitespace-pre-wrap text-xs leading-5 text-[#4f5473]">
+                    {ocrRawText}
+                  </pre>
                 </details>
               )}
 
-              <h3 className="mt-7 text-base font-bold text-[#171b36]">Apercu des ingredients confirmes</h3>
+              <h3 className="mt-7 text-sm font-bold text-[#171b36]">
+                Apercu des ingredients confirmes
+              </h3>
               <div className="grid gap-6 md:grid-cols-2">
                 <IngredientColumn items={leftColumn} startIndex={0} />
-                <IngredientColumn items={rightColumn} startIndex={leftColumn.length} />
+                <IngredientColumn
+                  items={rightColumn}
+                  startIndex={leftColumn.length}
+                />
               </div>
 
               <div className="mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-[#f0ecfa] pt-6">
                 <button
                   type="button"
                   onClick={onOpenManualDialog}
-                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full border border-[#dccdfd] bg-white px-6 text-sm font-semibold text-[#7b57ea] transition hover:bg-[#fbf8ff]"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full border border-[#dccdfd] bg-white px-6 text-xs font-semibold text-[#7b57ea] transition hover:bg-[#fbf8ff]"
                 >
                   <Pencil className="h-4 w-4" />
                   Modifier la liste
@@ -1390,7 +1622,7 @@ function IngredientsStep({
                   type="button"
                   onClick={onContinue}
                   disabled={ingredientItems.length === 0}
-                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-6 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex cursor-pointer h-11 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8d60ef] to-pink-300 px-6 text-xs font-semibold text-white shadow-[0_14px_30px_rgba(116,69,232,0.24)] transition hover:shadow-[0_18px_40px_rgba(116,69,232,0.32)] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Confirmer et continuer
                   <ChevronRight className="h-4 w-4" />
@@ -1410,8 +1642,13 @@ function IngredientsStep({
                 <Sparkles className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px] font-bold text-[#171b36]">Prochaine étape : Resultat IA</span>
-                <span className="mt-1 block text-sm text-[#727a99]">L IA analysera vos ingredients pour vous fournir une evaluation personnalisee.</span>
+                <span className="block text-sm font-bold text-[#171b36]">
+                  Prochaine étape : Resultat IA
+                </span>
+                <span className="mt-1 block text-xs text-[#727a99]">
+                  L IA analysera vos ingredients pour vous fournir une
+                  evaluation personnalisee.
+                </span>
               </span>
               <ChevronRight className="h-5 w-5 text-[#7d57ea]" />
             </button>
@@ -1440,13 +1677,24 @@ function IngredientColumn({
       </div>
       <div className="space-y-3">
         {items.map(({ name, status }, index) => (
-          <div key={`${startIndex + index}-${name}`} className="grid grid-cols-[28px_minmax(0,1fr)_112px] items-center gap-3">
+          <div
+            key={`${startIndex + index}-${name}`}
+            className="grid grid-cols-[28px_minmax(0,1fr)_112px] items-center gap-3"
+          >
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#eef0f7] text-[11px] font-bold text-[#66708f]">
               {startIndex + index + 1}
             </span>
-            <span className="truncate text-[15px] font-semibold text-[#1c2140]">{name}</span>
-            <span className={`inline-flex items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${status === "OK" ? "bg-[#dff4e7] text-[#15864a]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>
-              {status === "OK" ? <Check className="h-3 w-3" /> : <CircleHelp className="h-3 w-3" />}
+            <span className="truncate text-sm font-semibold text-[#1c2140]">
+              {name}
+            </span>
+            <span
+              className={`inline-flex items-center justify-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${status === "OK" ? "bg-[#dff4e7] text-[#15864a]" : "bg-[#fff0d9] text-[#ad6b00]"}`}
+            >
+              {status === "OK" ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <CircleHelp className="h-3 w-3" />
+              )}
               {status}
             </span>
           </div>
@@ -1478,12 +1726,20 @@ function AnalysisLoadingStep({
       <Panel className="overflow-hidden border-[#e8e0fb] bg-[radial-gradient(circle_at_top,_rgba(158,118,255,0.16),_transparent_36%),linear-gradient(180deg,_rgba(255,255,255,0.98)_0%,_rgba(250,246,255,0.98)_100%)] px-8 py-10 sm:px-12 sm:py-14">
         <div className="flex flex-col items-center text-center">
           <span className="flex h-20 w-20 items-center justify-center rounded-[28px] bg-white/90 text-[#7448e8] shadow-[0_18px_45px_rgba(116,72,232,0.15)]">
-            {isAnalyzing ? <LoaderCircle className="h-10 w-10 animate-spin" /> : <Sparkles className="h-10 w-10" />}
+            {isAnalyzing ? (
+              <LoaderCircle className="h-10 w-10 animate-spin" />
+            ) : (
+              <Sparkles className="h-10 w-10" />
+            )}
           </span>
 
-          <h2 className="mt-8 text-3xl font-bold text-[#151833] sm:text-4xl">Analyse IA en cours</h2>
+          <h2 className="mt-8 text-3xl font-bold text-[#151833] sm:text-4xl">
+            Analyse IA en cours
+          </h2>
           <p className="mt-4 max-w-[640px] text-base leading-8 text-[#68708b] sm:text-lg">
-            Nous analysons {ingredientCount} ingredient{ingredientCount > 1 ? "s" : ""} pour verifier si ce produit correspond a votre objectif peau: {selectedGoal.label}.
+            Nous analysons {ingredientCount} ingredient
+            {ingredientCount > 1 ? "s" : ""} pour verifier si ce produit
+            correspond a votre objectif peau: {selectedGoal.label}.
           </p>
 
           {analysisError && (
@@ -1509,9 +1765,21 @@ function AnalysisLoadingStep({
           )}
 
           <div className="mt-10 grid w-full gap-4 md:grid-cols-3">
-            <LoadingInfoCard icon={GoalIcon} title="Objectif choisi" text={selectedGoal.label} />
-            <LoadingInfoCard icon={ClipboardCheck} title="Ingredients verifies" text={`${ingredientCount} elements confirmes`} />
-            <LoadingInfoCard icon={Sparkles} title="Etape actuelle" text="Generation du resultat personnalise" />
+            <LoadingInfoCard
+              icon={GoalIcon}
+              title="Objectif choisi"
+              text={selectedGoal.label}
+            />
+            <LoadingInfoCard
+              icon={ClipboardCheck}
+              title="Ingredients verifies"
+              text={`${ingredientCount} elements confirmes`}
+            />
+            <LoadingInfoCard
+              icon={Sparkles}
+              title="Etape actuelle"
+              text="Generation du resultat personnalise"
+            />
           </div>
 
           <div className="mt-10 w-full max-w-[640px]">
@@ -1544,22 +1812,36 @@ function LoadingInfoCard({
       <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f4eeff] text-[#7448e8]">
         <Icon className="h-6 w-6" />
       </span>
-      <p className="mt-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#956cf8]">{title}</p>
+      <p className="mt-4 text-sm font-semibold uppercase tracking-[0.14em] text-[#956cf8]">
+        {title}
+      </p>
       <p className="mt-2 text-base font-semibold text-[#171b36]">{text}</p>
     </div>
   );
 }
 
-function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
+function ChatWorkspace({
+  onScanAnother,
+  initialSelectedChatId = null,
+}: {
+  onScanAnother: () => void;
+  initialSelectedChatId?: string | null;
+}) {
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
-  const [selectedHistoryChatId, setSelectedHistoryChatId] = useState<string | null>(null);
-  const [selectedHistoryDetail, setSelectedHistoryDetail] = useState<ScanConversationDetail | null>(null);
+  const [selectedHistoryChatId, setSelectedHistoryChatId] = useState<
+    string | null
+  >(null);
+  const [selectedHistoryDetail, setSelectedHistoryDetail] =
+    useState<ScanConversationDetail | null>(null);
   const [isConversationLoading, setIsConversationLoading] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatSending, setIsChatSending] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [renamedChats, setRenamedChats] = useState<Record<string, string>>({});
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [chatNameDraft, setChatNameDraft] = useState("");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
   const headerRef = useRef<HTMLElement | null>(null);
@@ -1581,11 +1863,27 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
     if (storedTheme === "light" || storedTheme === "dark") {
       setTheme(storedTheme);
     }
+
+    try {
+      const storedTitles = window.localStorage.getItem(CHAT_TITLE_STORAGE_KEY);
+      if (storedTitles) {
+        setRenamedChats(JSON.parse(storedTitles) as Record<string, string>);
+      }
+    } catch {
+      setRenamedChats({});
+    }
   }, []);
 
   useEffect(() => {
     window.localStorage.setItem("skinorai_chat_theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      CHAT_TITLE_STORAGE_KEY,
+      JSON.stringify(renamedChats),
+    );
+  }, [renamedChats]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1615,6 +1913,21 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
       isCancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!initialSelectedChatId) {
+      return;
+    }
+
+    setSelectedHistoryChatId(initialSelectedChatId);
+  }, [initialSelectedChatId]);
+
+  useEffect(() => {
+    if (editingChatId && editingChatId !== selectedHistoryChatId) {
+      setEditingChatId(null);
+      setChatNameDraft("");
+    }
+  }, [editingChatId, selectedHistoryChatId]);
 
   useEffect(() => {
     if (!selectedHistoryChatId) {
@@ -1718,36 +2031,85 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
   }, [theme, selectedHistoryChatId]);
 
   const featureCards = [
-    [FlaskConical, "Ingredient Analyzer", "Decode ingredients, check safety, and understand what works for your skin."],
-    [Bot, "Routine Coach", "Get personalized routines tailored to your skin goals."],
-    [SquareDashed, "Product Scanner", "Scan any product and analyze its claims."],
-    [Sparkles, "Skin Insights", "Track changes and unlock deeper skin insights."],
+    [
+      FlaskConical,
+      "Ingredient Analyzer",
+      "Decode ingredients, check safety, and understand what works for your skin.",
+    ],
+    [
+      Bot,
+      "Routine Coach",
+      "Get personalized routines tailored to your skin goals.",
+    ],
+    [
+      SquareDashed,
+      "Product Scanner",
+      "Scan any product and analyze its claims.",
+    ],
+    [
+      Sparkles,
+      "Skin Insights",
+      "Track changes and unlock deeper skin insights.",
+    ],
   ] as const;
 
   const recentChats = scanHistory.slice(0, 6);
-  const selectedHistoryChat = scanHistory.find((chat) => chat.id === selectedHistoryChatId) ?? null;
+  const getChatDisplayName = (
+    scanId: string | null | undefined,
+    fallbackName: string,
+  ) => {
+    if (!scanId) {
+      return fallbackName;
+    }
+
+    const renamedTitle = renamedChats[scanId]?.trim();
+    return renamedTitle || fallbackName;
+  };
+  const selectedHistoryChat =
+    scanHistory.find((chat) => chat.id === selectedHistoryChatId) ?? null;
   const isDarkTheme = theme === "dark";
   const selectedGoal =
-    goals.find((goal) => goal.id === selectedHistoryDetail?.skinGoal || skinGoalApiMap[goal.id] === selectedHistoryDetail?.skinGoal) ?? goals[0];
+    goals.find(
+      (goal) =>
+        goal.id === selectedHistoryDetail?.skinGoal ||
+        skinGoalApiMap[goal.id] === selectedHistoryDetail?.skinGoal,
+    ) ?? goals[0];
   const selectedAnalysisResult: AnalysisResult | null = selectedHistoryChat
-    ? selectedHistoryDetail?.analysisResult ?? {
+    ? (selectedHistoryDetail?.analysisResult ?? {
         score: 0,
         verdict: "good_choice",
-        verdictLabel: selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
-        summary: selectedHistoryChat.analysisSummary || "Analyse enregistrée pour ce produit.",
+        verdictLabel:
+          selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
+        summary:
+          selectedHistoryChat.analysisSummary ||
+          "Analyse enregistrée pour ce produit.",
         positives: [],
         watchouts: [],
         recommendations: selectedGoal.tips,
         nextStep: selectedGoal.nextStep,
         followUpQuestions: selectedGoal.questions,
-        disclaimer: "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
-      }
+        disclaimer:
+          "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+      })
     : null;
-  const selectedIngredientItems = buildIngredientItems(selectedHistoryDetail?.ingredients ?? []);
-  const selectedProductName = selectedHistoryDetail?.productName || selectedHistoryChat?.productName || "Produit scanné";
-  const selectedFollowUpQuestions =
-    selectedAnalysisResult?.followUpQuestions?.length ? selectedAnalysisResult.followUpQuestions : selectedGoal.questions;
-  const conversationMessages = (selectedHistoryDetail?.conversation ?? []).filter((message, index) => !(index === 0 && message.role === "assistant"));
+  const selectedIngredientItems = buildIngredientItems(
+    selectedHistoryDetail?.ingredients ?? [],
+  );
+  const selectedProductName =
+    selectedHistoryDetail?.productName ||
+    selectedHistoryChat?.productName ||
+    "Produit scanné";
+  const selectedDisplayName = getChatDisplayName(
+    selectedHistoryChat?.id,
+    selectedProductName,
+  );
+  const selectedFollowUpQuestions = selectedAnalysisResult?.followUpQuestions
+    ?.length
+    ? selectedAnalysisResult.followUpQuestions
+    : selectedGoal.questions;
+  const conversationMessages = (
+    selectedHistoryDetail?.conversation ?? []
+  ).filter((message, index) => !(index === 0 && message.role === "assistant"));
 
   useEffect(() => {
     setChatMessages(conversationMessages);
@@ -1756,7 +2118,12 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
   const askSavedQuestion = async (rawQuestion: string) => {
     const question = rawQuestion.trim();
 
-    if (!question || !selectedHistoryChat || !selectedAnalysisResult || isChatSending) {
+    if (
+      !question ||
+      !selectedHistoryChat ||
+      !selectedAnalysisResult ||
+      isChatSending
+    ) {
       return;
     }
 
@@ -1796,7 +2163,11 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
               ...current,
               promptCount: current.promptCount + 1,
               updatedAt: assistantMessage.createdAt ?? current.updatedAt,
-              conversation: [...current.conversation, userMessage, assistantMessage],
+              conversation: [
+                ...current.conversation,
+                userMessage,
+                assistantMessage,
+              ],
             }
           : current,
       );
@@ -1817,7 +2188,8 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
         {
           id: `history-assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
-          content: "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
+          content:
+            "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -1826,92 +2198,160 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
     }
   };
 
+  const startChatRename = () => {
+    if (!selectedHistoryChat) {
+      return;
+    }
+
+    setEditingChatId(selectedHistoryChat.id);
+    setChatNameDraft(selectedDisplayName);
+  };
+
+  const cancelChatRename = () => {
+    setEditingChatId(null);
+    setChatNameDraft("");
+  };
+
+  const saveChatRename = () => {
+    if (!editingChatId) {
+      return;
+    }
+
+    const trimmedName = chatNameDraft.trim();
+    if (!trimmedName) {
+      return;
+    }
+
+    setRenamedChats((current) => ({
+      ...current,
+      [editingChatId]: trimmedName,
+    }));
+    setEditingChatId(null);
+    setChatNameDraft("");
+  };
+
   const palette = isDarkTheme
     ? {
-      page: "bg-[#080912] text-[#f7f1fb]",
-      overlay:
-        "bg-[radial-gradient(circle_at_62%_10%,rgba(224,128,194,0.16),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(151,210,139,0.08),transparent_24%),linear-gradient(135deg,#0d111b_0%,#070811_45%,#11101a_100%)]",
-      sidebar: "border-r border-white/[0.07] bg-[#0b0d17]/92 shadow-[18px_0_55px_rgba(0,0,0,0.20)]",
-      logo: "brightness-0 invert",
-      sidebarButton: "border-white/10 bg-white/[0.03] text-[#a8a8b8] hover:bg-white/[0.08]",
-      primaryButton: "bg-[linear-gradient(135deg,rgba(149,81,151,0.88)_0%,rgba(231,139,199,0.88)_100%)] text-white shadow-[0_16px_34px_rgba(202,105,179,0.22)]",
-      sidebarLabel: "text-[#777583]",
-      navActive: "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
-      navIdle: "text-[#dbd8e4] hover:bg-white/[0.05]",
-      recentCard: "border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.07]",
-      recentActive: "border-[#e8a0d8]/45 bg-white/[0.09]",
-      recentText: "text-white",
-      recentMuted: "text-[#918f9e]",
-      premiumCard: "border-white/[0.08] bg-[linear-gradient(180deg,rgba(45,31,55,0.82)_0%,rgba(25,22,34,0.9)_100%)] shadow-[0_14px_38px_rgba(0,0,0,0.18)]",
-      premiumTitle: "text-[#f0a8d9]",
-      premiumText: "text-[#bdb7c8]",
-      premiumButton: "bg-[linear-gradient(135deg,#9b5f99_0%,#cf7db5_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.22)]",
-      headerButton: "border-white/[0.10] bg-white/[0.04] text-white hover:bg-white/[0.08]",
-      heading: "text-white",
-      subtext: "text-[#aaa6b5]",
-      orb: "border-[#d88fe1]/70 text-[#f09bd1] shadow-[0_0_42px_rgba(219,126,209,0.14)]",
-      orbRing: "border-[#a47df2]/80",
-      actionCard: "border-white/[0.13] bg-white/[0.045] hover:border-[#dca0dd]/50 hover:bg-white/[0.07]",
-      actionTitle: "text-white",
-      actionText: "text-[#aaa6b5]",
-      prompt: "border-white/[0.16] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
-      promptInput: "text-white placeholder:text-[#898693]",
-      promptMeta: "text-[#a9a5b3]",
-      iconButton: "border-white/[0.16] bg-white/[0.04] text-white",
-      featureCard: "border-white/[0.10] bg-white/[0.045] hover:bg-white/[0.07]",
-      featureTitle: "text-white",
-      featureText: "text-[#aaa6b5]",
-      detailCard: "border-white/[0.10] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
-      detailBadge: "bg-white/[0.08] text-[#f5c0e1]",
-      detailMeta: "text-[#b9b5c5]",
-    }
+        page: "bg-[#080912] text-[#f7f1fb]",
+        overlay:
+          "bg-[radial-gradient(circle_at_62%_10%,rgba(224,128,194,0.16),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(151,210,139,0.08),transparent_24%),linear-gradient(135deg,#0d111b_0%,#070811_45%,#11101a_100%)]",
+        sidebar:
+          "border-r border-white/[0.07] bg-[#0b0d17]/92 shadow-[18px_0_55px_rgba(0,0,0,0.20)]",
+        logo: "brightness-0 invert",
+        sidebarButton:
+          "border-white/10 bg-white/[0.03] text-[#a8a8b8] hover:bg-white/[0.08]",
+        primaryButton:
+          "bg-[linear-gradient(135deg,rgba(149,81,151,0.88)_0%,rgba(231,139,199,0.88)_100%)] text-white shadow-[0_16px_34px_rgba(202,105,179,0.22)]",
+        sidebarLabel: "text-[#777583]",
+        navActive:
+          "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+        navIdle: "text-[#dbd8e4] hover:bg-white/[0.05]",
+        recentCard: "border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.07]",
+        recentActive: "border-[#e8a0d8]/45 bg-white/[0.09]",
+        recentText: "text-white",
+        recentMuted: "text-[#918f9e]",
+        premiumCard:
+          "border-white/[0.08] bg-[linear-gradient(180deg,rgba(45,31,55,0.82)_0%,rgba(25,22,34,0.9)_100%)] shadow-[0_14px_38px_rgba(0,0,0,0.18)]",
+        premiumTitle: "text-[#f0a8d9]",
+        premiumText: "text-[#bdb7c8]",
+        premiumButton:
+          "bg-[linear-gradient(135deg,#9b5f99_0%,#cf7db5_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.22)]",
+        headerButton:
+          "border-white/[0.10] bg-white/[0.04] text-white hover:bg-white/[0.08]",
+        heading: "text-white",
+        subtext: "text-[#aaa6b5]",
+        orb: "border-[#d88fe1]/70 text-[#f09bd1] shadow-[0_0_42px_rgba(219,126,209,0.14)]",
+        orbRing: "border-[#a47df2]/80",
+        actionCard:
+          "border-white/[0.13] bg-white/[0.045] hover:border-[#dca0dd]/50 hover:bg-white/[0.07]",
+        actionTitle: "text-white",
+        actionText: "text-[#aaa6b5]",
+        prompt:
+          "border-white/[0.16] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
+        promptInput: "text-white placeholder:text-[#898693]",
+        promptMeta: "text-[#a9a5b3]",
+        iconButton: "border-white/[0.16] bg-white/[0.04] text-white",
+        featureCard:
+          "border-white/[0.10] bg-white/[0.045] hover:bg-white/[0.07]",
+        featureTitle: "text-white",
+        featureText: "text-[#aaa6b5]",
+        detailCard:
+          "border-white/[0.10] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
+        detailBadge: "bg-white/[0.08] text-[#f5c0e1]",
+        detailMeta: "text-[#b9b5c5]",
+      }
     : {
-      page: "bg-[#f6f1fb] text-[#1b1a2b]",
-      overlay:
-        "bg-[radial-gradient(circle_at_60%_14%,rgba(194,128,224,0.18),transparent_24%),radial-gradient(circle_at_82%_72%,rgba(180,223,164,0.18),transparent_20%),linear-gradient(180deg,#fffdfd_0%,#f9f5ff_40%,#f4f8fb_100%)]",
-      sidebar: "border-r border-[#eadff7] bg-white/88 shadow-[18px_0_45px_rgba(103,74,151,0.10)]",
-      logo: "",
-      sidebarButton: "border-[#ebddf9] bg-[#faf6ff] text-[#6c6289] hover:bg-[#f3ecff]",
-      primaryButton: "bg-[linear-gradient(135deg,#a56ae2_0%,#e89ac7_100%)] text-white shadow-[0_16px_32px_rgba(202,105,179,0.18)]",
-      sidebarLabel: "text-[#8f86a7]",
-      navActive: "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
-      navIdle: "text-[#5c5671] hover:bg-[#f6f1ff]",
-      recentCard: "border-[#ece5f7] bg-white/90 hover:bg-[#fbf8ff]",
-      recentActive: "border-[#ceafe8] bg-[#f9f2ff]",
-      recentText: "text-[#221d35]",
-      recentMuted: "text-[#7c7693]",
-      premiumCard: "border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]",
-      premiumTitle: "text-[#b1689b]",
-      premiumText: "text-[#7d7792]",
-      premiumButton: "bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]",
-      headerButton: "border-[#e7def4] bg-white/85 text-[#2a2440] hover:bg-white",
-      heading: "text-[#221d35]",
-      subtext: "text-[#726b86]",
-      orb: "border-[#d7a5dd] text-[#c76ab6] shadow-[0_0_35px_rgba(219,126,209,0.12)] bg-white/70",
-      orbRing: "border-[#c9a0ef]",
-      actionCard: "border-[#eadff7] bg-white/86 hover:border-[#dca0dd] hover:bg-white",
-      actionTitle: "text-[#241f36]",
-      actionText: "text-[#726b86]",
-      prompt: "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
-      promptInput: "text-[#241f36] placeholder:text-[#928aa6]",
-      promptMeta: "text-[#7f7893]",
-      iconButton: "border-[#e5dbf4] bg-white text-[#433d58]",
-      featureCard: "border-[#eadff7] bg-white/86 hover:bg-white",
-      featureTitle: "text-[#241f36]",
-      featureText: "text-[#726b86]",
-      detailCard: "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
-      detailBadge: "bg-[#f5ecff] text-[#9a56bf]",
-      detailMeta: "text-[#7d7792]",
-    };
+        page: "bg-[#f6f1fb] text-[#1b1a2b]",
+        overlay:
+          "bg-[radial-gradient(circle_at_60%_14%,rgba(194,128,224,0.18),transparent_24%),radial-gradient(circle_at_82%_72%,rgba(180,223,164,0.18),transparent_20%),linear-gradient(180deg,#fffdfd_0%,#f9f5ff_40%,#f4f8fb_100%)]",
+        sidebar:
+          "border-r border-[#eadff7] bg-white/88 shadow-[18px_0_45px_rgba(103,74,151,0.10)]",
+        logo: "",
+        sidebarButton:
+          "border-[#ebddf9] bg-[#faf6ff] text-[#6c6289] hover:bg-[#f3ecff]",
+        primaryButton:
+          "bg-[linear-gradient(135deg,#a56ae2_0%,#e89ac7_100%)] text-white shadow-[0_16px_32px_rgba(202,105,179,0.18)]",
+        sidebarLabel: "text-[#8f86a7]",
+        navActive:
+          "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+        navIdle: "text-[#5c5671] hover:bg-[#f6f1ff]",
+        recentCard: "border-[#ece5f7] bg-white/90 hover:bg-[#fbf8ff]",
+        recentActive: "border-[#ceafe8] bg-[#f9f2ff]",
+        recentText: "text-[#221d35]",
+        recentMuted: "text-[#7c7693]",
+        premiumCard:
+          "border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]",
+        premiumTitle: "text-[#b1689b]",
+        premiumText: "text-[#7d7792]",
+        premiumButton:
+          "bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]",
+        headerButton:
+          "border-[#e7def4] bg-white/85 text-[#2a2440] hover:bg-white",
+        heading: "text-[#221d35]",
+        subtext: "text-[#726b86]",
+        orb: "border-[#d7a5dd] text-[#c76ab6] shadow-[0_0_35px_rgba(219,126,209,0.12)] bg-white/70",
+        orbRing: "border-[#c9a0ef]",
+        actionCard:
+          "border-[#eadff7] bg-white/86 hover:border-[#dca0dd] hover:bg-white",
+        actionTitle: "text-[#241f36]",
+        actionText: "text-[#726b86]",
+        prompt:
+          "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+        promptInput: "text-[#241f36] placeholder:text-[#928aa6]",
+        promptMeta: "text-[#7f7893]",
+        iconButton: "border-[#e5dbf4] bg-white text-[#433d58]",
+        featureCard: "border-[#eadff7] bg-white/86 hover:bg-white",
+        featureTitle: "text-[#241f36]",
+        featureText: "text-[#726b86]",
+        detailCard:
+          "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+        detailBadge: "bg-[#f5ecff] text-[#9a56bf]",
+        detailMeta: "text-[#7d7792]",
+      };
 
   return (
-    <main className={`h-screen overflow-hidden ${palette.page}`}>
+    <main
+      className={`h-screen overflow-hidden [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed ${palette.page}`}
+    >
       <div className={`pointer-events-none fixed inset-0 ${palette.overlay}`} />
       <div ref={workspaceRef} className="relative flex h-screen w-full">
-        <aside ref={sidebarRef} className={`flex w-[270px] shrink-0 flex-col px-5 py-4 backdrop-blur-2xl ${palette.sidebar}`}>
+        <aside
+          ref={sidebarRef}
+          className={`flex w-[270px] shrink-0 flex-col px-5 py-4 backdrop-blur-2xl ${palette.sidebar}`}
+        >
           <div className="flex items-center justify-between">
-            <Image src="/logo.png" alt="SkinorAI" width={150} height={36} className={`h-8 w-auto ${palette.logo}`} priority />
-            <button type="button" className={`rounded-lg border p-1.5 transition ${palette.sidebarButton}`}>
+            <Image
+              src="/logo.png"
+              alt="SkinorAI"
+              width={150}
+              height={36}
+              className={`h-8 w-auto ${palette.logo}`}
+              priority
+            />
+            <button
+              type="button"
+              className={`rounded-lg border p-1.5 transition ${palette.sidebarButton}`}
+            >
               <PanelLeft className="h-4 w-4" />
             </button>
           </div>
@@ -1922,25 +2362,34 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
               setSelectedHistoryChatId(null);
               onScanAnother();
             }}
-            className={`mt-6 flex h-[50px] items-center gap-3 rounded-xl px-5 text-base font-medium transition hover:-translate-y-0.5 ${palette.primaryButton}`}
+            className="mt-6 flex h-[45px] cursor-pointer items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[#F4D2DF] hover:via-[#EFC9DB] hover:to-[#E8D1F4] active:translate-y-0"
           >
             <Plus className="h-5 w-5" />
             New Chat
           </button>
 
           <div className="mt-6">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Main</p>
+            <p
+              className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
+            >
+              Main
+            </p>
             <nav className="mt-3 space-y-2">
               <button
                 type="button"
                 onClick={() => setSelectedHistoryChatId(null)}
                 className={`relative flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${selectedHistoryChat ? palette.navIdle : palette.navActive}`}
               >
-                {!selectedHistoryChat && <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />}
+                {!selectedHistoryChat && (
+                  <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />
+                )}
                 <CircleHelp className="h-5 w-5" />
                 Chats
               </button>
-              <button type="button" className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}>
+              <button
+                type="button"
+                className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}
+              >
                 <FlaskConical className="h-5 w-5" />
                 Ingredient Library
               </button>
@@ -1948,10 +2397,18 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
           </div>
 
           <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Recent</p>
+            <p
+              className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
+            >
+              Recent
+            </p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
-                <p className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}>Loading chats...</p>
+                <p
+                  className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}
+                >
+                  Loading chats...
+                </p>
               ) : recentChats.length > 0 ? (
                 recentChats.map((chat) => {
                   const isActive = chat.id === selectedHistoryChatId;
@@ -1963,66 +2420,162 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
                       onClick={() => setSelectedHistoryChatId(chat.id)}
                       className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${isActive ? palette.recentActive : palette.recentCard}`}
                     >
-                      <p className={`truncate text-xs font-medium ${palette.recentText}`}>{chat.productName}</p>
-                      <p className={`mt-1 text-[11px] ${palette.recentMuted}`}>{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
-                      {chat.analysisSummary && <p className={`mt-2 line-clamp-2 text-[11px] leading-5 ${palette.recentMuted}`}>{chat.analysisSummary}</p>}
+                      <p
+                        className={`truncate text-sm font-medium ${palette.recentText}`}
+                      >
+                        {getChatDisplayName(chat.id, chat.productName)}
+                      </p>
+                      <p className={`mt-1 text-sm ${palette.recentMuted}`}>
+                        {formatScanHistoryDate(
+                          chat.updatedAt || chat.createdAt,
+                        )}
+                      </p>
+                      {chat.analysisSummary && (
+                        <p
+                          className={`mt-2 line-clamp-2 text-sm leading-5 ${palette.recentMuted}`}
+                        >
+                          {chat.analysisSummary}
+                        </p>
+                      )}
                     </button>
                   );
                 })
               ) : (
-                <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}>No chats yet. Start with a new scan.</p>
+                <p
+                  className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}
+                >
+                  No chats yet. Start with a new scan.
+                </p>
               )}
             </div>
           </div>
 
-          <div className={`mt-4 rounded-2xl p-4 text-center ${palette.premiumCard}`}>
+          <div
+            className={`mt-4 rounded-2xl p-4 text-center ${palette.premiumCard}`}
+          >
             <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]">
               <Sparkles className="h-4 w-4" />
             </span>
-            <h2 className={`mt-3 text-base font-semibold ${palette.premiumTitle}`}>Unlock Premium</h2>
-            <p className={`mt-2 text-xs leading-5 ${palette.premiumText}`}>Get deeper insights, unlimited scans, and personalized routines.</p>
-            <button type="button" className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold ${palette.premiumButton}`}>
+            <h2
+              className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}
+            >
+              Unlock Premium
+            </h2>
+            <p className={`mt-2 text-sm leading-5 ${palette.premiumText}`}>
+              Get deeper insights, unlimited scans, and personalized routines.
+            </p>
+            <button
+              type="button"
+              className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold cursor-pointer ${palette.premiumButton}`}
+            >
               Upgrade to Premium
             </button>
           </div>
         </aside>
 
-        <section className="relative min-w-0 flex-1 overflow-y-auto px-5 py-4 lg:px-7">
+        <section className="relative min-w-0 flex-1 overflow-y-auto px-5 pt-4 lg:px-7">
           <header ref={headerRef} className="flex items-center justify-between">
-            <button type="button">
-              
-            </button>
+            <button type="button"></button>
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+                onClick={() =>
+                  setTheme((current) => (current === "dark" ? "light" : "dark"))
+                }
                 className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}
               >
-                {isDarkTheme ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                {isDarkTheme ? (
+                  <Sun className="h-4 w-4" />
+                ) : (
+                  <Moon className="h-4 w-4" />
+                )}
                 {isDarkTheme ? "Light" : "Dark"}
               </button>
-              <button type="button" className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}>
+              <button
+                type="button"
+                className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-xs font-medium backdrop-blur transition-colors duration-300 hover:!bg-gray-50 ${palette.headerButton}`}
+              >
                 Settings
                 <Settings className="h-4 w-4" />
-              </button>
-              <button type="button" className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${palette.headerButton}`}>
-                Export
-                <Download className="h-4 w-4" />
               </button>
             </div>
           </header>
 
           <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-[980px] flex-col justify-start pt-6">
             {selectedHistoryChat ? (
-              <div ref={heroRef} className="flex flex-1 flex-col py-4">
-                <div data-chat-hero className="flex items-center justify-between gap-4">
+              <div ref={heroRef} className="flex flex-1 flex-col pt-4">
+                <div
+                  data-chat-hero
+                  className="flex items-center justify-between gap-4"
+                >
                   <div>
-                    <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${palette.subtext}`}>Conversation</p>
-                    <h1 className={`mt-2 text-[24px] font-medium leading-tight tracking-[-0.04em] sm:text-[32px] ${palette.heading}`}>
-                      {selectedProductName}
-                    </h1>
-                    <p className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}>
-                      Reprenez votre analyse, retrouvez le résultat précédent et continuez la discussion dans le même fil.
+                    <p
+                      className={`text-xs font-semibold uppercase tracking-[0.22em] ${palette.subtext}`}
+                    >
+                      Conversation
+                    </p>
+                    {editingChatId === selectedHistoryChat.id ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <input
+                          type="text"
+                          value={chatNameDraft}
+                          onChange={(event) =>
+                            setChatNameDraft(event.target.value)
+                          }
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                              event.preventDefault();
+                              saveChatRename();
+                            }
+
+                            if (event.key === "Escape") {
+                              event.preventDefault();
+                              cancelChatRename();
+                            }
+                          }}
+                          className={`min-w-[280px] rounded-xl border px-4 py-2 text-[24px] font-medium leading-tight tracking-[-0.04em] outline-none sm:text-[32px] ${isDarkTheme ? "border-white/[0.12] bg-white/[0.04] text-white" : "border-[#e7defc] bg-white text-[#221d35]"}`}
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          onClick={saveChatRename}
+                          disabled={!chatNameDraft.trim()}
+                          className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${palette.headerButton}`}
+                        >
+                          <Check className="h-4 w-4" />
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelChatRename}
+                          className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
+                        >
+                          <X className="h-4 w-4" />
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        <h1
+                          className={`text-[24px] font-medium leading-tight tracking-[-0.04em] sm:text-[32px] ${palette.heading}`}
+                        >
+                          {selectedDisplayName}
+                        </h1>
+                        <button
+                          type="button"
+                          onClick={startChatRename}
+                          className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition ${palette.headerButton}`}
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Rename
+                        </button>
+                      </div>
+                    )}
+                    <p
+                      className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}
+                    >
+                      Reprenez votre analyse, retrouvez le résultat précédent et
+                      continuez la discussion dans le même fil.
                     </p>
                   </div>
                   <button
@@ -2034,184 +2587,357 @@ function ChatWorkspace({ onScanAnother }: { onScanAnother: () => void }) {
                   </button>
                 </div>
 
-                <div ref={promptRef} className={`mt-5 flex flex-1 flex-col rounded-[22px] border p-5 ${palette.prompt}`}>
-                  <div className="space-y-4">
-                    <div className="flex justify-end">
-                      <div className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.06] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"}`}>
-                        <p className="font-medium">{selectedProductName} - objectif: {selectedGoal.label}</p>
-                        <p className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}>
-                          J&apos;ai scanné ce produit pour vérifier s&apos;il est bien adapté à mon objectif peau et à ma routine.
-                        </p>
+                <div
+                  ref={promptRef}
+                  className="mt-5 flex min-h-0 flex-1 flex-col rounded-[22px]"
+                >
+                  <div className="min-h-0 flex-1 overflow-y-auto px-1 pb-4">
+                    <div className="space-y-4 p-4">
+                      <div className="flex justify-end">
+                        <div
+                          data-chat-card
+                          className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.06] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"}`}
+                        >
+                          <p className="font-medium">
+                            {selectedDisplayName} - objectif:{" "}
+                            {selectedGoal.label}
+                          </p>
+                          <p
+                            className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}
+                          >
+                            J&apos;ai scanné ce produit pour vérifier s&apos;il
+                            est bien adapté à mon objectif peau et à ma routine.
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    {selectedAnalysisResult && (
-                      <div data-chat-card className={`rounded-[24px] border p-5 shadow-sm ${isDarkTheme ? "border-white/[0.1] bg-white/[0.05]" : "border-[#ece5fb] bg-white"}`}>
-                        <div className="flex flex-wrap items-start justify-between gap-4">
-                          <div className="flex items-start gap-3">
-                            <span className={`mt-1 flex h-11 w-11 items-center justify-center rounded-full ${isDarkTheme ? "bg-[#1b1630] text-[#e9a2d0]" : "bg-[#f3edff] text-[#7a55ea]"}`}>
-                              <Sparkles className="h-5 w-5" />
-                            </span>
-                            <div>
-                              <div className="flex flex-wrap items-center gap-3">
-                                <h2 className={`text-xl font-bold ${palette.heading}`}>Résultat de l&apos;analyse IA</h2>
-                                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}>
-                                  {selectedAnalysisResult.verdictLabel}
-                                </span>
+                      {selectedAnalysisResult && (
+                        <div
+                          data-chat-card
+                          className={`rounded-[24px] border p-5 shadow-sm ${isDarkTheme ? "border-white/[0.1] bg-white/[0.05]" : "border-[#ece5fb] bg-white"}`}
+                        >
+                          <div className="flex flex-wrap items-start justify-between gap-4">
+                            <div className="flex items-start gap-3">
+                              <span
+                                className={`mt-1 flex h-11 w-11 items-center justify-center rounded-full ${isDarkTheme ? "bg-[#1b1630] text-[#e9a2d0]" : "bg-[#f3edff] text-[#7a55ea]"}`}
+                              >
+                                <Sparkles className="h-5 w-5" />
+                              </span>
+                              <div>
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <h2
+                                    className={`text-xl font-bold ${palette.heading}`}
+                                  >
+                                    Résultat de l&apos;analyse IA
+                                  </h2>
+                                  <span
+                                    className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}
+                                  >
+                                    {selectedAnalysisResult.verdictLabel}
+                                  </span>
+                                </div>
+                                <p
+                                  className={`mt-3 max-w-[760px] text-sm leading-6 ${palette.subtext}`}
+                                >
+                                  {selectedAnalysisResult.summary}
+                                </p>
                               </div>
-                              <p className={`mt-3 max-w-[760px] text-sm leading-6 ${palette.subtext}`}>{selectedAnalysisResult.summary}</p>
+                            </div>
+                            <span
+                              className={`rounded-[16px] px-3 py-2 text-2xl font-bold shadow-sm ${isDarkTheme ? "bg-[#16291d] text-[#86d79f]" : "bg-[#e9faef] text-[#20a45c]"}`}
+                            >
+                              {selectedAnalysisResult.score > 0
+                                ? `${selectedAnalysisResult.score}/10`
+                                : "--/10"}
+                            </span>
+                          </div>
+
+                          <div className="mt-5 grid gap-4 xl:grid-cols-3">
+                            <InsightCard
+                              title="Points forts"
+                              tone="green"
+                              items={selectedAnalysisResult.positives ?? []}
+                              isDarkTheme={isDarkTheme}
+                            />
+                            <InsightCard
+                              title="À surveiller"
+                              tone="orange"
+                              items={selectedAnalysisResult.watchouts ?? []}
+                              isDarkTheme={isDarkTheme}
+                            />
+                            <NextStepCard
+                              tips={
+                                selectedAnalysisResult.recommendations?.length
+                                  ? selectedAnalysisResult.recommendations
+                                  : selectedGoal.tips
+                              }
+                              nextStep={
+                                selectedAnalysisResult.nextStep ||
+                                selectedGoal.nextStep
+                              }
+                              isDarkTheme={isDarkTheme}
+                            />
+                          </div>
+
+                          <p
+                            className={`mt-5 rounded-2xl px-4 py-3 text-xs leading-5 ${isDarkTheme ? "bg-white/[0.04] text-white/65" : "bg-[#faf7ff] text-[#68708b]"}`}
+                          >
+                            {selectedAnalysisResult.disclaimer ||
+                              "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
+                          </p>
+
+                          <div className="mt-5">
+                            <h3
+                              className={`text-base font-semibold ${palette.heading}`}
+                            >
+                              Questions à poser
+                            </h3>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {selectedFollowUpQuestions.map((question) => (
+                                <button
+                                  key={question}
+                                  type="button"
+                                  onClick={() =>
+                                    void askSavedQuestion(question)
+                                  }
+                                  className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${isDarkTheme ? "border-white/[0.1] bg-white/[0.04] text-[#f0c2df] hover:bg-white/[0.08]" : "border-[#e7defc] bg-[#faf7ff] text-[#7350e5] hover:bg-[#f1eaff]"}`}
+                                >
+                                  {question}
+                                </button>
+                              ))}
                             </div>
                           </div>
-                          <span className={`rounded-[16px] px-3 py-2 text-2xl font-bold shadow-sm ${isDarkTheme ? "bg-[#16291d] text-[#86d79f]" : "bg-[#e9faef] text-[#20a45c]"}`}>
-                            {selectedAnalysisResult.score > 0 ? `${selectedAnalysisResult.score}/10` : "--/10"}
-                          </span>
                         </div>
+                      )}
 
-                        <div className="mt-5 grid gap-4 xl:grid-cols-3">
-                          <InsightCard title="Points forts" tone="green" items={selectedAnalysisResult.positives ?? []} />
-                          <InsightCard title="À surveiller" tone="orange" items={selectedAnalysisResult.watchouts ?? []} />
-                          <NextStepCard
-                            tips={selectedAnalysisResult.recommendations?.length ? selectedAnalysisResult.recommendations : selectedGoal.tips}
-                            nextStep={selectedAnalysisResult.nextStep || selectedGoal.nextStep}
+                      {isConversationLoading ? (
+                        <div className="space-y-3">
+                          <div
+                            className={`h-16 rounded-2xl border ${palette.detailCard}`}
+                          />
+                          <div
+                            className={`ml-auto h-14 w-[72%] rounded-2xl border ${palette.detailCard}`}
+                          />
+                          <div
+                            className={`h-16 w-[78%] rounded-2xl border ${palette.detailCard}`}
                           />
                         </div>
-
-                        <p className={`mt-5 rounded-2xl px-4 py-3 text-xs leading-5 ${isDarkTheme ? "bg-white/[0.04] text-white/65" : "bg-[#faf7ff] text-[#68708b]"}`}>
-                          {selectedAnalysisResult.disclaimer || "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
-                        </p>
-
-                        <div className="mt-5">
-                          <h3 className={`text-base font-semibold ${palette.heading}`}>Questions à poser</h3>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {selectedFollowUpQuestions.map((question) => (
-                              <button
-                                key={question}
-                                type="button"
-                                onClick={() => void askSavedQuestion(question)}
-                                className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${isDarkTheme ? "border-white/[0.1] bg-white/[0.04] text-[#f0c2df] hover:bg-white/[0.08]" : "border-[#e7defc] bg-[#faf7ff] text-[#7350e5] hover:bg-[#f1eaff]"}`}
-                              >
-                                {question}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {isConversationLoading ? (
-                      <div className="space-y-3">
-                        <div className={`h-16 rounded-2xl border ${palette.detailCard}`} />
-                        <div className={`ml-auto h-14 w-[72%] rounded-2xl border ${palette.detailCard}`} />
-                        <div className={`h-16 w-[78%] rounded-2xl border ${palette.detailCard}`} />
-                      </div>
-                    ) : chatMessages.length > 0 ? (
-                      <div className="space-y-3">
-                        {chatMessages.map((message) => (
-                          <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                      ) : chatMessages.length > 0 ? (
+                        <div className="space-y-3">
+                          {chatMessages.map((message) => (
                             <div
-                              className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${message.role === "user"
-                                ? isDarkTheme
-                                  ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white shadow-[0_12px_28px_rgba(168,103,197,0.24)]"
-                                  : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                                : isDarkTheme
-                                  ? "border-white/[0.1] bg-white/[0.05] text-white"
-                                  : "border-[#ece5fb] bg-white text-[#59617d]"}`}
+                              key={message.id}
+                              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                             >
-                              <p>{message.content}</p>
-                              <p className={`mt-2 text-[11px] ${message.role === "user" ? (isDarkTheme ? "text-white/80" : "text-[#7a6ea6]") : palette.subtext}`}>
-                                {formatScanHistoryDate(message.createdAt ?? selectedHistoryDetail?.updatedAt ?? selectedHistoryChat.updatedAt ?? new Date().toISOString())}
-                              </p>
+                              <div
+                                className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${
+                                  message.role === "user"
+                                    ? isDarkTheme
+                                      ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white shadow-[0_12px_28px_rgba(168,103,197,0.24)]"
+                                      : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                                    : isDarkTheme
+                                      ? "border-white/[0.1] bg-white/[0.05] text-white"
+                                      : "border-[#ece5fb] bg-white text-[#59617d]"
+                                }`}
+                              >
+                                <p>{message.content}</p>
+                                <p
+                                  className={`mt-2 text-[11px] ${message.role === "user" ? (isDarkTheme ? "text-white/80" : "text-[#7a6ea6]") : palette.subtext}`}
+                                >
+                                  {formatScanHistoryDate(
+                                    message.createdAt ??
+                                      selectedHistoryDetail?.updatedAt ??
+                                      selectedHistoryChat.updatedAt ??
+                                      new Date().toISOString(),
+                                  )}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className={`rounded-2xl border p-4 text-sm ${palette.detailCard} ${palette.subtext}`}>
-                        Aucune question enregistrée pour ce scan pour le moment. Vous pouvez reprendre la conversation ci-dessous.
-                      </div>
-                    )}
-
-                    {isChatSending && (
-                      <div className="flex justify-start">
-                        <div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}>
-                          <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                          SkinorAI réfléchit...
+                          ))}
                         </div>
-                      </div>
-                    )}
+                      ) : (
+                        <div
+                          className={`rounded-2xl border p-4 text-sm ${palette.detailCard} ${palette.subtext}`}
+                        >
+                          Aucune question enregistrée pour ce scan pour le
+                          moment. Vous pouvez reprendre la conversation
+                          ci-dessous.
+                        </div>
+                      )}
+
+                      {isChatSending && (
+                        <div className="flex justify-start">
+                          <div
+                            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}
+                          >
+                            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                            SkinorAI réfléchit...
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className={`mt-5 rounded-[22px] border p-4 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.03]" : "border-[#e8e0fb] bg-white"}`}>
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                      <div className="min-w-0 flex-1">
-                        <div className={`flex items-center gap-2 ${isDarkTheme ? "text-[#f0c2df]" : "text-[#7a55ea]"}`}>
-                          <Sparkles className="h-4 w-4" />
-                          <span className="text-sm font-semibold">Continuer la conversation</span>
-                        </div>
-                        <input
-                          value={chatInput}
-                          onChange={(event) => setChatInput(event.target.value)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter") {
-                              event.preventDefault();
-                              void askSavedQuestion(chatInput);
-                            }
-                          }}
-                          className={`mt-3 w-full border-0 bg-transparent text-sm outline-none ${palette.promptInput}`}
-                          placeholder="Posez une question sur ce produit, la routine ou les ingrédients..."
-                        />
-                      </div>
+                  <div
+                    className={`sticky bottom-0 z-20 mt-auto -mx-5 px-5 pb-3 pt-3 backdrop-blur-xl lg:-mx-7 lg:px-7`}
+                  >
+                    <div
+                      className={`mx-auto flex h-12 w-full max-w-3xl items-center gap-2 rounded-full border px-3 shadow-[0_14px_35px_rgba(122,63,92,0.12)] transition ${
+                        isDarkTheme
+                          ? "border-white/10 bg-[#15111d]"
+                          : "border-[#ead8ef] bg-gradient-to-r from-[#fff7fb] via-[#f8edf7] to-[#f1e9ff]"
+                      }`}
+                    >
+                      <button
+                        type="button"
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
+                          isDarkTheme
+                            ? "text-white/75 hover:bg-white/10"
+                            : "text-[#8b5cf6] hover:bg-[#efe5ff]"
+                        }`}
+                        aria-label="Nouvelle question"
+                      >
+                        <Plus className="h-4.5 w-4.5" />
+                      </button>
+
+                      <input
+                        value={chatInput}
+                        onChange={(event) => setChatInput(event.target.value)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            void askSavedQuestion(chatInput);
+                          }
+                        }}
+                        className={`min-w-0 flex-1 border-0 bg-transparent text-[14px] outline-none ${
+                          isDarkTheme
+                            ? "text-white placeholder:text-white/40"
+                            : "text-[#33243c] placeholder:text-[#9a88a8]"
+                        }`}
+                        placeholder="Poser une question"
+                      />
+
                       <button
                         type="button"
                         onClick={() => void askSavedQuestion(chatInput)}
                         disabled={!chatInput.trim() || isChatSending}
-                        className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#9b7cff] to-[#d78ac8] text-white shadow-[0_8px_18px_rgba(139,92,246,0.24)] transition hover:scale-105 hover:shadow-[0_10px_24px_rgba(139,92,246,0.30)] disabled:cursor-not-allowed disabled:opacity-50"
+                        aria-label="Envoyer"
                       >
-                        <Send className="h-5 w-5" />
+                        <Send className="h-4 w-4" />
                       </button>
                     </div>
+
+                    <p
+                      className={`mt-2 text-center text-[10px] ${
+                        isDarkTheme ? "text-white/35" : "text-[#9a8faa]"
+                      }`}
+                    >
+                      SkinorAI peut faire des erreurs. Vérifiez les informations
+                      importantes.
+                    </p>
                   </div>
                 </div>
               </div>
             ) : (
-              <div ref={heroRef} className="flex flex-1 flex-col items-center justify-start py-2 text-center">
-                <div data-chat-hero className="relative mt-1 flex justify-center">
-                  <div data-chat-orb className={`relative flex h-[82px] w-[82px] items-center justify-center rounded-full border ${palette.orb}`}>
-                    <div className={`absolute inset-1.5 rounded-full border-r-2 ${palette.orbRing}`} />
+              <div
+                ref={heroRef}
+                className="flex flex-1 flex-col items-center justify-start py-2 text-center"
+              >
+                <div
+                  data-chat-hero
+                  className="relative mt-1 flex justify-center"
+                >
+                  <div
+                    data-chat-orb
+                    className={`relative flex h-[82px] w-[82px] items-center justify-center rounded-full border ${palette.orb}`}
+                  >
+                    <div
+                      className={`absolute inset-1.5 rounded-full border-r-2 ${palette.orbRing}`}
+                    />
                     <Leaf className="h-10 w-10" />
                   </div>
                 </div>
-                <h1 data-chat-hero className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}>
+                <h1
+                  data-chat-hero
+                  className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}
+                >
                   Ready to Understand Your Skin?
                 </h1>
-                <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
+                {/* <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
                   Your AI skincare companion for science-backed insights and personalized recommendations.
-                </p>
+                </p> */}
 
-                <div data-chat-hero className="mt-4 grid w-full max-w-[700px] gap-4 md:grid-cols-2">
-                  <button type="button" onClick={onScanAnother} className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}>
-                    <ScanBarcode className="h-10 w-10 text-[#bce58d]" />
-                    <span>
-                      <span className={`block text-[17px] font-semibold ${palette.actionTitle}`}>Scan Product</span>
-                      <span className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}>Scan any product to analyze its ingredients and claims.</span>
+                <div
+                  data-chat-hero
+                  className="mt-4 grid w-full max-w-[700px] gap-4 md:grid-cols-2"
+                >
+                  <button
+                    type="button"
+                    onClick={onScanAnother}
+                    className={`group cursor-pointer flex min-h-[316px] gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
+                  >
+                    {/* <ScanBarcode className="h-10 w-10 text-[#bce58d]" /> */}
+                    <span className="justify-items-center">
+                      <span
+                        className={`block text-[17px] font-semibold ${palette.actionTitle}`}
+                      >
+                        Scan Product
+                      </span>
+                      <span
+                        className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
+                      >
+                        Scan any product to analyze its ingredients and claims.
+                      </span>
+                      <img src="/icons/scan.png" alt="scan product" />
                     </span>
                   </button>
-                  <button type="button" className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}>
-                    <Leaf className="h-7 w-7 text-[#f09ac7]" />
-                    <span>
-                      <span className={`block text-[17px] font-semibold ${palette.actionTitle}`}>Analyse Ingredients</span>
-                      <span className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}>Decode ingredients and understand what works for your skin.</span>
+                  <button
+                    type="button"
+                    className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
+                  >
+                    {/* <Leaf className="h-7 w-7 text-[#f09ac7]" /> */}
+                    <span className="justify-items-center">
+                      <span
+                        className={`block text-[17px] font-semibold ${palette.actionTitle}`}
+                      >
+                        Analyse Ingredients
+                      </span>
+                      <span
+                        className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
+                      >
+                        Decode ingredients and understand what works for your
+                        skin.
+                      </span>
+                      <img src="/icons/analyse.png" alt="analyze ingredients" />
                     </span>
                   </button>
                 </div>
 
-                <div ref={cardsRef} className="mt-6 grid w-full gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div
+                  ref={cardsRef}
+                  className="mt-6 grid w-full gap-3 md:grid-cols-2 xl:grid-cols-4"
+                >
                   {featureCards.map(([Icon, title, text]) => (
-                    <article key={title} data-chat-card className={`group min-h-[118px] rounded-2xl border p-4 text-left transition hover:-translate-y-1 ${palette.featureCard}`}>
+                    <article
+                      key={title}
+                      data-chat-card
+                      className={`group min-h-[118px] rounded-2xl border p-4 text-left transition hover:-translate-y-1 ${palette.featureCard}`}
+                    >
                       <Icon className="h-6 w-6 text-[#ec9ccc]" />
-                      <h3 className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}>{title}</h3>
-                      <p className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}>{text}</p>
-                      <ArrowRight className={`ml-auto mt-3 h-4 w-4 transition group-hover:translate-x-1 ${palette.featureText}`} />
+                      <h3
+                        className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}
+                      >
+                        {title}
+                      </h3>
+                      <p
+                        className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}
+                      >
+                        {text}
+                      </p>
+                      <ArrowRight
+                        className={`ml-auto mt-3 h-4 w-4 transition group-hover:translate-x-1 ${palette.featureText}`}
+                      />
                     </article>
                   ))}
                 </div>
@@ -2235,7 +2961,13 @@ function SavedConversationWorkspace({
   detail: ScanConversationDetail | null;
   fallbackHistoryItem: ScanHistoryItem;
   isConversationLoading: boolean;
-  historyItems: Array<{ id: string; name: string; date: string; active: boolean; image: string }>;
+  historyItems: Array<{
+    id: string;
+    name: string;
+    date: string;
+    active: boolean;
+    image: string;
+  }>;
   isHistoryLoading: boolean;
   onScanAnother: () => void;
 }) {
@@ -2253,26 +2985,41 @@ function SavedConversationWorkspace({
   }, []);
 
   const selectedGoal =
-    goals.find((goal) => goal.id === detail?.skinGoal || skinGoalApiMap[goal.id] === detail?.skinGoal) ?? goals[0];
+    goals.find(
+      (goal) =>
+        goal.id === detail?.skinGoal ||
+        skinGoalApiMap[goal.id] === detail?.skinGoal,
+    ) ?? goals[0];
 
   const analysisResult: AnalysisResult = detail?.analysisResult ?? {
     score: 0,
     verdict: "good_choice",
     verdictLabel: fallbackHistoryItem.analysisVerdict || "Analyse enregistrée",
-    summary: fallbackHistoryItem.analysisSummary || "Analyse enregistrée pour ce produit.",
+    summary:
+      fallbackHistoryItem.analysisSummary ||
+      "Analyse enregistrée pour ce produit.",
     positives: [],
     watchouts: [],
     recommendations: selectedGoal.tips,
     nextStep: selectedGoal.nextStep,
     followUpQuestions: selectedGoal.questions,
-    disclaimer: "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+    disclaimer:
+      "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
   };
 
-  const followUpQuestions = analysisResult.followUpQuestions?.length ? analysisResult.followUpQuestions : selectedGoal.questions;
-  const restoredMessages = (detail?.conversation ?? []).filter((message, index) => !(index === 0 && message.role === "assistant"));
+  const followUpQuestions = analysisResult.followUpQuestions?.length
+    ? analysisResult.followUpQuestions
+    : selectedGoal.questions;
+  const restoredMessages = (detail?.conversation ?? []).filter(
+    (message, index) => !(index === 0 && message.role === "assistant"),
+  );
   const ingredientItems = buildIngredientItems(detail?.ingredients ?? []);
-  const productName = detail?.productName || fallbackHistoryItem.productName || "Produit scanné";
-  const messageTimestamp = detail?.updatedAt || fallbackHistoryItem.updatedAt || fallbackHistoryItem.createdAt;
+  const productName =
+    detail?.productName || fallbackHistoryItem.productName || "Produit scanné";
+  const messageTimestamp =
+    detail?.updatedAt ||
+    fallbackHistoryItem.updatedAt ||
+    fallbackHistoryItem.createdAt;
 
   useEffect(() => {
     setChatMessages(restoredMessages);
@@ -2321,7 +3068,8 @@ function SavedConversationWorkspace({
         {
           id: `saved-assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
-          content: "Impossible de charger la réponse pour le moment. Réessayez dans quelques instants.",
+          content:
+            "Impossible de charger la réponse pour le moment. Réessayez dans quelques instants.",
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -2331,17 +3079,28 @@ function SavedConversationWorkspace({
   };
 
   return (
-    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35]">
+    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35] [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed">
       <div className="flex h-screen w-full bg-white/85">
-        <ResultSidebarShell historyItems={historyItems} isHistoryLoading={isHistoryLoading} onScanAnother={onScanAnother} selectedImage={null} />
+        <ResultSidebarShell
+          historyItems={historyItems}
+          isHistoryLoading={isHistoryLoading}
+          onScanAnother={onScanAnother}
+          selectedImage={null}
+        />
         <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
           <div className="shrink-0 flex items-center justify-end border-b border-[#ede7fb] px-5 py-4 sm:px-8">
             <div className="flex items-center gap-4 text-[#636b88]">
-              <button type="button" className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]"
+              >
                 <CircleHelp className="h-5 w-5" />
                 Aide
               </button>
-              <button type="button" className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]">
+              <button
+                type="button"
+                className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]"
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#8f64f2]" />
               </button>
@@ -2350,22 +3109,33 @@ function SavedConversationWorkspace({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 lg:px-10">
             <div className="mx-auto max-w-[1050px]">
-              <ScanProgress currentStep={4} onStepClick={() => undefined} selectedGoalLabel={selectedGoal.label} />
+              <ScanProgress
+                currentStep={4}
+                onStepClick={() => undefined}
+                selectedGoalLabel={selectedGoal.label}
+              />
 
               <div className="mt-4 flex items-start justify-end gap-3">
                 <div className="max-w-[680px] rounded-[22px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-5 py-4 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
-                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">{productName} - objectif: {selectedGoal.label}</p>
-                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">J'ai scanné ce produit pour vérifier s'il est bien adapté à mon objectif peau et à ma routine.</p>
+                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">
+                    {productName} - objectif: {selectedGoal.label}
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">
+                    J'ai scanné ce produit pour vérifier s'il est bien adapté à
+                    mon objectif peau et à ma routine.
+                  </p>
                 </div>
                 <div className="hidden items-center gap-3 sm:flex">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
                     <UserRound className="h-5 w-5" />
                   </span>
-                  <span className="text-xs text-[#868daa]">{formatScanHistoryDate(messageTimestamp)}</span>
+                  <span className="text-xs text-[#868daa]">
+                    {formatScanHistoryDate(messageTimestamp)}
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] border border-[#ece5fb] bg-white px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
+              <div className="mt-6 rounded-[28px] border border-[#ece5fb] px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
@@ -2373,29 +3143,58 @@ function SavedConversationWorkspace({
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-xl font-bold text-[#171b36]">Résultat de l'analyse IA</h2>
-                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">{analysisResult.verdictLabel || fallbackHistoryItem.analysisVerdict || "Analyse enregistrée"}</span>
+                        <h2 className="text-xl font-bold text-[#171b36]">
+                          Résultat de l'analyse IA
+                        </h2>
+                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">
+                          {analysisResult.verdictLabel ||
+                            fallbackHistoryItem.analysisVerdict ||
+                            "Analyse enregistrée"}
+                        </span>
                       </div>
-                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">{analysisResult.summary || "Analyse enregistrée pour ce produit."}</p>
+                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">
+                        {analysisResult.summary ||
+                          "Analyse enregistrée pour ce produit."}
+                      </p>
                     </div>
                   </div>
                   <span className="rounded-[16px] bg-[#e9faef] px-3 py-2 text-2xl font-bold text-[#20a45c] shadow-sm">
-                    {analysisResult.score > 0 ? `${analysisResult.score}/10` : "--/10"}
+                    {analysisResult.score > 0
+                      ? `${analysisResult.score}/10`
+                      : "--/10"}
                   </span>
                 </div>
 
                 <div className="mt-5 grid gap-4 xl:grid-cols-3">
-                  <InsightCard title="Points forts" tone="green" items={analysisResult.positives ?? []} />
-                  <InsightCard title="À surveiller" tone="orange" items={analysisResult.watchouts ?? []} />
-                  <NextStepCard tips={analysisResult.recommendations?.length ? analysisResult.recommendations : selectedGoal.tips} nextStep={analysisResult.nextStep || selectedGoal.nextStep} />
+                  <InsightCard
+                    title="Points forts"
+                    tone="green"
+                    items={analysisResult.positives ?? []}
+                  />
+                  <InsightCard
+                    title="À surveiller"
+                    tone="orange"
+                    items={analysisResult.watchouts ?? []}
+                  />
+                  <NextStepCard
+                    tips={
+                      analysisResult.recommendations?.length
+                        ? analysisResult.recommendations
+                        : selectedGoal.tips
+                    }
+                    nextStep={analysisResult.nextStep || selectedGoal.nextStep}
+                  />
                 </div>
 
                 <p className="mt-5 rounded-2xl bg-[#faf7ff] px-4 py-3 text-xs leading-5 text-[#68708b]">
-                  {analysisResult.disclaimer || "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
+                  {analysisResult.disclaimer ||
+                    "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
                 </p>
 
                 <div className="mt-5">
-                  <h3 className="text-base font-semibold text-[#171b36]">Questions à poser</h3>
+                  <h3 className="text-base font-semibold text-[#171b36]">
+                    Questions à poser
+                  </h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {followUpQuestions.map((question) => (
                       <button
@@ -2419,12 +3218,16 @@ function SavedConversationWorkspace({
                   </div>
                 ) : (
                   chatMessages.map((message) => (
-                    <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
                       <div
-                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
-                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                          : "border-[#ece5fb] bg-white text-[#59617d]"
-                          }`}
+                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${
+                          message.role === "user"
+                            ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                            : "border-[#ece5fb] bg-white text-[#59617d]"
+                        }`}
                       >
                         {message.content}
                       </div>
@@ -2450,7 +3253,9 @@ function SavedConversationWorkspace({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-[#7a55ea]">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Posez une question sur ce produit...</span>
+                    <span className="text-sm font-semibold">
+                      Posez une question sur ce produit...
+                    </span>
                   </div>
                   <input
                     value={chatInput}
@@ -2537,20 +3342,27 @@ function ResultWorkspace({
     {
       id: "assistant-intro",
       role: "assistant",
-      content: "Je peux maintenant repondre a vos questions sur ce resultat, la routine, les ingredients a surveiller ou la frequence d utilisation.",
+      content:
+        "Je peux maintenant repondre a vos questions sur ce resultat, la routine, les ingredients a surveiller ou la frequence d utilisation.",
     },
   ]);
   const [isChatSending, setIsChatSending] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const chatMessageIdRef = useRef(0);
-  const freePromptsRemaining = Math.max(0, FREE_PROMPT_LIMIT - currentScanPromptCount);
+  const freePromptsRemaining = Math.max(
+    0,
+    FREE_PROMPT_LIMIT - currentScanPromptCount,
+  );
   const historyItems = scanHistory.map((item) => ({
     id: item.id,
     name: item.productName,
     date: formatScanHistoryDate(item.updatedAt || item.createdAt),
     active: item.id === scanId,
-    image: item.id === scanId ? selectedImage?.url ?? "/cleanser.png" : "/cleanser.png",
+    image:
+      item.id === scanId
+        ? (selectedImage?.url ?? "/cleanser.png")
+        : "/cleanser.png",
   }));
   useEffect(() => {
     let isCancelled = false;
@@ -2637,7 +3449,8 @@ function ResultWorkspace({
         {
           id: `assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
-          content: "Impossible de repondre pour le moment. Reessayez dans quelques instants.",
+          content:
+            "Impossible de repondre pour le moment. Reessayez dans quelques instants.",
         },
       ]);
     } finally {
@@ -2646,9 +3459,14 @@ function ResultWorkspace({
   };
 
   return (
-    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35]">
+    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35] [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed">
       <div className="flex h-screen w-full bg-white/85">
-        <ResultSidebarShell historyItems={historyItems} isHistoryLoading={isHistoryLoading} onScanAnother={onScanAnother} selectedImage={selectedImage} />
+        <ResultSidebarShell
+          historyItems={historyItems}
+          isHistoryLoading={isHistoryLoading}
+          onScanAnother={onScanAnother}
+          selectedImage={selectedImage}
+        />
         <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
           <div className="shrink-0 flex items-center justify-between border-b border-[#ede7fb] px-5 py-4 sm:px-8">
             <button
@@ -2660,11 +3478,17 @@ function ResultWorkspace({
               Retour au scan
             </button>
             <div className="flex items-center gap-4 text-[#636b88]">
-              <button type="button" className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]">
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]"
+              >
                 <CircleHelp className="h-5 w-5" />
                 Aide
               </button>
-              <button type="button" className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]">
+              <button
+                type="button"
+                className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]"
+              >
                 <Bell className="h-5 w-5" />
                 <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#8f64f2]" />
               </button>
@@ -2673,7 +3497,11 @@ function ResultWorkspace({
 
           <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 lg:px-10">
             <div className="mx-auto max-w-[1050px]">
-              <ScanProgress currentStep={currentStep} onStepClick={() => undefined} selectedGoalLabel={selectedGoal.label} />
+              <ScanProgress
+                currentStep={currentStep}
+                onStepClick={() => undefined}
+                selectedGoalLabel={selectedGoal.label}
+              />
 
               {analysisError && (
                 <p className="mt-4 rounded-2xl border border-[#ffe3a8] bg-[#fffaf0] px-4 py-3 text-xs font-medium text-[#9b6500]">
@@ -2683,8 +3511,13 @@ function ResultWorkspace({
 
               <div className="mt-4 flex items-start justify-end gap-3">
                 <div className="max-w-[680px] rounded-[22px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-5 py-4 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
-                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">{productName} - objectif: {selectedGoal.label}</p>
-                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">J'ai scanné ce produit pour vérifier s'il est bien adapté à mon objectif peau et à ma routine.</p>
+                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">
+                    {productName} - objectif: {selectedGoal.label}
+                  </p>
+                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">
+                    J'ai scanné ce produit pour vérifier s'il est bien adapté à
+                    mon objectif peau et à ma routine.
+                  </p>
                 </div>
                 <div className="hidden items-center gap-3 sm:flex">
                   <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
@@ -2694,7 +3527,7 @@ function ResultWorkspace({
                 </div>
               </div>
 
-              <div className="mt-6 rounded-[28px] border border-[#ece5fb] bg-white px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
+              <div className="mt-6 rounded-[28px] border border-[#ece5fb] px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
@@ -2702,10 +3535,16 @@ function ResultWorkspace({
                     </span>
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-xl font-bold text-[#171b36]">Résultat de l'analyse IA</h2>
-                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">{analysisResult.verdictLabel}</span>
+                        <h2 className="text-xl font-bold text-[#171b36]">
+                          Résultat de l'analyse IA
+                        </h2>
+                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">
+                          {analysisResult.verdictLabel}
+                        </span>
                       </div>
-                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">{analysisResult.summary}</p>
+                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">
+                        {analysisResult.summary}
+                      </p>
                     </div>
                   </div>
                   <span className="rounded-[16px] bg-[#e9faef] px-3 py-2 text-2xl font-bold text-[#20a45c] shadow-sm">
@@ -2714,9 +3553,20 @@ function ResultWorkspace({
                 </div>
 
                 <div className="mt-5 grid gap-4 xl:grid-cols-3">
-                  <InsightCard title="Points forts" tone="green" items={analysisResult.positives} />
-                  <InsightCard title="À surveiller" tone="orange" items={analysisResult.watchouts} />
-                  <NextStepCard tips={analysisResult.recommendations} nextStep={analysisResult.nextStep} />
+                  <InsightCard
+                    title="Points forts"
+                    tone="green"
+                    items={analysisResult.positives}
+                  />
+                  <InsightCard
+                    title="À surveiller"
+                    tone="orange"
+                    items={analysisResult.watchouts}
+                  />
+                  <NextStepCard
+                    tips={analysisResult.recommendations}
+                    nextStep={analysisResult.nextStep}
+                  />
                 </div>
 
                 <p className="mt-5 rounded-2xl bg-[#faf7ff] px-4 py-3 text-xs leading-5 text-[#68708b]">
@@ -2724,7 +3574,9 @@ function ResultWorkspace({
                 </p>
 
                 <div className="mt-5">
-                  <h3 className="text-base font-semibold text-[#171b36]">Questions à poser</h3>
+                  <h3 className="text-base font-semibold text-[#171b36]">
+                    Questions à poser
+                  </h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {analysisResult.followUpQuestions.map((question) => (
                       <button
@@ -2742,12 +3594,16 @@ function ResultWorkspace({
 
               <div className="mt-5 space-y-3 pb-3">
                 {chatMessages.map((message) => (
-                  <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    key={message.id}
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
                     <div
-                      className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
-                        ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                        : "border-[#ece5fb] bg-white text-[#59617d]"
-                        }`}
+                      className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${
+                        message.role === "user"
+                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                          : "border-[#ece5fb] bg-white text-[#59617d]"
+                      }`}
                     >
                       {message.content}
                     </div>
@@ -2772,7 +3628,9 @@ function ResultWorkspace({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-[#7a55ea]">
                     <Sparkles className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Posez une question sur ce produit...</span>
+                    <span className="text-sm font-semibold">
+                      Posez une question sur ce produit...
+                    </span>
                   </div>
                   <input
                     value={chatInput}
@@ -2787,11 +3645,17 @@ function ResultWorkspace({
                     placeholder="Compatibilite, usage, sensibilite, routine..."
                   />
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]"
+                    >
                       <Paperclip className="h-3.5 w-3.5" />
                       Joindre une image
                     </button>
-                    <button type="button" className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]">
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]"
+                    >
                       <Sparkles className="h-3.5 w-3.5" />
                       Exemples de questions
                     </button>
@@ -2810,7 +3674,11 @@ function ResultWorkspace({
                   disabled={!chatInput.trim() || isChatSending}
                   className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {isChatSending ? <LoaderCircle className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+                  {isChatSending ? (
+                    <LoaderCircle className="h-5 w-5 animate-spin" />
+                  ) : (
+                    <Send className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -2830,23 +3698,39 @@ function ResultWorkspace({
   );
 }
 
-function Panel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function Panel({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <section className={`rounded-3xl border border-[#e1e4ef] bg-white/86 p-7 shadow-[0_18px_45px_rgba(64,56,105,0.08)] backdrop-blur-xl ${className}`}>
+    <section
+      className={`rounded-3xl border border-[#e1e4ef] bg-white/86 p-7 shadow-[0_18px_45px_rgba(64,56,105,0.08)] backdrop-blur-xl ${className}`}
+    >
       {children}
     </section>
   );
 }
 
-function StepTitle({ number, title, description }: { number: string; title: string; description: string }) {
+function StepTitle({
+  number,
+  title,
+  description,
+}: {
+  number: string;
+  title: string;
+  description: string;
+}) {
   return (
     <div className="flex gap-5">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#9b75f2] to-pink-200 text-lg font-bold text-white">
         {number}
       </span>
       <div>
-        <h2 className="text-2xl font-bold">{title}</h2>
-        <p className="mt-2 text-base text-[#66708f]">{description}</p>
+        <h2 className="text-xl font-bold">{title}</h2>
+        <p className="mt-2 text-sm text-[#66708f]">{description}</p>
       </div>
     </div>
   );
@@ -2854,20 +3738,35 @@ function StepTitle({ number, title, description }: { number: string; title: stri
 
 function HowItWorksCard() {
   const items = [
-    [Target, "Choisissez votre objectif peau", "Indiquez votre priorite actuelle."],
-    [Camera, "Importez l etiquette du produit", "Prenez une photo claire de l etiquette du produit."],
-    [Sparkles, "Obtenez l analyse IA", "Recevez une analyse simple et comprehensible des ingredients."],
+    [
+      Target,
+      "Choisissez votre objectif peau",
+      "Indiquez votre priorite actuelle.",
+    ],
+    [
+      Camera,
+      "Importez l etiquette du produit",
+      "Prenez une photo claire de l etiquette du produit.",
+    ],
+    [
+      Sparkles,
+      "Obtenez l analyse IA",
+      "Recevez une analyse simple et comprehensible des ingredients.",
+    ],
   ] as const;
 
   return (
     <Panel className="min-h-[420px] px-7 py-7">
-      <h2 className="flex items-center justify-between text-2xl font-bold">
+      <h2 className="flex items-center justify-between text-xl font-bold">
         Comment ca marche
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
       <div className="mt-7 space-y-6">
         {items.map(([Icon, title, text], index) => (
-          <div key={title} className="relative grid grid-cols-[28px_56px_1fr] gap-4">
+          <div
+            key={title}
+            className="relative grid grid-cols-[28px_56px_1fr] gap-4"
+          >
             {/* Step number + line */}
             <div className="relative flex justify-center">
               {index !== items.length - 1 && (
@@ -2903,14 +3802,26 @@ function HowItWorksCard() {
 
 function TipsCard() {
   const tips = [
-    [Lightbulb, "Bonne luminosite", "Prenez la photo dans un endroit bien eclaire."],
-    [SquareDashed, "Centree et lisible", "Assurez-vous que toute la liste d ingredients est visible et nette."],
-    [EyeOff, "Evitez le flou", "Stabilisez votre appareil et verifiez la mise au point avant d envoyer."],
+    [
+      Lightbulb,
+      "Bonne luminosite",
+      "Prenez la photo dans un endroit bien eclaire.",
+    ],
+    [
+      SquareDashed,
+      "Centree et lisible",
+      "Assurez-vous que toute la liste d ingredients est visible et nette.",
+    ],
+    [
+      EyeOff,
+      "Evitez le flou",
+      "Stabilisez votre appareil et verifiez la mise au point avant d envoyer.",
+    ],
   ] as const;
 
   return (
     <Panel>
-      <h2 className="flex items-center justify-between text-2xl font-bold">
+      <h2 className="flex items-center justify-between text-xl font-bold">
         Conseils photo
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
@@ -2921,8 +3832,10 @@ function TipsCard() {
               <Icon className="h-8 w-8" />
             </span>
             <span>
-              <span className="block font-bold">{title}</span>
-              <span className="mt-2 block leading-6 text-[#66708f]">{text}</span>
+              <span className="block text-sm font-bold">{title}</span>
+              <span className="mt-2 block text-sm leading-6 text-[#66708f]">
+                {text}
+              </span>
             </span>
           </div>
         ))}
@@ -2933,9 +3846,21 @@ function TipsCard() {
 
 function BeforeContinueCard() {
   const items = [
-    [ClipboardCheck, "Verifiez que la liste est complete", "Assurez-vous que tous les ingredients presents sur l etiquette sont detectes."],
-    [TextCursorInput, "Corrigez si necessaire", "L IA peut faire des erreurs de lecture. Modifiez les noms mal orthographies."],
-    [ShieldCheck, "Continuez en toute confiance", "Si tout correspond a l etiquette, vous pouvez lancer l analyse."],
+    [
+      ClipboardCheck,
+      "Verifiez que la liste est complete",
+      "Assurez-vous que tous les ingredients presents sur l etiquette sont detectes.",
+    ],
+    [
+      TextCursorInput,
+      "Corrigez si necessaire",
+      "L IA peut faire des erreurs de lecture. Modifiez les noms mal orthographies.",
+    ],
+    [
+      ShieldCheck,
+      "Continuez en toute confiance",
+      "Si tout correspond a l etiquette, vous pouvez lancer l analyse.",
+    ],
   ] as const;
 
   return (
@@ -2951,8 +3876,12 @@ function BeforeContinueCard() {
               <Icon className="h-7 w-7" />
             </span>
             <span>
-              <span className="block text-[18px] font-bold text-[#171b36]">{title}</span>
-              <span className="mt-2 block leading-6 text-[#66708f]">{text}</span>
+              <span className="block text-base font-bold text-[#171b36]">
+                {title}
+              </span>
+              <span className="mt-2 block text-sm leading-6 text-[#66708f]">
+                {text}
+              </span>
             </span>
           </div>
         ))}
@@ -2961,7 +3890,10 @@ function BeforeContinueCard() {
         <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#5f4f8c] shadow-sm">
           <Lock className="h-5 w-5" />
         </span>
-        <p className="text-sm leading-6">Vos donnees restent privees et securisees. Elles ne sont utilisees que pour l analyse.</p>
+        <p className="text-xs leading-6">
+          Vos donnees restent privees et securisees. Elles ne sont utilisees que
+          pour l analyse.
+        </p>
       </div>
     </Panel>
   );
@@ -2978,21 +3910,43 @@ function PhotoPreview({
 }) {
   return (
     <div className={small ? "mt-5" : ""}>
-      {!small && <h3 className="mb-5 text-center font-bold">Apercu de votre photo</h3>}
-      <div className={`mx-auto overflow-hidden rounded-[24px] border border-[#eadfff] bg-[linear-gradient(180deg,_#c7ad90_0%,_#b89772_100%)] p-3 shadow-[0_18px_40px_rgba(117,72,232,0.12)] ${small ? "w-[146px]" : "w-[260px]"}`}>
-        <div className={`relative overflow-hidden rounded-[18px] bg-[#efe6ff] ${small ? "h-[132px]" : "h-[290px]"}`}>
+      {!small && (
+        <h3 className="mb-5 text-center text-sm font-bold">
+          Apercu de votre photo
+        </h3>
+      )}
+      <div
+        className={`mx-auto overflow-hidden rounded-[24px] border border-[#eadfff] bg-[linear-gradient(180deg,_#c7ad90_0%,_#b89772_100%)] p-3 shadow-[0_18px_40px_rgba(117,72,232,0.12)] ${small ? "w-[146px]" : "w-[260px]"}`}
+      >
+        <div
+          className={`relative overflow-hidden rounded-[18px] bg-[#efe6ff] ${small ? "h-[132px]" : "h-[290px]"}`}
+        >
           {selectedImage ? (
-            <Image src={selectedImage.url} alt={selectedImage.file.name} fill className="object-cover" unoptimized />
+            <Image
+              src={selectedImage.url}
+              alt={selectedImage.file.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
           ) : (
             <div className="flex h-full flex-col items-center justify-center px-5 text-center text-[#7a6f99]">
               <Camera className="h-10 w-10 text-[#a184f4]" />
-              <p className="mt-4 text-sm font-semibold">{small ? "Ajoutez une image pour afficher l apercu." : "Votre apercu d image apparaitra ici."}</p>
-              <p className="mt-2 text-xs leading-5 text-[#8a84a4]">Vous pouvez importer une ou plusieurs photos de l etiquette.</p>
+              <p className="mt-4 text-xs font-semibold">
+                {small
+                  ? "Ajoutez une image pour afficher l apercu."
+                  : "Votre apercu d image apparaitra ici."}
+              </p>
+              <p className="mt-2 text-xs leading-5 text-[#8a84a4]">
+                Vous pouvez importer une ou plusieurs photos de l etiquette.
+              </p>
             </div>
           )}
         </div>
       </div>
-      <p className={`mx-auto mt-4 ${small ? "max-w-[180px]" : "max-w-[220px]"} text-center text-sm text-[#66708f]`}>
+      <p
+        className={`mx-auto mt-4 ${small ? "max-w-[180px]" : "max-w-[220px]"} text-center text-xs text-[#66708f]`}
+      >
         {selectedImage
           ? `Vous pouvez modifier la liste si necessaire.${imageCount > 1 ? ` ${imageCount} images importees.` : ""}`
           : "Importez une image ou collez vos ingredients manuellement."}
@@ -3024,9 +3978,20 @@ function ManualIngredientsDialog({
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">Etape 2</p>
-            <h2 id="manual-ingredients-title" className="mt-2 text-2xl font-bold text-[#111631]">Collez vos ingredients manuellement</h2>
-            <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#66708f]">Collez la liste INCI telle qu elle apparait sur l emballage ou le site du produit. Vous pouvez utiliser des virgules, des points-virgules ou des retours a la ligne.</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">
+              Etape 2
+            </p>
+            <h2
+              id="manual-ingredients-title"
+              className="mt-2 text-2xl font-bold text-[#111631]"
+            >
+              Collez vos ingredients manuellement
+            </h2>
+            <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#66708f]">
+              Collez la liste INCI telle qu elle apparait sur l emballage ou le
+              site du produit. Vous pouvez utiliser des virgules, des
+              points-virgules ou des retours a la ligne.
+            </p>
           </div>
           <button
             type="button"
@@ -3047,9 +4012,13 @@ function ManualIngredientsDialog({
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#faf7ff] px-4 py-3">
           <p className="text-sm text-[#66708f]">
-            {parsedCount > 0 ? `${parsedCount} ingredients detectes dans votre saisie.` : "Collez votre liste pour preparer l etape suivante."}
+            {parsedCount > 0
+              ? `${parsedCount} ingredients detectes dans votre saisie.`
+              : "Collez votre liste pour preparer l etape suivante."}
           </p>
-          <p className="text-sm font-semibold text-[#7a54ea]">Separateurs acceptes : virgule, point-virgule, retour a la ligne</p>
+          <p className="text-sm font-semibold text-[#7a54ea]">
+            Separateurs acceptes : virgule, point-virgule, retour a la ligne
+          </p>
         </div>
 
         <div className="mt-6 flex flex-wrap justify-end gap-3">
@@ -3111,9 +4080,13 @@ function UpgradePlanDialog({
           </button>
         </div>
 
-        <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">Plan Pro</p>
+        <p className="mt-5 text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">
+          Plan Pro
+        </p>
         <h2 id="upgrade-plan-title" className="mt-2 text-2xl font-bold">
-          {isScanLimit ? "Vos 3 scans gratuits sont termines" : "Votre question gratuite est utilisee"}
+          {isScanLimit
+            ? "Vos 3 scans gratuits sont termines"
+            : "Votre question gratuite est utilisee"}
         </h2>
         <p className="mt-3 text-sm leading-6 text-[#66708f]">
           {isScanLimit
@@ -3123,12 +4096,20 @@ function UpgradePlanDialog({
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Scans gratuits</p>
-            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{Math.min(scansUsed, FREE_SCAN_LIMIT)}/{FREE_SCAN_LIMIT}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">
+              Scans gratuits
+            </p>
+            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">
+              {Math.min(scansUsed, FREE_SCAN_LIMIT)}/{FREE_SCAN_LIMIT}
+            </p>
           </div>
           <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Restants</p>
-            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{scansRemaining}</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">
+              Restants
+            </p>
+            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">
+              {scansRemaining}
+            </p>
           </div>
         </div>
 
@@ -3153,8 +4134,20 @@ function UpgradePlanDialog({
 function ProductStill() {
   return (
     <div className="relative h-56 w-72">
-      <Image src="/cleanser.png" alt="" width={150} height={180} className="absolute right-20 top-0 h-44 w-auto object-contain drop-shadow-xl" />
-      <Image src="/cleanser.png" alt="" width={160} height={160} className="absolute bottom-2 right-0 h-32 w-auto object-contain drop-shadow-xl" />
+      <Image
+        src="/cleanser.png"
+        alt=""
+        width={150}
+        height={180}
+        className="absolute right-20 top-0 h-44 w-auto object-contain drop-shadow-xl"
+      />
+      <Image
+        src="/cleanser.png"
+        alt=""
+        width={160}
+        height={160}
+        className="absolute bottom-2 right-0 h-32 w-auto object-contain drop-shadow-xl"
+      />
       <Sparkles className="absolute left-4 top-10 h-7 w-7 text-[#bba1ff]" />
     </div>
   );
@@ -3166,7 +4159,13 @@ function ResultSidebarShell({
   onScanAnother,
   selectedImage,
 }: {
-  historyItems: Array<{ id: string; name: string; date: string; active: boolean; image: string }>;
+  historyItems: Array<{
+    id: string;
+    name: string;
+    date: string;
+    active: boolean;
+    image: string;
+  }>;
   isHistoryLoading: boolean;
   onScanAnother: () => void;
   selectedImage: UploadedImage | null;
@@ -3203,11 +4202,21 @@ function ResultSidebarShell({
   }, [isProfileMenuOpen]);
 
   return (
-    <aside className="hidden h-screen w-[320px] shrink-0 border-r border-[#ede7fb] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94)_0%,_rgba(249,245,255,0.92)_100%)] lg:flex lg:flex-col">
+    <aside className="hidden h-screen w-[320px] shrink-0 border-r border-[#ede7fb] bg-[linear-gradient(180deg,_rgba(255,255,255,0.94)_0%,_rgba(249,245,255,0.92)_100%)] text-[13px] lg:flex lg:flex-col">
       <div className="border-b border-[#ede7fb] px-6 py-6">
         <div className="flex items-center justify-between">
-          <Image src="/logo.png" alt="SkinorAI" width={170} height={40} className="h-10 w-auto" priority />
-          <button type="button" className="rounded-full p-2 text-[#6c7190] transition hover:bg-[#f5f1ff]">
+          <Image
+            src="/logo.png"
+            alt="SkinorAI"
+            width={170}
+            height={40}
+            className="h-10 w-auto"
+            priority
+          />
+          <button
+            type="button"
+            className="rounded-full p-2 text-[#6c7190] transition hover:bg-[#f5f1ff]"
+          >
             <ChevronLeft className="h-5 w-5" />
           </button>
         </div>
@@ -3215,7 +4224,7 @@ function ResultSidebarShell({
         <button
           type="button"
           onClick={onScanAnother}
-          className="mt-7 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
+          className="mt-7 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-3.5 text-[13px] font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
         >
           <Plus className="h-5 w-5" />
           Nouveau scan
@@ -3223,19 +4232,19 @@ function ResultSidebarShell({
 
         <div className="mt-7 flex items-center gap-3 rounded-2xl border border-[#e8e0fb] bg-white px-4 py-3 text-[#8a90aa]">
           <Search className="h-5 w-5" />
-          <span className="text-sm">Rechercher un scan...</span>
+          <span className="text-[13px]">Rechercher un scan...</span>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-        <h3 className="flex items-center gap-2 text-base font-semibold text-[#171b36]">
+        <h3 className="flex items-center gap-2 text-[13px] font-semibold text-[#171b36]">
           <Clock3 className="h-5 w-5 text-[#7260ad]" />
           Historique
         </h3>
 
         <div className="mt-5 space-y-3">
           {isHistoryLoading ? (
-            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-sm text-[#7b829e]">
+            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-[13px] text-[#7b829e]">
               Chargement de l historique...
             </div>
           ) : historyItems.length > 0 ? (
@@ -3245,33 +4254,50 @@ function ResultSidebarShell({
                 className={`flex items-center gap-3 rounded-[22px] border px-3 py-2.5 shadow-sm ${item.active ? "border-[#e6ddfb] bg-[#f8f4ff]" : "border-transparent bg-white/70"}`}
               >
                 <div className="relative h-12 w-12 overflow-hidden rounded-2xl border border-[#efe7fb] bg-white">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" unoptimized={item.image === selectedImage?.url} />
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    unoptimized={item.image === selectedImage?.url}
+                  />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#1b1f39]">{item.name}</p>
-                  <p className="mt-1 text-xs text-[#7b829e]">{item.date}</p>
+                  <p className="truncate text-[13px] font-semibold text-[#1b1f39]">
+                    {item.name}
+                  </p>
+                  <p className="mt-1 text-[13px] text-[#7b829e]">{item.date}</p>
                 </div>
-                <button type="button" className="rounded-full p-2 text-[#7680a0] transition hover:bg-white">
+                <button
+                  type="button"
+                  className="rounded-full p-2 text-[#7680a0] transition hover:bg-white"
+                >
                   <MoreVertical className="h-4 w-4" />
                 </button>
               </div>
             ))
           ) : (
-            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-sm leading-6 text-[#7b829e]">
+            <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-[13px] leading-6 text-[#7b829e]">
               Aucun scan enregistre pour le moment.
             </div>
           )}
         </div>
 
         {historyItems.length > 0 && (
-          <button type="button" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#6f49e2] transition hover:text-[#5d39cf]">
+          <button
+            type="button"
+            className="mt-5 inline-flex items-center gap-2 text-[13px] font-semibold text-[#6f49e2] transition hover:text-[#5d39cf]"
+          >
             Voir tous les scans
             <ArrowRight className="h-4 w-4" />
           </button>
         )}
       </div>
 
-      <div ref={profileMenuRef} className="relative mt-auto border-t border-[#ede7fb] px-4 py-4">
+      <div
+        ref={profileMenuRef}
+        className="relative mt-auto border-t border-[#ede7fb] px-4 py-4"
+      >
         <button
           type="button"
           onClick={() => setIsProfileMenuOpen((current) => !current)}
@@ -3283,10 +4309,16 @@ function ResultSidebarShell({
             <UserRound className="h-5 w-5" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate font-semibold text-[#171b36]">{displayName}</span>
-            <span className="block text-sm font-medium text-[#7a55ea]">Plan Pro</span>
+            <span className="block truncate font-semibold text-[#171b36]">
+              {displayName}
+            </span>
+            <span className="block text-[13px] font-medium text-[#7a55ea]">
+              Plan Pro
+            </span>
           </span>
-          <ChevronDown className={`h-4 w-4 text-[#6e7693] transition ${isProfileMenuOpen ? "rotate-180" : "rotate-0"}`} />
+          <ChevronDown
+            className={`h-4 w-4 text-[#6e7693] transition ${isProfileMenuOpen ? "rotate-180" : "rotate-0"}`}
+          />
         </button>
 
         <div
@@ -3294,14 +4326,18 @@ function ResultSidebarShell({
           role="menu"
         >
           <div className="rounded-[20px] bg-white px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.06)]">
-            <p className="truncate text-sm font-semibold text-[#18181b]">{displayName}</p>
-            <p className="mt-1 truncate text-xs text-[#6b7280]">{user?.email}</p>
+            <p className="truncate text-[13px] font-semibold text-[#18181b]">
+              {displayName}
+            </p>
+            <p className="mt-1 truncate text-[13px] text-[#6b7280]">
+              {user?.email}
+            </p>
           </div>
 
           <div className="mt-3 overflow-hidden rounded-[20px] border border-[#efebe7] bg-white">
             <button
               type="button"
-              className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
+              className="flex w-full items-center gap-3 px-4 py-3 text-left text-[13px] font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
               role="menuitem"
             >
               <Settings className="h-4 w-4 text-[#555]" />
@@ -3310,7 +4346,7 @@ function ResultSidebarShell({
             <button
               type="button"
               onClick={logout}
-              className="flex w-full items-center gap-3 border-t border-[#f1ede8] px-4 py-3 text-left text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
+              className="flex w-full items-center gap-3 border-t border-[#f1ede8] px-4 py-3 text-left text-[13px] font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
               role="menuitem"
             >
               <LogOut className="h-4 w-4 text-[#555]" />
@@ -3327,37 +4363,85 @@ function InsightCard({
   title,
   tone,
   items,
+  isDarkTheme = false,
 }: {
   title: string;
   tone: "green" | "orange";
   items: PositiveDetail[] | WatchoutDetail[];
+  isDarkTheme?: boolean;
 }) {
   const isGreen = tone === "green";
   return (
-    <section className={`rounded-[24px] border p-5 ${isGreen ? "border-[#ddf1e6] bg-[#fcfffd]" : "border-[#f5e5cb] bg-[#fffdf9]"}`}>
-      <h3 className="flex items-center gap-2.5 text-lg font-bold">
-        <CheckCircle2 className={`h-6 w-6 ${isGreen ? "text-[#55c987]" : "text-[#ffae4f]"}`} />
+    <section
+      className={`rounded-[24px] border p-5 ${
+        isDarkTheme
+          ? isGreen
+            ? "border-[#234936] bg-[#101b15]"
+            : "border-[#5a3a16] bg-[#1a1610]"
+          : isGreen
+            ? "border-[#ddf1e6] bg-[#fcfffd]"
+            : "border-[#f5e5cb] bg-[#fffdf9]"
+      }`}
+    >
+      <h3
+        className={`flex items-center gap-2.5 text-lg font-bold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
+      >
+        <CheckCircle2
+          className={`h-6 w-6 ${isGreen ? "text-[#55c987]" : "text-[#ffae4f]"}`}
+        />
         {title}
-        <span className={`rounded-full px-2.5 py-0.5 text-xs ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}>{items.length}</span>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs ${isGreen ? "bg-[#ddf7e7] text-[#20a45c]" : "bg-[#fff0d9] text-[#ad6b00]"}`}
+        >
+          {items.length}
+        </span>
       </h3>
       {items.length > 0 ? (
         <div className="mt-4 space-y-4">
           {items.map((item) => (
             <div key={item.ingredient} className="flex gap-3">
-              <span className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isGreen ? "bg-[#e7f8ec] text-[#20a45c]" : "bg-[#fff2df] text-[#ff9d2f]"}`}>
-                {isGreen ? <Check className="h-3.5 w-3.5" /> : <CircleHelp className="h-3.5 w-3.5" />}
+              <span
+                className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isGreen ? "bg-[#e7f8ec] text-[#20a45c]" : "bg-[#fff2df] text-[#ff9d2f]"}`}
+              >
+                {isGreen ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <CircleHelp className="h-3.5 w-3.5" />
+                )}
               </span>
               <div>
-                <p className="text-sm font-semibold text-[#171b36]">{item.ingredient}</p>
-                <p className="mt-1 text-xs leading-5 text-[#66708f]">{item.reason}</p>
-                {"tag" in item && <p className="mt-1 text-[11px] font-semibold text-[#20a45c]">{item.tag}</p>}
-                {"severity" in item && <p className="mt-1 text-[11px] font-semibold text-[#ad6b00]">Risque {item.severity}</p>}
+                <p
+                  className={`text-sm font-semibold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
+                >
+                  {item.ingredient}
+                </p>
+                <p
+                  className={`mt-1 text-xs leading-5 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
+                >
+                  {item.reason}
+                </p>
+                {"tag" in item && (
+                  <p className="mt-1 text-[11px] font-semibold text-[#20a45c]">
+                    {item.tag}
+                  </p>
+                )}
+                {"severity" in item && (
+                  <p className="mt-1 text-[11px] font-semibold text-[#ad6b00]">
+                    Risque {item.severity}
+                  </p>
+                )}
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <p className="mt-4 text-sm leading-6 text-[#66708f]">{isGreen ? "Aucun point fort spécifique détecté pour le moment." : "Aucun ingrédient préoccupant détecté pour le moment."}</p>
+        <p
+          className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
+        >
+          {isGreen
+            ? "Aucun point fort spécifique détecté pour le moment."
+            : "Aucun ingrédient préoccupant détecté pour le moment."}
+        </p>
       )}
     </section>
   );
@@ -3366,71 +4450,52 @@ function InsightCard({
 function NextStepCard({
   tips,
   nextStep,
+  isDarkTheme = false,
 }: {
   tips: string[];
   nextStep: string;
+  isDarkTheme?: boolean;
 }) {
   return (
-    <section className="rounded-[24px] border border-[#e8defc] bg-[#fefcff] p-5">
-      <h3 className="flex items-center gap-2.5 text-lg font-bold text-[#171b36]">
+    <section
+      className={`rounded-[24px] border p-5 ${isDarkTheme ? "border-[#3c2e61] bg-[#14111d]" : "border-[#e8defc] bg-[#fefcff]"}`}
+    >
+      <h3
+        className={`flex items-center gap-2.5 text-lg font-bold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
+      >
         <Sparkles className="h-5 w-5 text-[#7a55ea]" />
         Prochaine étape
       </h3>
-      <p className="mt-3 text-xs leading-6 text-[#66708f]">{nextStep}</p>
+      <p
+        className={`mt-3 text-xs leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
+      >
+        {nextStep}
+      </p>
       <div className="mt-4 space-y-3">
         {tips.map((tip, index) => (
-          <div key={tip} className="flex gap-3 border-t border-[#f0e9fd] pt-3 first:border-t-0 first:pt-0">
-            <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
-              {index === 0 ? <Clock3 className="h-3.5 w-3.5" /> : index === 1 ? <ShieldCheck className="h-3.5 w-3.5" /> : <Droplet className="h-3.5 w-3.5" />}
+          <div
+            key={tip}
+            className={`flex gap-3 border-t pt-3 first:border-t-0 first:pt-0 ${isDarkTheme ? "border-white/[0.08]" : "border-[#f0e9fd]"}`}
+          >
+            <span
+              className={`mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[#7a55ea] ${isDarkTheme ? "bg-[#221a35]" : "bg-[#f3edff]"}`}
+            >
+              {index === 0 ? (
+                <Clock3 className="h-3.5 w-3.5" />
+              ) : index === 1 ? (
+                <ShieldCheck className="h-3.5 w-3.5" />
+              ) : (
+                <Droplet className="h-3.5 w-3.5" />
+              )}
             </span>
-            <p className="text-xs leading-6 text-[#535a78]">{tip}</p>
+            <p
+              className={`text-xs leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"}`}
+            >
+              {tip}
+            </p>
           </div>
         ))}
       </div>
     </section>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

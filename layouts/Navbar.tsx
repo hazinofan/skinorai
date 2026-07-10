@@ -9,9 +9,9 @@ import { useAuth } from "@/components/AuthProvider";
 
 const navItems = [
   { label: "Comment ca marche", href: "#how-it-works" },
-  { label: "Fonctionnalites", href: "#features" },
-  { label: "Ingredients", href: "#ingredients" },
-  { label: "A propos", href: "#about" },
+  { label: "Produits", href: "/products" },
+  { label: "Ingredients", href: "/ingredient-library" },
+  { label: "Tarifs", href: "/pricing" },
 ];
 
 export default function Navbar() {

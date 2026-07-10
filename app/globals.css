@@ -15,3 +15,80 @@ body {
   color: var(--foreground);
   font-family: var(--font-manrope), sans-serif;
 }
+
+@keyframes plusMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.plus-menu-fade-in {
+  animation: plusMenuFadeIn 160ms ease-out forwards;
+}
+
+@keyframes dialog-overlay-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-panel-fade {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dialog-overlay-fade {
+  animation: dialog-overlay-fade 180ms ease-out both;
+}
+
+.dialog-panel-fade {
+  animation: dialog-panel-fade 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes dialog-overlay-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dialog-panel-fade {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dialog-overlay-fade {
+  animation: dialog-overlay-fade 220ms ease-out both;
+}
+
+.dialog-panel-fade {
+  animation: dialog-panel-fade 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}

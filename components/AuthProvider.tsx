@@ -10,6 +10,8 @@ export type AuthUser = {
   planStatus?: "free" | "pro";
   freeScansUsed?: number;
   freeScanLimit?: number;
+  skinGoal?: string;
+  preferredSkinGoal?: string;
 };
 
 type AuthResponse = {
@@ -24,6 +26,7 @@ type AuthContextValue = {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   completeOAuthLogin: (token: string, user: Pick<AuthUser, "name" | "email">) => void;
+  updateUser: (updates: Partial<AuthUser>) => void;
   logout: () => void;
 };
 
@@ -89,6 +92,21 @@ function getAuthStoreSnapshot() {
     token: localStorage.getItem(AUTH_TOKEN_KEY),
     user: localStorage.getItem(AUTH_USER_KEY),
   });
+}
+
+function readStoredUser() {
+  const rawUser = localStorage.getItem(AUTH_USER_KEY);
+
+  if (!rawUser) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(rawUser) as AuthUser;
+  } catch {
+    localStorage.removeItem(AUTH_USER_KEY);
+    return null;
+  }
 }
 
 function parseAuthStoreSnapshot(snapshot: string) {
@@ -157,6 +175,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistAuth]
   );
 
+  const updateUser = useCallback(
+    (updates: Partial<AuthUser>) => {
+      const currentUser = readStoredUser();
+      const currentToken = localStorage.getItem(AUTH_TOKEN_KEY);
+
+      if (!currentUser || !currentToken) {
+        return;
+      }
+
+      persistAuth(currentToken, {
+        ...currentUser,
+        ...updates,
+      });
+    },
+    [persistAuth]
+  );
+
   const logout = useCallback(() => {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
@@ -171,9 +206,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       register,
       completeOAuthLogin,
+      updateUser,
       logout,
     }),
-    [completeOAuthLogin, isReady, login, logout, register, token, user]
+    [completeOAuthLogin, isReady, login, logout, register, token, updateUser, user]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -198,4 +234,3 @@ export function getStoredAuthToken() {
 }
 
 export { API_BASE_URL };
-

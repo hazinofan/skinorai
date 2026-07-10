@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import {
@@ -55,12 +55,13 @@ import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { getStoredAuthToken, useAuth } from "@/components/AuthProvider";
+import { normalizeSkinGoalId, SKIN_GOAL_STORAGE_KEY } from "@/lib/skinGoals";
 
 const stepLabels = [
   "Objectif peau",
-  "Importer l etiquette",
-  "Ingredients detectes",
-  "Resultat IA",
+  "Importer l’étiquette",
+  "Ingrédients détectés",
+  "Résultat IA",
 ];
 
 type SkinGoal = {
@@ -380,7 +381,7 @@ function parseIngredientText(value: string): string[] {
 
 function formatProductName(imageName?: string | null) {
   if (!imageName) {
-    return "Produit analyse";
+    return "Produit analysé";
   }
 
   return imageName
@@ -484,6 +485,19 @@ function formatScanHistoryDate(value: string) {
       : date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
   return `${label} - ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function normalizeDisplayText(value: string) {
+  if (!/[???]/.test(value)) {
+    return value;
+  }
+
+  try {
+    const bytes = Uint8Array.from(value, (char) => char.charCodeAt(0));
+    return new TextDecoder("utf-8").decode(bytes);
+  } catch {
+    return value;
+  }
 }
 
 function requestScanAnalysis({
@@ -699,6 +713,14 @@ export default function ScanPage() {
 
   const startNewScan = () => {
     resetFlow();
+    const preferredGoal = normalizeSkinGoalId(
+      user?.preferredSkinGoal ??
+        user?.skinGoal ??
+        (typeof window !== 'undefined' ? window.localStorage.getItem(SKIN_GOAL_STORAGE_KEY) : null),
+    );
+    if (preferredGoal) {
+      setSelectedGoalId(preferredGoal);
+    }
     setIsWizardOpen(true);
   };
 
@@ -719,6 +741,15 @@ export default function ScanPage() {
       router.replace("/login");
     }
   }, [isAuthReady, router, token]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const chatId = new URLSearchParams(window.location.search).get("chat");
+    setChatScanIdToOpen(chatId);
+  }, []);
   useEffect(() => {
     if (!isAuthReady || !user) {
       return;
@@ -727,6 +758,22 @@ export default function ScanPage() {
     setPlanStatus(user.planStatus ?? "free");
     setFreeScansUsed(user.freeScansUsed ?? 0);
   }, [isAuthReady, user]);
+
+  useEffect(() => {
+    if (!isAuthReady) {
+      return;
+    }
+
+    const preferredGoal = normalizeSkinGoalId(
+      user?.preferredSkinGoal ??
+        user?.skinGoal ??
+        (typeof window !== "undefined" ? window.localStorage.getItem(SKIN_GOAL_STORAGE_KEY) : null),
+    );
+
+    if (preferredGoal) {
+      setSelectedGoalId(preferredGoal);
+    }
+  }, [isAuthReady, user?.preferredSkinGoal, user?.skinGoal]);
   useEffect(() => {
     if (!isWizardOpen || isResultReady || currentStep === 4) {
       document.body.dataset.navbarHidden = "true";
@@ -776,7 +823,7 @@ export default function ScanPage() {
           setCurrentStep(3);
         } else {
           setAnalysisError(
-            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et reessayez.",
+            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et réessayez.",
           );
         }
         setAnalysisResult(null);
@@ -1064,12 +1111,11 @@ export default function ScanPage() {
                     currentStep === 2 &&
                     (!hasStepTwoData || isExtractingIngredients)
                   }
-                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${
-                    currentStep === 2 &&
+                  className={`group relative inline-flex items-center justify-center overflow-hidden rounded-md bg-gradient-to-r from-[#9b75f2] to-pink-300 px-14 py-2.5 tracking-tighter text-white ${currentStep === 2 &&
                     (!hasStepTwoData || isExtractingIngredients)
-                      ? "cursor-not-allowed opacity-55"
-                      : "cursor-pointer"
-                  }`}
+                    ? "cursor-not-allowed opacity-55"
+                    : "cursor-pointer"
+                    }`}
                 >
                   <span className="absolute h-0 w-0 rounded-full bg-[#8d68ef] transition-all duration-500 ease-out group-hover:h-56 group-hover:w-56"></span>
                   <span className="absolute bottom-0 left-0 h-full -ml-2">
@@ -1170,6 +1216,38 @@ export default function ScanPage() {
           padding: 0;
         }
       `}</style>
+      <style jsx global>{`
+  @keyframes dialog-overlay-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes dialog-panel-fade {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .dialog-overlay-fade {
+    animation: dialog-overlay-fade 220ms ease-out both;
+  }
+
+  .dialog-panel-fade {
+    animation: dialog-panel-fade 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: opacity, transform;
+  }
+`}</style>
     </main>
   );
 }
@@ -1199,20 +1277,18 @@ function ScanProgress({
               aria-label={`Aller a l etape ${step}`}
             >
               <span
-                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition ${
-                  isComplete
-                    ? "border-[#7548e8] bg-[#7548e8] text-white"
-                    : isActive
-                      ? "border-[#7548e8] bg-gradient-to-b from-[#8d5df4] to-[#6c35d8] text-white"
-                      : "border-[#d9ddec] bg-white text-[#5f6780]"
-                }`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full border text-sm font-bold shadow-sm transition ${isComplete
+                  ? "border-[#7548e8] bg-[#7548e8] text-white"
+                  : isActive
+                    ? "border-[#7548e8] bg-gradient-to-b from-[#8d5df4] to-[#6c35d8] text-white"
+                    : "border-[#d9ddec] bg-white text-[#5f6780]"
+                  }`}
               >
                 {isComplete ? <Check className="h-5 w-5" /> : step}
               </span>
               <span
-                className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${
-                  currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
-                }`}
+                className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
+                  }`}
               >
                 {label}
                 {step === 1 && (
@@ -1225,9 +1301,8 @@ function ScanProgress({
             {step < stepLabels.length && (
               <span className="mx-2 h-0.5 flex-1 rounded bg-[#dfe2ee]">
                 <span
-                  className={`block h-full rounded bg-[#7548e8] transition-all ${
-                    currentStep > step ? "w-full" : "w-0"
-                  }`}
+                  className={`block h-full rounded bg-[#7548e8] transition-all ${currentStep > step ? "w-full" : "w-0"
+                    }`}
                 />
               </span>
             )}
@@ -1261,11 +1336,10 @@ function GoalStep({
                 key={goal.label}
                 type="button"
                 onClick={() => onSelectGoal(goal.id)}
-                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${
-                  isSelected
-                    ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
-                    : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
-                }`}
+                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${isSelected
+                  ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
+                  : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
+                  }`}
               >
                 {isSelected && (
                   <span className="absolute right-4 top-4 flex h-6 w-6 items-center justify-center rounded-full bg-[#7947e6] text-white">
@@ -1366,11 +1440,10 @@ function UploadStep({
               }}
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
-              className={`flex min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isExtractingIngredients ? "cursor-wait opacity-80" : "cursor-pointer"} ${
-                isDragging
-                  ? "border-[#8f68f2] bg-[#f4edff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all shadow-[0_22px_45px_rgba(123,86,238,0.14)]"
-                  : "border-[#bda7ff] bg-[#fbf8ff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all"
-              }`}
+              className={`flex min-h-[285px] w-full flex-col items-center justify-center rounded-2xl border border-dashed px-6 text-center transition ${isExtractingIngredients ? "cursor-wait opacity-80" : "cursor-pointer"} ${isDragging
+                ? "border-[#8f68f2] bg-[#f4edff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all shadow-[0_22px_45px_rgba(123,86,238,0.14)]"
+                : "border-[#bda7ff] bg-[#fbf8ff] hover:bg-[#f0e8ff] hover:duration-500 hover:transition-all"
+                }`}
             >
               {isExtractingIngredients ? (
                 <LoaderCircle className="h-14 w-14 animate-spin text-[#9b77f5]" />
@@ -1392,7 +1465,7 @@ function UploadStep({
               </span>
               <span className="mt-5 flex items-center gap-2 text-xs text-[#727a99]">
                 <Lock className="h-4 w-4" />
-                Vos images sont privees et securisees.
+                Vos images sont privées et sécurisées.
               </span>
             </button>
             {uploadedImages.length > 0 && (
@@ -1423,11 +1496,10 @@ function UploadStep({
                     return (
                       <div
                         key={image.id}
-                        className={`group relative overflow-hidden rounded-2xl border bg-[#faf8ff] ${
-                          isSelected
-                            ? "border-[#8d68ef] ring-2 ring-[#eadfff]"
-                            : "border-[#ece5ff]"
-                        }`}
+                        className={`group relative overflow-hidden rounded-2xl border bg-[#faf8ff] ${isSelected
+                          ? "border-[#8d68ef] ring-2 ring-[#eadfff]"
+                          : "border-[#ece5ff]"
+                          }`}
                       >
                         <button
                           type="button"
@@ -1643,7 +1715,7 @@ function IngredientsStep({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-bold text-[#171b36]">
-                  Prochaine étape : Resultat IA
+                  Prochaine étape : Résultat IA
                 </span>
                 <span className="mt-1 block text-xs text-[#727a99]">
                   L IA analysera vos ingredients pour vous fournir une
@@ -1772,7 +1844,7 @@ function AnalysisLoadingStep({
             />
             <LoadingInfoCard
               icon={ClipboardCheck}
-              title="Ingredients verifies"
+              title="Ingrédients vérifiés"
               text={`${ingredientCount} elements confirmes`}
             />
             <LoadingInfoCard
@@ -1788,7 +1860,7 @@ function AnalysisLoadingStep({
             </div>
             <div className="mt-4 flex items-center justify-between text-sm font-medium text-[#7b829e]">
               <span>Lecture de la formule</span>
-              <span>Evaluation de compatibilite</span>
+              <span>Évaluation de compatibilité</span>
               <span>Preparation du resultat</span>
             </div>
           </div>
@@ -1820,6 +1892,83 @@ function LoadingInfoCard({
   );
 }
 
+
+type FeatureCard = {
+  id: string;
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  image: string;
+  imageAlt: string;
+  points: string[];
+  primaryCtaLabel?: string;
+  action?: "scan";
+};
+
+
+const featureCards: FeatureCard[] = [
+  {
+    id: "ingredient-analyzer",
+    icon: FlaskConical,
+    title: "Analyseur d’ingrédients",
+    text: "Décodez les ingrédients, vérifiez les points à surveiller et comprenez ce qui convient à votre peau.",
+    image: "/chat/ingredients.png",
+    imageAlt: "Illustration de l’analyse des ingrédients",
+    points: [
+      "Collez ou scannez la liste d’ingrédients d’un produit de soin.",
+      "Comprenez le rôle de chaque ingrédient.",
+      "Repérez les ingrédients pouvant irriter les peaux sensibles.",
+      "Obtenez une explication claire, sans jargon INCI compliqué.",
+    ],
+    primaryCtaLabel: "Analyser les ingrédients",
+    action: "scan",
+  },
+  {
+    id: "routine-coach",
+    icon: Bot,
+    title: "Coach routine",
+    text: "Recevez des routines personnalisées selon vos objectifs peau.",
+    image: "/chat/routine.png",
+    imageAlt: "Illustration du coach routine",
+    points: [
+      "Construisez une routine simple pour le matin ou le soir.",
+      "Sachez quel produit appliquer en premier, ensuite et en dernier.",
+      "Évitez de mélanger trop d’actifs puissants.",
+      "Recevez des rappels sur le SPF et la fréquence d’utilisation.",
+    ],
+  },
+  {
+    id: "product-scanner",
+    icon: SquareDashed,
+    title: "Scanner produit",
+    text: "Scannez un produit et analysez sa formule.",
+    image: "/chat/scan.png",
+    imageAlt: "Illustration du scanner produit",
+    points: [
+      "Importez une photo claire de l’étiquette du produit.",
+      "Extrayez automatiquement les ingrédients grâce à l’OCR.",
+      "Corrigez la liste détectée avant l’analyse.",
+      "Recevez un score, un verdict, des points forts et des ingrédients à surveiller.",
+    ],
+    primaryCtaLabel: "Scanner un produit",
+    action: "scan",
+  },
+  {
+    id: "skin-insights",
+    icon: Sparkles,
+    title: "Insights peau",
+    text: "Suivez vos analyses et obtenez des insights plus précis sur votre peau.",
+    image: "/chat/insights.png",
+    imageAlt: "Illustration des insights peau",
+    points: [
+      "Comprenez les tendances dans vos produits scannés.",
+      "Identifiez les ingrédients qui correspondent le plus souvent à vos objectifs peau.",
+      "Repérez ce que votre peau semble mieux tolérer.",
+      "Préparez des recommandations plus intelligentes avec le temps.",
+    ],
+  },
+];
+
 function ChatWorkspace({
   onScanAnother,
   initialSelectedChatId = null,
@@ -1838,9 +1987,14 @@ function ChatWorkspace({
   const [chatInput, setChatInput] = useState("");
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isChatSending, setIsChatSending] = useState(false);
-  const [renamedChats, setRenamedChats] = useState<Record<string, string>>({});
+  const [renamedDiscussions, setRenamedDiscussions] = useState<Record<string, string>>({});
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [chatNameDraft, setChatNameDraft] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedFeatureCard, setSelectedFeatureCard] =
+    useState<FeatureCard | null>(null);
+  const [isFaceScanDialogOpen, setIsFaceScanDialogOpen] = useState(false);
+
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const workspaceRef = useRef<HTMLDivElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -1867,10 +2021,10 @@ function ChatWorkspace({
     try {
       const storedTitles = window.localStorage.getItem(CHAT_TITLE_STORAGE_KEY);
       if (storedTitles) {
-        setRenamedChats(JSON.parse(storedTitles) as Record<string, string>);
+        setRenamedDiscussions(JSON.parse(storedTitles) as Record<string, string>);
       }
     } catch {
-      setRenamedChats({});
+      setRenamedDiscussions({});
     }
   }, []);
 
@@ -1881,9 +2035,9 @@ function ChatWorkspace({
   useEffect(() => {
     window.localStorage.setItem(
       CHAT_TITLE_STORAGE_KEY,
-      JSON.stringify(renamedChats),
+      JSON.stringify(renamedDiscussions),
     );
-  }, [renamedChats]);
+  }, [renamedDiscussions]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1964,96 +2118,79 @@ function ChatWorkspace({
     };
   }, [selectedHistoryChatId]);
 
-  useEffect(() => {
-    if (!workspaceRef.current) {
-      return;
+useEffect(() => {
+  if (!workspaceRef.current) {
+    return;
+  }
+
+  const ctx = gsap.context(() => {
+    const heroItems = gsap.utils.toArray<HTMLElement>("[data-chat-hero]");
+    const cards = gsap.utils.toArray<HTMLElement>("[data-chat-card]");
+    const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+
+    gsap.set(cards, { opacity: 1, y: 0 });
+
+    const timeline = gsap.timeline({
+      defaults: {
+        ease: "power3.out",
+      },
+    });
+
+    if (isDesktop) {
+      timeline.from(sidebarRef.current, {
+        x: -30,
+        opacity: 0,
+        duration: 0.65,
+        clearProps: "transform,opacity",
+      });
     }
 
-    const ctx = gsap.context(() => {
-      const heroItems = gsap.utils.toArray<HTMLElement>("[data-chat-hero]");
-      const cards = gsap.utils.toArray<HTMLElement>("[data-chat-card]");
-      const orb = heroRef.current?.querySelector("[data-chat-orb]");
-
-      gsap.set(cards, { opacity: 1, y: 0 });
-
-      const timeline = gsap.timeline({
-        defaults: {
-          ease: "power3.out",
-        },
-      });
-
-      timeline
-        .from(sidebarRef.current, {
-          x: -30,
+    timeline
+      .from(
+        headerRef.current,
+        {
+          y: -18,
           opacity: 0,
-          duration: 0.65,
-        })
-        .from(
-          headerRef.current,
-          {
-            y: -18,
-            opacity: 0,
-            duration: 0.45,
-          },
-          "-=0.35",
-        )
-        .from(
-          heroItems,
-          {
-            y: 20,
-            opacity: 0,
-            scale: 0.985,
-            duration: 0.56,
-            stagger: 0.07,
-          },
-          "-=0.18",
-        )
-        .fromTo(
-          cards,
-          {
-            y: 22,
-            opacity: 0,
-          },
-          {
-            y: 0,
-            opacity: 1,
-            duration: 0.44,
-            stagger: 0.07,
-            clearProps: "transform,opacity",
-          },
-          "-=0.2",
-        );
-    }, workspaceRef);
+          duration: 0.45,
+          clearProps: "transform,opacity",
+        },
+        isDesktop ? "-=0.35" : 0,
+      )
+      .from(
+        heroItems,
+        {
+          y: 20,
+          opacity: 0,
+          scale: 0.985,
+          duration: 0.56,
+          stagger: 0.07,
+          clearProps: "transform,opacity",
+        },
+        "-=0.18",
+      )
+      .fromTo(
+        cards,
+        {
+          y: 22,
+          opacity: 0,
+        },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.44,
+          stagger: 0.07,
+          clearProps: "transform,opacity",
+        },
+        "-=0.2",
+      );
+  }, workspaceRef);
 
-    return () => {
-      ctx.revert();
-    };
-  }, [theme, selectedHistoryChatId]);
+  return () => {
+    ctx.revert();
+  };
+}, [theme, selectedHistoryChatId]);
 
-  const featureCards = [
-    [
-      FlaskConical,
-      "Ingredient Analyzer",
-      "Decode ingredients, check safety, and understand what works for your skin.",
-    ],
-    [
-      Bot,
-      "Routine Coach",
-      "Get personalized routines tailored to your skin goals.",
-    ],
-    [
-      SquareDashed,
-      "Product Scanner",
-      "Scan any product and analyze its claims.",
-    ],
-    [
-      Sparkles,
-      "Skin Insights",
-      "Track changes and unlock deeper skin insights.",
-    ],
-  ] as const;
-
-  const recentChats = scanHistory.slice(0, 6);
+  const recentDiscussions = scanHistory.slice(0, 6);
   const getChatDisplayName = (
     scanId: string | null | undefined,
     fallbackName: string,
@@ -2062,9 +2199,10 @@ function ChatWorkspace({
       return fallbackName;
     }
 
-    const renamedTitle = renamedChats[scanId]?.trim();
-    return renamedTitle || fallbackName;
+    const renamedTitle = renamedDiscussions[scanId]?.trim();
+    return normalizeDisplayText(renamedTitle || fallbackName);
   };
+  const [showPlusMenu, setShowPlusMenu] = useState(false);
   const selectedHistoryChat =
     scanHistory.find((chat) => chat.id === selectedHistoryChatId) ?? null;
   const isDarkTheme = theme === "dark";
@@ -2076,21 +2214,21 @@ function ChatWorkspace({
     ) ?? goals[0];
   const selectedAnalysisResult: AnalysisResult | null = selectedHistoryChat
     ? (selectedHistoryDetail?.analysisResult ?? {
-        score: 0,
-        verdict: "good_choice",
-        verdictLabel:
-          selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
-        summary:
-          selectedHistoryChat.analysisSummary ||
-          "Analyse enregistrée pour ce produit.",
-        positives: [],
-        watchouts: [],
-        recommendations: selectedGoal.tips,
-        nextStep: selectedGoal.nextStep,
-        followUpQuestions: selectedGoal.questions,
-        disclaimer:
-          "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
-      })
+      score: 0,
+      verdict: "good_choice",
+      verdictLabel:
+        selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
+      summary:
+        selectedHistoryChat.analysisSummary ||
+        "Analyse enregistrée pour ce produit.",
+      positives: [],
+      watchouts: [],
+      recommendations: selectedGoal.tips,
+      nextStep: selectedGoal.nextStep,
+      followUpQuestions: selectedGoal.questions,
+      disclaimer:
+        "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+    })
     : null;
   const selectedIngredientItems = buildIngredientItems(
     selectedHistoryDetail?.ingredients ?? [],
@@ -2160,25 +2298,25 @@ function ChatWorkspace({
       setSelectedHistoryDetail((current) =>
         current
           ? {
-              ...current,
-              promptCount: current.promptCount + 1,
-              updatedAt: assistantMessage.createdAt ?? current.updatedAt,
-              conversation: [
-                ...current.conversation,
-                userMessage,
-                assistantMessage,
-              ],
-            }
+            ...current,
+            promptCount: current.promptCount + 1,
+            updatedAt: assistantMessage.createdAt ?? current.updatedAt,
+            conversation: [
+              ...current.conversation,
+              userMessage,
+              assistantMessage,
+            ],
+          }
           : current,
       );
       setScanHistory((items) =>
         items.map((item) =>
           item.id === selectedHistoryChat.id
             ? {
-                ...item,
-                promptCount: item.promptCount + 1,
-                updatedAt: assistantMessage.createdAt ?? item.updatedAt,
-              }
+              ...item,
+              promptCount: item.promptCount + 1,
+              updatedAt: assistantMessage.createdAt ?? item.updatedAt,
+            }
             : item,
         ),
       );
@@ -2212,6 +2350,8 @@ function ChatWorkspace({
     setChatNameDraft("");
   };
 
+  const router = useRouter()
+
   const saveChatRename = () => {
     if (!editingChatId) {
       return;
@@ -2222,7 +2362,7 @@ function ChatWorkspace({
       return;
     }
 
-    setRenamedChats((current) => ({
+    setRenamedDiscussions((current) => ({
       ...current,
       [editingChatId]: trimmedName,
     }));
@@ -2232,112 +2372,122 @@ function ChatWorkspace({
 
   const palette = isDarkTheme
     ? {
-        page: "bg-[#080912] text-[#f7f1fb]",
-        overlay:
-          "bg-[radial-gradient(circle_at_62%_10%,rgba(224,128,194,0.16),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(151,210,139,0.08),transparent_24%),linear-gradient(135deg,#0d111b_0%,#070811_45%,#11101a_100%)]",
-        sidebar:
-          "border-r border-white/[0.07] bg-[#0b0d17]/92 shadow-[18px_0_55px_rgba(0,0,0,0.20)]",
-        logo: "brightness-0 invert",
-        sidebarButton:
-          "border-white/10 bg-white/[0.03] text-[#a8a8b8] hover:bg-white/[0.08]",
-        primaryButton:
-          "bg-[linear-gradient(135deg,rgba(149,81,151,0.88)_0%,rgba(231,139,199,0.88)_100%)] text-white shadow-[0_16px_34px_rgba(202,105,179,0.22)]",
-        sidebarLabel: "text-[#777583]",
-        navActive:
-          "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
-        navIdle: "text-[#dbd8e4] hover:bg-white/[0.05]",
-        recentCard: "border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.07]",
-        recentActive: "border-[#e8a0d8]/45 bg-white/[0.09]",
-        recentText: "text-white",
-        recentMuted: "text-[#918f9e]",
-        premiumCard:
-          "border-white/[0.08] bg-[linear-gradient(180deg,rgba(45,31,55,0.82)_0%,rgba(25,22,34,0.9)_100%)] shadow-[0_14px_38px_rgba(0,0,0,0.18)]",
-        premiumTitle: "text-[#f0a8d9]",
-        premiumText: "text-[#bdb7c8]",
-        premiumButton:
-          "bg-[linear-gradient(135deg,#9b5f99_0%,#cf7db5_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.22)]",
-        headerButton:
-          "border-white/[0.10] bg-white/[0.04] text-white hover:bg-white/[0.08]",
-        heading: "text-white",
-        subtext: "text-[#aaa6b5]",
-        orb: "border-[#d88fe1]/70 text-[#f09bd1] shadow-[0_0_42px_rgba(219,126,209,0.14)]",
-        orbRing: "border-[#a47df2]/80",
-        actionCard:
-          "border-white/[0.13] bg-white/[0.045] hover:border-[#dca0dd]/50 hover:bg-white/[0.07]",
-        actionTitle: "text-white",
-        actionText: "text-[#aaa6b5]",
-        prompt:
-          "border-white/[0.16] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
-        promptInput: "text-white placeholder:text-[#898693]",
-        promptMeta: "text-[#a9a5b3]",
-        iconButton: "border-white/[0.16] bg-white/[0.04] text-white",
-        featureCard:
-          "border-white/[0.10] bg-white/[0.045] hover:bg-white/[0.07]",
-        featureTitle: "text-white",
-        featureText: "text-[#aaa6b5]",
-        detailCard:
-          "border-white/[0.10] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
-        detailBadge: "bg-white/[0.08] text-[#f5c0e1]",
-        detailMeta: "text-[#b9b5c5]",
-      }
+      page: "bg-[#080912] text-[#f7f1fb]",
+      overlay:
+        "bg-[radial-gradient(circle_at_62%_10%,rgba(224,128,194,0.16),transparent_28%),radial-gradient(circle_at_78%_70%,rgba(151,210,139,0.08),transparent_24%),linear-gradient(135deg,#0d111b_0%,#070811_45%,#11101a_100%)]",
+      sidebar:
+        "border-r border-white/[0.07] bg-[#0b0d17]/92 shadow-[18px_0_55px_rgba(0,0,0,0.20)]",
+      logo: "brightness-0 invert",
+      sidebarButton:
+        "border-white/10 bg-white/[0.03] text-[#a8a8b8] hover:bg-white/[0.08]",
+      primaryButton:
+        "bg-[linear-gradient(135deg,rgba(149,81,151,0.88)_0%,rgba(231,139,199,0.88)_100%)] text-white shadow-[0_16px_34px_rgba(202,105,179,0.22)]",
+      sidebarLabel: "text-[#777583]",
+      navActive:
+        "bg-white/[0.07] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]",
+      navIdle: "text-[#dbd8e4] hover:bg-white/[0.05]",
+      recentCard: "border-white/[0.06] bg-white/[0.04] hover:bg-white/[0.07]",
+      recentActive: "border-[#e8a0d8]/45 bg-white/[0.09]",
+      recentText: "text-white",
+      recentMuted: "text-[#918f9e]",
+      premiumCard:
+        "border-white/[0.08] bg-[linear-gradient(180deg,rgba(45,31,55,0.82)_0%,rgba(25,22,34,0.9)_100%)] shadow-[0_14px_38px_rgba(0,0,0,0.18)]",
+      premiumTitle: "text-[#f0a8d9]",
+      premiumText: "text-[#bdb7c8]",
+      premiumButton:
+        "bg-[linear-gradient(135deg,#9b5f99_0%,#cf7db5_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.22)]",
+      headerButton:
+        "border-white/[0.10] bg-white/[0.04] text-white hover:bg-white/[0.08]",
+      heading: "text-white",
+      subtext: "text-[#aaa6b5]",
+      orb: "border-[#d88fe1]/70 text-[#f09bd1] shadow-[0_0_42px_rgba(219,126,209,0.14)]",
+      orbRing: "border-[#a47df2]/80",
+      actionCard:
+        "border-white/[0.13] bg-white/[0.045] hover:border-[#dca0dd]/50 hover:bg-white/[0.07]",
+      actionTitle: "text-white",
+      actionText: "text-[#aaa6b5]",
+      prompt:
+        "border-white/[0.16] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.22),inset_0_1px_0_rgba(255,255,255,0.05)]",
+      promptInput: "text-white placeholder:text-[#898693]",
+      promptMeta: "text-[#a9a5b3]",
+      iconButton: "border-white/[0.16] bg-white/[0.04] text-white",
+      featureCard:
+        "border-white/[0.10] bg-white/[0.045] hover:bg-white/[0.07]",
+      featureTitle: "text-white",
+      featureText: "text-[#aaa6b5]",
+      detailCard:
+        "border-white/[0.10] bg-white/[0.045] shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
+      detailBadge: "bg-white/[0.08] text-[#f5c0e1]",
+      detailMeta: "text-[#b9b5c5]",
+    }
     : {
-        page: "bg-[#f6f1fb] text-[#1b1a2b]",
-        overlay:
-          "bg-[radial-gradient(circle_at_60%_14%,rgba(194,128,224,0.18),transparent_24%),radial-gradient(circle_at_82%_72%,rgba(180,223,164,0.18),transparent_20%),linear-gradient(180deg,#fffdfd_0%,#f9f5ff_40%,#f4f8fb_100%)]",
-        sidebar:
-          "border-r border-[#eadff7] bg-white/88 shadow-[18px_0_45px_rgba(103,74,151,0.10)]",
-        logo: "",
-        sidebarButton:
-          "border-[#ebddf9] bg-[#faf6ff] text-[#6c6289] hover:bg-[#f3ecff]",
-        primaryButton:
-          "bg-[linear-gradient(135deg,#a56ae2_0%,#e89ac7_100%)] text-white shadow-[0_16px_32px_rgba(202,105,179,0.18)]",
-        sidebarLabel: "text-[#8f86a7]",
-        navActive:
-          "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
-        navIdle: "text-[#5c5671] hover:bg-[#f6f1ff]",
-        recentCard: "border-[#ece5f7] bg-white/90 hover:bg-[#fbf8ff]",
-        recentActive: "border-[#ceafe8] bg-[#f9f2ff]",
-        recentText: "text-[#221d35]",
-        recentMuted: "text-[#7c7693]",
-        premiumCard:
-          "border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]",
-        premiumTitle: "text-[#b1689b]",
-        premiumText: "text-[#7d7792]",
-        premiumButton:
-          "bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]",
-        headerButton:
-          "border-[#e7def4] bg-white/85 text-[#2a2440] hover:bg-white",
-        heading: "text-[#221d35]",
-        subtext: "text-[#726b86]",
-        orb: "border-[#d7a5dd] text-[#c76ab6] shadow-[0_0_35px_rgba(219,126,209,0.12)] bg-white/70",
-        orbRing: "border-[#c9a0ef]",
-        actionCard:
-          "border-[#eadff7] bg-white/86 hover:border-[#dca0dd] hover:bg-white",
-        actionTitle: "text-[#241f36]",
-        actionText: "text-[#726b86]",
-        prompt:
-          "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
-        promptInput: "text-[#241f36] placeholder:text-[#928aa6]",
-        promptMeta: "text-[#7f7893]",
-        iconButton: "border-[#e5dbf4] bg-white text-[#433d58]",
-        featureCard: "border-[#eadff7] bg-white/86 hover:bg-white",
-        featureTitle: "text-[#241f36]",
-        featureText: "text-[#726b86]",
-        detailCard:
-          "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
-        detailBadge: "bg-[#f5ecff] text-[#9a56bf]",
-        detailMeta: "text-[#7d7792]",
-      };
+      page: "bg-[#f6f1fb] text-[#1b1a2b]",
+      overlay:
+        "bg-[radial-gradient(circle_at_60%_14%,rgba(194,128,224,0.18),transparent_24%),radial-gradient(circle_at_82%_72%,rgba(180,223,164,0.18),transparent_20%),linear-gradient(180deg,#fffdfd_0%,#f9f5ff_40%,#f4f8fb_100%)]",
+      sidebar:
+        "border-r border-[#eadff7] bg-white/88 shadow-[18px_0_45px_rgba(103,74,151,0.10)]",
+      logo: "",
+      sidebarButton:
+        "border-[#ebddf9] bg-[#faf6ff] text-[#6c6289] hover:bg-[#f3ecff]",
+      primaryButton:
+        "bg-[linear-gradient(135deg,#a56ae2_0%,#e89ac7_100%)] text-white shadow-[0_16px_32px_rgba(202,105,179,0.18)]",
+      sidebarLabel: "text-[#8f86a7]",
+      navActive:
+        "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]",
+      navIdle: "text-[#5c5671] hover:bg-[#f6f1ff]",
+      recentCard: "border-[#ece5f7] bg-white/90 hover:bg-[#fbf8ff]",
+      recentActive: "border-[#ceafe8] bg-[#f9f2ff]",
+      recentText: "text-[#221d35]",
+      recentMuted: "text-[#7c7693]",
+      premiumCard:
+        "border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]",
+      premiumTitle: "text-[#b1689b]",
+      premiumText: "text-[#7d7792]",
+      premiumButton:
+        "bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]",
+      headerButton:
+        "border-[#e7def4] bg-white/85 text-[#2a2440] hover:bg-white",
+      heading: "text-[#221d35]",
+      subtext: "text-[#726b86]",
+      orb: "border-[#d7a5dd] text-[#c76ab6] shadow-[0_0_35px_rgba(219,126,209,0.12)] bg-white/70",
+      orbRing: "border-[#c9a0ef]",
+      actionCard:
+        "border-[#eadff7] bg-white/86 hover:border-[#dca0dd] hover:bg-white",
+      actionTitle: "text-[#241f36]",
+      actionText: "text-[#726b86]",
+      prompt:
+        "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+      promptInput: "text-[#241f36] placeholder:text-[#928aa6]",
+      promptMeta: "text-[#7f7893]",
+      iconButton: "border-[#e5dbf4] bg-white text-[#433d58]",
+      featureCard: "border-[#eadff7] bg-white/86 hover:bg-white",
+      featureTitle: "text-[#241f36]",
+      featureText: "text-[#726b86]",
+      detailCard:
+        "border-[#eadff7] bg-white/88 shadow-[0_18px_45px_rgba(136,101,184,0.10)]",
+      detailBadge: "bg-[#f5ecff] text-[#9a56bf]",
+      detailMeta: "text-[#7d7792]",
+    };
 
   return (
     <main
       className={`h-screen overflow-hidden [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed ${palette.page}`}
     >
       <div className={`pointer-events-none fixed inset-0 ${palette.overlay}`} />
+      <div className={`fixed inset-0 z-40 bg-[#120d20]/30 backdrop-blur-[4px] transition lg:hidden ${isSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setIsSidebarOpen(false)} />
+      <div
+        className={`fixed inset-0 z-40 bg-[#120d20]/30 backdrop-blur-[4px] transition-opacity duration-300 lg:hidden ${isSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
+        onClick={() => setIsSidebarOpen(false)}
+      />
       <div ref={workspaceRef} className="relative flex h-screen w-full">
         <aside
           ref={sidebarRef}
-          className={`flex w-[270px] shrink-0 flex-col px-5 py-4 backdrop-blur-2xl ${palette.sidebar}`}
+          className={`fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[86vw] shrink-0 flex-col px-4 py-4 backdrop-blur-2xl transition-transform duration-300 ease-out
+                    lg:static lg:z-auto lg:w-[248px] lg:max-w-none lg:translate-x-0 lg:px-4
+                    xl:w-[270px] xl:px-5
+                    ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+                    ${palette.sidebar}`}
         >
           <div className="flex items-center justify-between">
             <Image
@@ -2345,12 +2495,14 @@ function ChatWorkspace({
               alt="SkinorAI"
               width={150}
               height={36}
-              className={`h-8 w-auto ${palette.logo}`}
+              className={`h-8 cursor-pointer w-auto ${palette.logo}`}
               priority
+              onClick={() => { router.push("/")}}
             />
             <button
               type="button"
-              className={`rounded-lg border p-1.5 transition ${palette.sidebarButton}`}
+              onClick={() => setIsSidebarOpen(false)}
+              className={`rounded-lg cursor-pointer border p-1.5 transition ${palette.sidebarButton}`}
             >
               <PanelLeft className="h-4 w-4" />
             </button>
@@ -2359,39 +2511,47 @@ function ChatWorkspace({
           <button
             type="button"
             onClick={() => {
+              setIsSidebarOpen(false);
               setSelectedHistoryChatId(null);
               onScanAnother();
             }}
             className="mt-6 flex h-[45px] cursor-pointer items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[#F4D2DF] hover:via-[#EFC9DB] hover:to-[#E8D1F4] active:translate-y-0"
           >
             <Plus className="h-5 w-5" />
-            New Chat
+            Nouvelle discussion
           </button>
 
           <div className="mt-6">
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              Main
+              Menu
             </p>
             <nav className="mt-3 space-y-2">
               <button
                 type="button"
-                onClick={() => setSelectedHistoryChatId(null)}
+                onClick={() => {
+                  setSelectedHistoryChatId(null);
+                  setIsSidebarOpen(false);
+                }}
                 className={`relative flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${selectedHistoryChat ? palette.navIdle : palette.navActive}`}
               >
                 {!selectedHistoryChat && (
                   <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />
                 )}
                 <CircleHelp className="h-5 w-5" />
-                Chats
+                Discussions
               </button>
               <button
                 type="button"
+                onClick={() => {
+                  setIsSidebarOpen(false);
+                  router.push("/ingredient-library");
+                }}
                 className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}
               >
                 <FlaskConical className="h-5 w-5" />
-                Ingredient Library
+                Bibliothèque d’ingrédients
               </button>
             </nav>
           </div>
@@ -2400,24 +2560,27 @@ function ChatWorkspace({
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              Recent
+              Récent
             </p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
                 <p
                   className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}
                 >
-                  Loading chats...
+                  Chargement des discussions...
                 </p>
-              ) : recentChats.length > 0 ? (
-                recentChats.map((chat) => {
+              ) : recentDiscussions.length > 0 ? (
+                recentDiscussions.map((chat) => {
                   const isActive = chat.id === selectedHistoryChatId;
 
                   return (
                     <button
                       key={chat.id}
                       type="button"
-                      onClick={() => setSelectedHistoryChatId(chat.id)}
+                      onClick={() => {
+                        setSelectedHistoryChatId(chat.id);
+                        setIsSidebarOpen(false);
+                      }}
                       className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${isActive ? palette.recentActive : palette.recentCard}`}
                     >
                       <p
@@ -2444,14 +2607,14 @@ function ChatWorkspace({
                 <p
                   className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}
                 >
-                  No chats yet. Start with a new scan.
+                  Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.
                 </p>
               )}
             </div>
           </div>
 
           <div
-            className={`mt-4 rounded-2xl p-4 text-center ${palette.premiumCard}`}
+            className={`mt-4 rounded-2xl p-2 text-center max-lg:mb-4 lg:p-2 xl:p-2 ${palette.premiumCard}`}
           >
             <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]">
               <Sparkles className="h-4 w-4" />
@@ -2459,23 +2622,26 @@ function ChatWorkspace({
             <h2
               className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}
             >
-              Unlock Premium
+              Débloquer Premium
             </h2>
             <p className={`mt-2 text-sm leading-5 ${palette.premiumText}`}>
-              Get deeper insights, unlimited scans, and personalized routines.
+              Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.
             </p>
             <button
               type="button"
+              onClick={() => router.push('/pricing')}
               className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold cursor-pointer ${palette.premiumButton}`}
             >
-              Upgrade to Premium
+              Passer à Premium
             </button>
           </div>
         </aside>
 
-        <section className="relative min-w-0 flex-1 overflow-y-auto px-5 pt-4 lg:px-7">
-          <header ref={headerRef} className="flex items-center justify-between">
-            <button type="button"></button>
+        <section className="relative min-w-0 flex-1 overflow-y-auto px-4 pt-4 sm:px-5 lg:px-6 xl:px-7">
+          <header ref={headerRef} className="flex items-center justify-between gap-3">
+            <button type="button" onClick={() => setIsSidebarOpen(true)} className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border lg:hidden ${palette.headerButton}`}>
+              <PanelLeft className="h-4 w-4" />
+            </button>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -2489,13 +2655,14 @@ function ChatWorkspace({
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-                {isDarkTheme ? "Light" : "Dark"}
+                {isDarkTheme ? "Clair" : "Sombre"}
               </button>
               <button
                 type="button"
+                onClick={() => router.push('/settings')}
                 className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-xs font-medium backdrop-blur transition-colors duration-300 hover:!bg-gray-50 ${palette.headerButton}`}
               >
-                Settings
+                Paramètres
                 <Settings className="h-4 w-4" />
               </button>
             </div>
@@ -2543,7 +2710,7 @@ function ChatWorkspace({
                           className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${palette.headerButton}`}
                         >
                           <Check className="h-4 w-4" />
-                          Save
+                          Enregistrer
                         </button>
                         <button
                           type="button"
@@ -2551,7 +2718,7 @@ function ChatWorkspace({
                           className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
                         >
                           <X className="h-4 w-4" />
-                          Cancel
+                          Annuler
                         </button>
                       </div>
                     ) : (
@@ -2567,7 +2734,7 @@ function ChatWorkspace({
                           className={`inline-flex h-9 items-center gap-2 rounded-xl border px-3 text-sm font-medium transition ${palette.headerButton}`}
                         >
                           <Pencil className="h-4 w-4" />
-                          Rename
+                          Renommer
                         </button>
                       </div>
                     )}
@@ -2583,7 +2750,7 @@ function ChatWorkspace({
                     onClick={() => setSelectedHistoryChatId(null)}
                     className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
                   >
-                    Back to home
+                    Retour à l'accueil
                   </button>
                 </div>
 
@@ -2599,8 +2766,8 @@ function ChatWorkspace({
                           className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${isDarkTheme ? "border-white/[0.1] bg-white/[0.06] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"}`}
                         >
                           <p className="font-medium">
-                            {selectedDisplayName} - objectif:{" "}
-                            {selectedGoal.label}
+                            {selectedDisplayName} - objectif :{" "}
+                            {normalizeDisplayText(selectedGoal.label)}
                           </p>
                           <p
                             className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}
@@ -2633,13 +2800,13 @@ function ChatWorkspace({
                                   <span
                                     className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}
                                   >
-                                    {selectedAnalysisResult.verdictLabel}
+                                    {normalizeDisplayText(selectedAnalysisResult.verdictLabel)}
                                   </span>
                                 </div>
                                 <p
                                   className={`mt-3 max-w-[760px] text-sm leading-6 ${palette.subtext}`}
                                 >
-                                  {selectedAnalysisResult.summary}
+                                  {normalizeDisplayText(selectedAnalysisResult.summary)}
                                 </p>
                               </div>
                             </div>
@@ -2656,24 +2823,24 @@ function ChatWorkspace({
                             <InsightCard
                               title="Points forts"
                               tone="green"
-                              items={selectedAnalysisResult.positives ?? []}
+                              items={(selectedAnalysisResult.positives ?? []).map((item) => ({ ...item, ingredient: normalizeDisplayText(item.ingredient), reason: normalizeDisplayText(item.reason), tag: normalizeDisplayText(item.tag) }))}
                               isDarkTheme={isDarkTheme}
                             />
                             <InsightCard
                               title="À surveiller"
                               tone="orange"
-                              items={selectedAnalysisResult.watchouts ?? []}
+                              items={(selectedAnalysisResult.watchouts ?? []).map((item) => ({ ...item, ingredient: normalizeDisplayText(item.ingredient), reason: normalizeDisplayText(item.reason) }))}
                               isDarkTheme={isDarkTheme}
                             />
                             <NextStepCard
                               tips={
                                 selectedAnalysisResult.recommendations?.length
-                                  ? selectedAnalysisResult.recommendations
-                                  : selectedGoal.tips
+                                  ? selectedAnalysisResult.recommendations.map(normalizeDisplayText)
+                                  : selectedGoal.tips.map(normalizeDisplayText)
                               }
                               nextStep={
-                                selectedAnalysisResult.nextStep ||
-                                selectedGoal.nextStep
+                                normalizeDisplayText(selectedAnalysisResult.nextStep) ||
+                                normalizeDisplayText(selectedGoal.nextStep)
                               }
                               isDarkTheme={isDarkTheme}
                             />
@@ -2702,7 +2869,7 @@ function ChatWorkspace({
                                   }
                                   className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${isDarkTheme ? "border-white/[0.1] bg-white/[0.04] text-[#f0c2df] hover:bg-white/[0.08]" : "border-[#e7defc] bg-[#faf7ff] text-[#7350e5] hover:bg-[#f1eaff]"}`}
                                 >
-                                  {question}
+                                  {normalizeDisplayText(question)}
                                 </button>
                               ))}
                             </div>
@@ -2730,15 +2897,14 @@ function ChatWorkspace({
                               className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                             >
                               <div
-                                className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${
-                                  message.role === "user"
-                                    ? isDarkTheme
-                                      ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white shadow-[0_12px_28px_rgba(168,103,197,0.24)]"
-                                      : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                                    : isDarkTheme
-                                      ? "border-white/[0.1] bg-white/[0.05] text-white"
-                                      : "border-[#ece5fb] bg-white text-[#59617d]"
-                                }`}
+                                className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${message.role === "user"
+                                  ? isDarkTheme
+                                    ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white shadow-[0_12px_28px_rgba(168,103,197,0.24)]"
+                                    : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                                  : isDarkTheme
+                                    ? "border-white/[0.1] bg-white/[0.05] text-white"
+                                    : "border-[#ece5fb] bg-white text-[#59617d]"
+                                  }`}
                               >
                                 <p>{message.content}</p>
                                 <p
@@ -2746,9 +2912,9 @@ function ChatWorkspace({
                                 >
                                   {formatScanHistoryDate(
                                     message.createdAt ??
-                                      selectedHistoryDetail?.updatedAt ??
-                                      selectedHistoryChat.updatedAt ??
-                                      new Date().toISOString(),
+                                    selectedHistoryDetail?.updatedAt ??
+                                    selectedHistoryChat.updatedAt ??
+                                    new Date().toISOString(),
                                   )}
                                 </p>
                               </div>
@@ -2782,23 +2948,47 @@ function ChatWorkspace({
                     className={`sticky bottom-0 z-20 mt-auto -mx-5 px-5 pb-3 pt-3 backdrop-blur-xl lg:-mx-7 lg:px-7`}
                   >
                     <div
-                      className={`mx-auto flex h-12 w-full max-w-3xl items-center gap-2 rounded-full border px-3 shadow-[0_14px_35px_rgba(122,63,92,0.12)] transition ${
-                        isDarkTheme
-                          ? "border-white/10 bg-[#15111d]"
-                          : "border-[#ead8ef] bg-gradient-to-r from-[#fff7fb] via-[#f8edf7] to-[#f1e9ff]"
-                      }`}
+                      className={`mx-auto flex h-12 w-full max-w-3xl items-center gap-2 rounded-full border px-3 shadow-[0_14px_35px_rgba(122,63,92,0.12)] transition ${isDarkTheme
+                        ? "border-white/10 bg-[#15111d]"
+                        : "border-[#ead8ef] bg-gradient-to-r from-[#fff7fb] via-[#f8edf7] to-[#f1e9ff]"
+                        }`}
                     >
-                      <button
-                        type="button"
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${
-                          isDarkTheme
+                      <div className="relative shrink-0">
+                        {showPlusMenu && (
+                          <div
+                            className={`plus-menu-fade-in absolute bottom-full left-0 mb-3 min-w-[150px] rounded-2xl border p-1 shadow-[0_18px_40px_rgba(0,0,0,0.14)] ${isDarkTheme
+                              ? "border-white/10 bg-[#1b1624]"
+                              : "border-[#ead8ef] bg-white"
+                              }`}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowPlusMenu(false);
+                                router.push("/ingredient-library");
+                              }}
+                              className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isDarkTheme
+                                ? "text-white/85 hover:bg-white/10"
+                                : "text-[#33243c] hover:bg-[#f5eefe]"
+                                }`}
+                            >
+                              Bibliothèque d’ingrédients
+                            </button>
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => setShowPlusMenu((prev) => !prev)}
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${isDarkTheme
                             ? "text-white/75 hover:bg-white/10"
                             : "text-[#8b5cf6] hover:bg-[#efe5ff]"
-                        }`}
-                        aria-label="Nouvelle question"
-                      >
-                        <Plus className="h-4.5 w-4.5" />
-                      </button>
+                            }`}
+                          aria-label="Nouvelle question"
+                        >
+                          <Plus className="h-4.5 w-4.5" />
+                        </button>
+                      </div>
 
                       <input
                         value={chatInput}
@@ -2809,11 +2999,10 @@ function ChatWorkspace({
                             void askSavedQuestion(chatInput);
                           }
                         }}
-                        className={`min-w-0 flex-1 border-0 bg-transparent text-[14px] outline-none ${
-                          isDarkTheme
-                            ? "text-white placeholder:text-white/40"
-                            : "text-[#33243c] placeholder:text-[#9a88a8]"
-                        }`}
+                        className={`min-w-0 flex-1 border-0 bg-transparent text-[14px] outline-none ${isDarkTheme
+                          ? "text-white placeholder:text-white/40"
+                          : "text-[#33243c] placeholder:text-[#9a88a8]"
+                          }`}
                         placeholder="Poser une question"
                       />
 
@@ -2829,9 +3018,8 @@ function ChatWorkspace({
                     </div>
 
                     <p
-                      className={`mt-2 text-center text-[10px] ${
-                        isDarkTheme ? "text-white/35" : "text-[#9a8faa]"
-                      }`}
+                      className={`mt-2 text-center text-[10px] ${isDarkTheme ? "text-white/35" : "text-[#9a8faa]"
+                        }`}
                     >
                       SkinorAI peut faire des erreurs. Vérifiez les informations
                       importantes.
@@ -2862,7 +3050,7 @@ function ChatWorkspace({
                   data-chat-hero
                   className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}
                 >
-                  Ready to Understand Your Skin?
+                  Prête à mieux comprendre votre peau ?
                 </h1>
                 {/* <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
                   Your AI skincare companion for science-backed insights and personalized recommendations.
@@ -2882,18 +3070,19 @@ function ChatWorkspace({
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        Scan Product
+                        Scanner un produit
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        Scan any product to analyze its ingredients and claims.
+                        Scannez un produit pour analyser ses ingrédients et sa formule.
                       </span>
                       <img src="/icons/scan.png" alt="scan product" />
                     </span>
                   </button>
                   <button
                     type="button"
+                    onClick={() => setIsFaceScanDialogOpen(true)}
                     className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
                   >
                     {/* <Leaf className="h-7 w-7 text-[#f09ac7]" /> */}
@@ -2901,15 +3090,14 @@ function ChatWorkspace({
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        Analyse Ingredients
+                        Scan du visage <span className="bg-yellow-200 text-[#171b36] px-2 py-1 rounded-md text-[8px] font-bold"> PREMIUM </span>
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        Decode ingredients and understand what works for your
-                        skin.
+                        Décodez les ingrédients et comprenez ce qui convient à votre peau.
                       </span>
-                      <img src="/icons/analyse.png" alt="analyze ingredients" />
+                      <img src="/icons/face.png" alt="analyze ingredients" />
                     </span>
                   </button>
                 </div>
@@ -2918,34 +3106,97 @@ function ChatWorkspace({
                   ref={cardsRef}
                   className="mt-6 grid w-full gap-3 md:grid-cols-2 xl:grid-cols-4"
                 >
-                  {featureCards.map(([Icon, title, text]) => (
-                    <article
-                      key={title}
-                      data-chat-card
-                      className={`group min-h-[118px] rounded-2xl border p-4 text-left transition hover:-translate-y-1 ${palette.featureCard}`}
-                    >
-                      <Icon className="h-6 w-6 text-[#ec9ccc]" />
-                      <h3
-                        className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}
+                  {featureCards.map((card) => {
+                    const Icon = card.icon;
+
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        data-chat-card
+                        onClick={() => setSelectedFeatureCard(card)}
+                        className={`group min-h-[118px] rounded-2xl border p-4 text-left transition hover:-translate-y-1 ${palette.featureCard}`}
                       >
-                        {title}
-                      </h3>
-                      <p
-                        className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}
-                      >
-                        {text}
-                      </p>
-                      <ArrowRight
-                        className={`ml-auto mt-3 h-4 w-4 transition group-hover:translate-x-1 ${palette.featureText}`}
-                      />
-                    </article>
-                  ))}
+                        <Icon className="h-6 w-6 text-[#ec9ccc]" />
+
+                        <h3
+                          className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}
+                        >
+                          {card.title}
+                        </h3>
+
+                        <p className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}>
+                          {card.text}
+                        </p>
+
+                        <ArrowRight
+                          className={`ml-auto mt-3 h-4 w-4 transition group-hover:translate-x-1 ${palette.featureText}`}
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
           </div>
         </section>
       </div>
+      {selectedFeatureCard && (
+        <FeatureCardDialog
+          card={selectedFeatureCard}
+          isDarkTheme={isDarkTheme}
+          onClose={() => setSelectedFeatureCard(null)}
+          onPrimaryAction={() => {
+            if (selectedFeatureCard.action === "scan") {
+              setSelectedFeatureCard(null);
+              onScanAnother();
+              return;
+            }
+
+            setSelectedFeatureCard(null);
+          }}
+        />
+      )}
+
+      {isFaceScanDialogOpen && (
+        <FaceScanComingSoonDialog
+          isDarkTheme={isDarkTheme}
+          onClose={() => setIsFaceScanDialogOpen(false)}
+        />
+      )}
+
+      <style jsx global>{`
+  @keyframes dialog-overlay-fade {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes dialog-panel-fade {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .dialog-overlay-fade {
+    animation: dialog-overlay-fade 220ms ease-out both;
+  }
+
+  .dialog-panel-fade {
+    animation: dialog-panel-fade 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: opacity, transform;
+  }
+`}</style>
     </main>
   );
 }
@@ -3223,11 +3474,10 @@ function SavedConversationWorkspace({
                       className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${
-                          message.role === "user"
-                            ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                            : "border-[#ece5fb] bg-white text-[#59617d]"
-                        }`}
+                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
+                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                          : "border-[#ece5fb] bg-white text-[#59617d]"
+                          }`}
                       >
                         {message.content}
                       </div>
@@ -3343,7 +3593,7 @@ function ResultWorkspace({
       id: "assistant-intro",
       role: "assistant",
       content:
-        "Je peux maintenant repondre a vos questions sur ce resultat, la routine, les ingredients a surveiller ou la frequence d utilisation.",
+        "Je peux maintenant répondre à vos questions sur ce résultat, la routine, les ingrédients à surveiller ou la fréquence d’utilisation.",
     },
   ]);
   const [isChatSending, setIsChatSending] = useState(false);
@@ -3450,7 +3700,7 @@ function ResultWorkspace({
           id: `assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
           content:
-            "Impossible de repondre pour le moment. Reessayez dans quelques instants.",
+            "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
         },
       ]);
     } finally {
@@ -3599,11 +3849,10 @@ function ResultWorkspace({
                     className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     <div
-                      className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${
-                        message.role === "user"
-                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                          : "border-[#ece5fb] bg-white text-[#59617d]"
-                      }`}
+                      className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
+                        ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
+                        : "border-[#ece5fb] bg-white text-[#59617d]"
+                        }`}
                     >
                       {message.content}
                     </div>
@@ -3804,12 +4053,12 @@ function TipsCard() {
   const tips = [
     [
       Lightbulb,
-      "Bonne luminosite",
-      "Prenez la photo dans un endroit bien eclaire.",
+      "Bonne luminosité",
+      "Prenez la photo dans un endroit bien éclairé.",
     ],
     [
       SquareDashed,
-      "Centree et lisible",
+      "Centrée et lisible",
       "Assurez-vous que toute la liste d ingredients est visible et nette.",
     ],
     [
@@ -3891,7 +4140,7 @@ function BeforeContinueCard() {
           <Lock className="h-5 w-5" />
         </span>
         <p className="text-xs leading-6">
-          Vos donnees restent privees et securisees. Elles ne sont utilisees que
+          Vos données restent privées et sécurisées. Elles ne sont utilisees que
           pour l analyse.
         </p>
       </div>
@@ -3969,12 +4218,12 @@ function ManualIngredientsDialog({
   const parsedCount = parseIngredientText(value).length;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
+    <div className="dialog-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="manual-ingredients-title"
-        className="w-full max-w-2xl rounded-[32px] border border-white/60 bg-white p-7 shadow-[0_35px_90px_rgba(42,22,84,0.28)]"
+        className="dialog-panel-fade w-full max-w-2xl rounded-[32px] border border-white/60 bg-white p-7 shadow-[0_35px_90px_rgba(42,22,84,0.28)]"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -4059,12 +4308,12 @@ function UpgradePlanDialog({
   const isScanLimit = reason === "scan-limit";
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
+    <div className="dialog-overlay-fade fixed inset-0 z-[100] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="upgrade-plan-title"
-        className="w-full max-w-md rounded-[32px] border border-white/70 bg-white p-7 text-[#171b36] shadow-[0_35px_90px_rgba(42,22,84,0.3)]"
+        className="dialog-panel-fade w-full max-w-md rounded-[32px] border border-white/70 bg-white p-7 text-[#171b36] shadow-[0_35px_90px_rgba(42,22,84,0.3)]"
       >
         <div className="flex items-start justify-between gap-4">
           <span className="flex h-13 w-13 shrink-0 items-center justify-center rounded-2xl bg-[#f3edff] text-[#7a55ea] shadow-[0_14px_28px_rgba(112,75,225,0.16)]">
@@ -4373,15 +4622,14 @@ function InsightCard({
   const isGreen = tone === "green";
   return (
     <section
-      className={`rounded-[24px] border p-5 ${
-        isDarkTheme
-          ? isGreen
-            ? "border-[#234936] bg-[#101b15]"
-            : "border-[#5a3a16] bg-[#1a1610]"
-          : isGreen
-            ? "border-[#ddf1e6] bg-[#fcfffd]"
-            : "border-[#f5e5cb] bg-[#fffdf9]"
-      }`}
+      className={`rounded-[24px] border p-5 ${isDarkTheme
+        ? isGreen
+          ? "border-[#234936] bg-[#101b15]"
+          : "border-[#5a3a16] bg-[#1a1610]"
+        : isGreen
+          ? "border-[#ddf1e6] bg-[#fcfffd]"
+          : "border-[#f5e5cb] bg-[#fffdf9]"
+        }`}
     >
       <h3
         className={`flex items-center gap-2.5 text-lg font-bold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
@@ -4497,5 +4745,251 @@ function NextStepCard({
         ))}
       </div>
     </section>
+  );
+}
+
+function FaceScanComingSoonDialog({
+  isDarkTheme,
+  onClose,
+}: {
+  isDarkTheme: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <div className="dialog-overlay-fade fixed inset-0 z-[95] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="face-scan-coming-soon-title"
+        className={`dialog-panel-fade w-full max-w-lg rounded-[34px] border p-6 shadow-[0_35px_90px_rgba(15,23,42,0.28)] ${isDarkTheme
+          ? "border-white/10 bg-[#11101a] text-white"
+          : "border-white/70 bg-white text-[#171b36]"
+          }`}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <span
+            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${isDarkTheme
+              ? "bg-white/[0.07] text-[#f0a6d6]"
+              : "bg-[#f5ecff] text-[#9a56bf]"
+              }`}
+          >
+            <ScanBarcode className="h-7 w-7" />
+          </span>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className={`flex h-10 w-10 items-center justify-center rounded-full transition ${isDarkTheme
+              ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
+              : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
+              }`}
+            aria-label="Fermer la fenêtre"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div
+          className={`mt-6 overflow-hidden rounded-[28px] border ${isDarkTheme
+            ? "border-white/10 bg-white/[0.04]"
+            : "border-[#efe7fb] bg-[#fbf8ff]"
+            }`}
+        >
+          <div className="relative flex h-[210px] items-center justify-center p-6">
+            <div
+              className={`absolute inset-0 ${isDarkTheme
+                ? "bg-[radial-gradient(circle_at_center,rgba(232,160,216,0.18),transparent_58%)]"
+                : "bg-[radial-gradient(circle_at_center,rgba(213,160,221,0.24),transparent_58%)]"
+                }`}
+            />
+
+            <img
+              src="/icons/face.png"
+              alt="Face scanning preview"
+              className="relative z-10 max-h-[180px] w-auto object-contain drop-shadow-[0_18px_35px_rgba(122,63,92,0.16)]"
+            />
+          </div>
+        </div>
+
+        <p
+          className={`mt-6 text-xs font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
+            }`}
+        >
+          Bientôt disponible
+        </p>
+
+        <h2
+          id="face-scan-coming-soon-title"
+          className="mt-2 text-2xl font-bold tracking-[-0.03em]"
+        >
+          Le scan du visage arrive bientôt
+        </h2>
+
+        <p
+          className={`mt-3 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"
+            }`}
+        >
+          Bientôt, SkinorAI aidera les utilisateurs à scanner leur visage, comprendre les préoccupations visibles de la peau et recevoir des conseils plus personnalisés.
+        </p>
+
+        <div className="mt-6 space-y-3">
+          {[
+            "Analyser les préoccupations visibles grâce à un scan guidé du visage.",
+            "Améliorer les recommandations selon l’apparence de la peau et les objectifs.",
+            "Combiner les scans produits avec des insights peau personnalisés.",
+          ].map((point) => (
+            <div
+              key={point}
+              className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${isDarkTheme
+                ? "border-white/10 bg-white/[0.04]"
+                : "border-[#efe7fb] bg-[#fbf8ff]"
+                }`}
+            >
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isDarkTheme
+                  ? "bg-white/[0.08] text-[#f0a6d6]"
+                  : "bg-[#f1eaff] text-[#7a55ea]"
+                  }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+
+              <p
+                className={`text-sm leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"
+                  }`}
+              >
+                {point}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-7 flex justify-end">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(202,105,179,0.22)] transition hover:-translate-y-0.5"
+          >
+            Compris
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeatureCardDialog({
+  card,
+  isDarkTheme,
+  onClose,
+  onPrimaryAction,
+}: {
+  card: FeatureCard;
+  isDarkTheme: boolean;
+  onClose: () => void;
+  onPrimaryAction: () => void;
+}) {
+  const Icon = card.icon;
+  const hasPrimaryCta = Boolean(card.primaryCtaLabel);
+
+  return (
+    <div className="dialog-overlay-fade fixed inset-0 z-[90] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feature-card-dialog-title"
+        className={`dialog-panel-fade w-full max-w-3xl rounded-[34px] border p-6 shadow-[0_35px_90px_rgba(15,23,42,0.28)] ${isDarkTheme
+          ? "border-white/10 bg-[#11101a] text-white"
+          : "border-white/70 bg-white text-[#171b36]"
+          }`}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${isDarkTheme
+                ? "bg-white/[0.07] text-[#f0a6d6]"
+                : "bg-[#f5ecff] text-[#9a56bf]"
+                }`}
+            >
+              <Icon className="h-5 w-5" />
+            </span>
+
+            <div>
+              <p
+                className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
+                  }`}
+              >
+                Fonctionnalité SkinorAI
+              </p>
+
+              <h2
+                id="feature-card-dialog-title"
+                className="mt-1 text-xl font-bold tracking-[-0.03em]"
+              >
+                {card.title}
+              </h2>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className={`flex h-10 w-10 items-center justify-center rounded-full transition ${isDarkTheme
+              ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
+              : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
+              }`}
+            aria-label="Fermer la fenêtre"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <img
+          src={card.image}
+          alt={card.imageAlt}
+          className="relative my-5 w-full rounded-lg z-10 w-auto object-contain drop-shadow-[0_18px_35px_rgba(122,63,92,0.16)]"
+        />
+
+        <div className="mt-6 space-y-3">
+          {card.points.map((point: any) => (
+            <div
+              key={point}
+              className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${isDarkTheme
+                ? "border-white/10 bg-white/[0.04]"
+                : "border-[#efe7fb] bg-[#fbf8ff]"
+                }`}
+            >
+              <span
+                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isDarkTheme
+                  ? "bg-white/[0.08] text-[#f0a6d6]"
+                  : "bg-[#f1eaff] text-[#7a55ea]"
+                  }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+
+              <p
+                className={`text-sm leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"
+                  }`}
+              >
+                {point}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {hasPrimaryCta && (
+          <div className="mt-7 flex justify-end">
+            <button
+              type="button"
+              onClick={onPrimaryAction}
+              className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(202,105,179,0.22)] transition hover:-translate-y-0.5"
+            >
+              {card.primaryCtaLabel}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

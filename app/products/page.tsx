@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, ReactNode, SyntheticEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, ReactNode, SyntheticEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   ChevronLeft,
@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { API_BASE_URL } from "@/components/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -150,15 +151,15 @@ const categoryFilters: Array<{
   filterType: "all" | "skinType" | "goal";
   value?: SkinType | SkinGoal;
 }> = [
-  { id: "all", label: "Tous", filterType: "all" },
-  { id: "dry", label: "Peau sèche", filterType: "skinType", value: "dry" },
-  { id: "oily", label: "Peau grasse", filterType: "skinType", value: "oily" },
-  { id: "sensitive", label: "Peau sensible", filterType: "skinType", value: "sensitive" },
-  { id: "acne", label: "Acné & imperfections", filterType: "goal", value: "acne" },
-  { id: "redness", label: "Rougeurs", filterType: "goal", value: "redness" },
-  { id: "barrier", label: "Barrière abîmée", filterType: "goal", value: "barrier" },
-  { id: "glow", label: "Éclat & taches", filterType: "goal", value: "glow" },
-];
+    { id: "all", label: "Tous", filterType: "all" },
+    { id: "dry", label: "Peau sèche", filterType: "skinType", value: "dry" },
+    { id: "oily", label: "Peau grasse", filterType: "skinType", value: "oily" },
+    { id: "sensitive", label: "Peau sensible", filterType: "skinType", value: "sensitive" },
+    { id: "acne", label: "Acné & imperfections", filterType: "goal", value: "acne" },
+    { id: "redness", label: "Rougeurs", filterType: "goal", value: "redness" },
+    { id: "barrier", label: "Barrière abîmée", filterType: "goal", value: "barrier" },
+    { id: "glow", label: "Éclat & taches", filterType: "goal", value: "glow" },
+  ];
 
 function buildImageUrl(imagePath?: string | null) {
   if (!imagePath) return `${API_BASE_URL}${DEFAULT_PRODUCT_IMAGE}`;
@@ -244,7 +245,9 @@ export default function ProductsPage() {
   const heroRef = useRef<HTMLDivElement | null>(null);
   const profileRef = useRef<HTMLDivElement | null>(null);
   const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const categoriesRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const paginationRef = useRef<HTMLDivElement | null>(null);
 
   const isPersonalized = useMemo(() => !isDefaultProfile(appliedForm), [appliedForm]);
 
@@ -266,19 +269,73 @@ export default function ProductsPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!pageRef.current) return;
+  useLayoutEffect(() => {
+    const root = pageRef.current;
+    if (!root) return;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    gsap.registerPlugin(ScrollTrigger);
 
     const ctx = gsap.context(() => {
-      gsap.from([heroRef.current, profileRef.current, toolbarRef.current], {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .from(heroRef.current, {
+          y: 28,
+          opacity: 0,
+          duration: 0.7,
+          immediateRender: false,
+        })
+        .from(
+          profileRef.current,
+          {
+            y: 30,
+            opacity: 0,
+            scale: 0.985,
+            duration: 0.7,
+            immediateRender: false,
+          },
+          "-=0.35",
+        )
+        .from(
+          "[data-profile-summary]",
+          {
+            y: 16,
+            opacity: 0,
+            duration: 0.45,
+            stagger: 0.055,
+            immediateRender: false,
+          },
+          "-=0.32",
+        );
+
+      gsap.from("[data-category-pill]", {
+        y: 18,
+        opacity: 0,
+        duration: 0.45,
+        stagger: 0.045,
+        ease: "power3.out",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: categoriesRef.current,
+          start: "top 88%",
+          once: true,
+        },
+      });
+
+      gsap.from(toolbarRef.current, {
         y: 22,
         opacity: 0,
-        duration: 0.65,
-        stagger: 0.09,
+        duration: 0.55,
         ease: "power3.out",
-        clearProps: "transform,opacity",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: toolbarRef.current,
+          start: "top 90%",
+          once: true,
+        },
       });
-    }, pageRef);
+    }, root);
 
     return () => ctx.revert();
   }, []);
@@ -342,20 +399,50 @@ export default function ProductsPage() {
   useEffect(() => {
     if (isLoading || !gridRef.current) return;
 
-    const cards = gridRef.current.querySelectorAll("[data-product-card]");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    gsap.fromTo(
-      cards,
-      { y: 18, opacity: 0 },
-      {
-        y: 0,
-        opacity: 1,
-        duration: 0.42,
-        stagger: 0.035,
-        ease: "power3.out",
-        clearProps: "transform,opacity",
-      },
-    );
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      const cards = gsap.utils.toArray<HTMLElement>("[data-product-card]");
+
+      gsap.set(cards, { y: 34, opacity: 0, scale: 0.985 });
+
+      ScrollTrigger.batch(cards, {
+        start: "top 92%",
+        once: true,
+        onEnter: (batch) => {
+          gsap.to(batch, {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.55,
+            stagger: 0.05,
+            ease: "power3.out",
+            clearProps: "transform,opacity",
+          });
+        },
+      });
+
+      if (paginationRef.current) {
+        gsap.from(paginationRef.current, {
+          y: 18,
+          opacity: 0,
+          duration: 0.45,
+          ease: "power3.out",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: paginationRef.current,
+            start: "top 94%",
+            once: true,
+          },
+        });
+      }
+
+      window.requestAnimationFrame(() => ScrollTrigger.refresh());
+    }, gridRef);
+
+    return () => ctx.revert();
   }, [isLoading, response?.meta.page, response?.items.length]);
 
   const updateForm = <Key extends keyof RecommendationForm>(
@@ -414,45 +501,7 @@ export default function ProductsPage() {
               </p>
             </div>
 
-            <Card className="hidden rounded-[10px] border border-[#efe7fb] bg-white/85 shadow-none ring-0 lg:block">
-              <CardContent className="flex gap-4 p-5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] bg-[#f3ecff] text-[#8b5cf6]">
-                  <ShieldCheck className="h-5 w-5" />
-                </span>
-                <div>
-                  <h2 className="text-base font-semibold text-[#221d35]">
-                    Recommandations sans tokens IA
-                  </h2>
-                  <p className="mt-2 text-sm leading-6 text-[#726b86]">
-                    Le classement utilise les données produits en base. L’IA reste pour les conseils détaillés.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          <div className="mt-8 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {categoryFilters.map((category) => {
-              const isActive = activeCategory === category.id;
-
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveCategory(category.id);
-                    setPage(1);
-                  }}
-                  className={`shrink-0 rounded-full border px-5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "border-[#8b5cf6] bg-[#8b5cf6] text-white"
-                      : "border-[#e7def3] bg-white text-[#4f4661] hover:border-[#cdb8ee] hover:bg-[#fbf8ff]"
-                  }`}
-                >
-                  {category.label}
-                </button>
-              );
-            })}
           </div>
 
           <Card
@@ -516,6 +565,30 @@ export default function ProductsPage() {
             </CardContent>
           </Card>
 
+          <div ref={categoriesRef} className="mt-8 flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {categoryFilters.map((category) => {
+              const isActive = activeCategory === category.id;
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(category.id);
+                    setPage(1);
+                  }}
+                  data-category-pill
+                  className={`shrink-0 cursor-pointer rounded-full border px-5 py-2.5 text-sm font-medium transition-all duration-200 ${isActive
+                      ? "border-[#8b5cf6] bg-[#8b5cf6] text-white"
+                      : "border-[#e7def3] bg-white text-[#4f4661] hover:border-[#cdb8ee] hover:bg-[#fbf8ff]"
+                    }`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+
           <div ref={toolbarRef} className="mt-8 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-[#221d35]">
@@ -562,16 +635,16 @@ export default function ProductsPage() {
           <div ref={gridRef} className="mt-5 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-4">
             {isLoading
               ? Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
-                  <ProductSkeleton key={index} />
-                ))
+                <ProductSkeleton key={index} />
+              ))
               : response?.items.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    isPersonalized={isPersonalized}
-                    onOpen={() => setSelectedProduct(product)}
-                  />
-                ))}
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isPersonalized={isPersonalized}
+                  onOpen={() => setSelectedProduct(product)}
+                />
+              ))}
           </div>
 
           {!isLoading && response?.items.length === 0 && (
@@ -589,7 +662,7 @@ export default function ProductsPage() {
           )}
 
           {response && response.meta.totalPages > 1 && (
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <div ref={paginationRef} className="mt-10 flex flex-wrap items-center justify-center gap-3">
               <Button
                 type="button"
                 variant="outline"
@@ -648,7 +721,7 @@ export default function ProductsPage() {
 
 function ProfileSummary({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] px-4 py-3 transition hover:border-[#e3d4f5] hover:bg-[#fffafe]">
+    <div data-profile-summary className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] px-4 py-3 transition hover:border-[#e3d4f5] hover:bg-[#fffafe]">
       <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#8f86a5]">
         {label}
       </p>
@@ -679,11 +752,28 @@ function SkinProfileDialog({
   useEffect(() => {
     if (!open || !contentRef.current) return;
 
-    gsap.fromTo(
-      contentRef.current,
-      { y: 18, opacity: 0, scale: 0.98 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" },
-    );
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          contentRef.current,
+          { y: 18, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.35 },
+        )
+        .from(
+          "[data-profile-dialog-part]",
+          {
+            y: 14,
+            opacity: 0,
+            duration: 0.34,
+            stagger: 0.045,
+            immediateRender: false,
+          },
+          "-=0.18",
+        );
+    }, contentRef);
+
+    return () => ctx.revert();
   }, [open]);
 
   return (
@@ -693,7 +783,7 @@ function SkinProfileDialog({
         className="w-[calc(100vw-32px)] max-h-[90vh] overflow-hidden rounded-[14px] border border-[#eadff7] bg-white p-0 shadow-[0_24px_80px_rgba(53,37,82,0.14)] sm:max-w-[760px]"
       >
         <form onSubmit={onSubmit}>
-          <DialogHeader className="border-b border-[#f1eaf9] bg-[linear-gradient(135deg,#ffffff_0%,#fbf7ff_55%,#fffafc_100%)] p-6 text-left">
+          <DialogHeader data-profile-dialog-part className="border-b border-[#f1eaf9] bg-[linear-gradient(135deg,#ffffff_0%,#fbf7ff_55%,#fffafc_100%)] p-6 text-left">
             <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] bg-[#f3ecff] text-[#8b5cf6]">
               <Sparkles className="h-5 w-5" />
             </div>
@@ -705,7 +795,7 @@ function SkinProfileDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-4 p-6 lg:grid-cols-2">
+          <div data-profile-dialog-part className="grid gap-4 p-6 lg:grid-cols-2">
             <SelectField
               label="Type de peau"
               value={form.skinType}
@@ -743,7 +833,7 @@ function SkinProfileDialog({
             </div>
           </div>
 
-          <DialogFooter className="gap-3 rounded-b-[14px] border-t border-[#f1eaf9] bg-[#fffdfd] p-5 sm:items-center sm:justify-between">
+          <DialogFooter data-profile-dialog-part className="gap-3 rounded-b-[14px] border-t border-[#f1eaf9] bg-[#fffdfd] p-5 sm:items-center sm:justify-between">
             <Button
               type="button"
               variant="outline"
@@ -918,11 +1008,49 @@ function ProductDetailsDialog({
   useEffect(() => {
     if (!open || !contentRef.current) return;
 
-    gsap.fromTo(
-      contentRef.current,
-      { y: 24, opacity: 0, scale: 0.98 },
-      { y: 0, opacity: 1, scale: 1, duration: 0.38, ease: "power3.out" },
-    );
+    const ctx = gsap.context(() => {
+      gsap
+        .timeline({ defaults: { ease: "power3.out" } })
+        .fromTo(
+          contentRef.current,
+          { y: 24, opacity: 0, scale: 0.98 },
+          { y: 0, opacity: 1, scale: 1, duration: 0.38 },
+        )
+        .from(
+          "[data-product-detail-media]",
+          { x: -24, opacity: 0, duration: 0.45, immediateRender: false },
+          "-=0.18",
+        )
+        .from(
+          "[data-product-detail-copy]",
+          { y: 18, opacity: 0, duration: 0.42, immediateRender: false },
+          "-=0.28",
+        )
+        .from(
+          "[data-product-detail-info]",
+          {
+            y: 14,
+            opacity: 0,
+            duration: 0.34,
+            stagger: 0.055,
+            immediateRender: false,
+          },
+          "-=0.2",
+        )
+        .from(
+          "[data-product-detail-section]",
+          {
+            y: 16,
+            opacity: 0,
+            duration: 0.34,
+            stagger: 0.055,
+            immediateRender: false,
+          },
+          "-=0.16",
+        );
+    }, contentRef);
+
+    return () => ctx.revert();
   }, [open, product?.id]);
 
   return (
@@ -933,7 +1061,7 @@ function ProductDetailsDialog({
       >
         {product && (
           <div className="grid max-h-[86vh] overflow-y-auto lg:grid-cols-[360px_minmax(0,1fr)]">
-            <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden border-b border-[#f1eaf9] bg-[#faf8fc] p-0 lg:border-b-0 lg:border-r">
+            <div data-product-detail-media className="relative flex min-h-[360px] items-center justify-center overflow-hidden border-b border-[#f1eaf9] bg-[#faf8fc] p-0 lg:border-b-0 lg:border-r">
               {product.badges?.[0] && (
                 <Badge className="absolute left-5 top-5 rounded-[10px] border border-[#eadcff] bg-white/90 px-3 py-1 text-[11px] font-medium text-[#7c4ee4] shadow-none hover:bg-white/90">
                   {product.badges[0]}
@@ -948,7 +1076,7 @@ function ProductDetailsDialog({
             </div>
 
             <div className="p-6">
-              <DialogHeader className="text-left">
+              <DialogHeader data-product-detail-copy className="text-left">
                 <p className="text-sm font-medium text-[#8a8299]">{product.brand}</p>
                 <DialogTitle className="mt-1 text-2xl font-semibold tracking-[-0.04em] text-[#171325]">
                   {product.name}
@@ -1020,7 +1148,7 @@ function ProductDetailsDialog({
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] px-4 py-3">
+    <div data-product-detail-info className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] px-4 py-3">
       <p className="text-[11px] font-semibold uppercase tracking-[0.13em] text-[#8f86a5]">
         {label}
       </p>
@@ -1031,7 +1159,7 @@ function InfoBox({ label, value }: { label: string; value: string }) {
 
 function DetailSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] p-4">
+    <section data-product-detail-section className="rounded-[10px] border border-[#f1eaf9] bg-[#fffdfd] p-4">
       <h3 className="text-sm font-semibold text-[#221d35]">{title}</h3>
       <div className="mt-3">{children}</div>
     </section>

@@ -2,29 +2,41 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { ArrowRight, LogOut, Settings, UserRound } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  ArrowRight,
+  LogOut,
+  Menu,
+  Settings,
+  UserRound,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import { formatMessage, useI18n } from "@/lib/i18n";
 
 const navItems = [
-  { label: "Comment ca marche", href: "#how-it-works" },
-  { label: "Produits", href: "/products" },
-  { label: "Ingredients", href: "/ingredient-library" },
-  { label: "Tarifs", href: "/pricing" },
+  // { label: "Comment ca marche", href: "#how-it-works" },
+  { labelKey: "nav.products", href: "/products" },
+  { labelKey: "nav.ingredients", href: "/ingredient-library" },
+  { labelKey: "nav.pricing", href: "/pricing" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
   const { isReady, user, logout } = useAuth();
+  const { t } = useI18n();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isHiddenByPage, setIsHiddenByPage] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const displayName = user?.name?.trim() || user?.email || "Compte";
 
   useEffect(() => {
     setIsMenuOpen(false);
+    setIsMobileNavOpen(false);
   }, [pathname]);
 
   useEffect(() => {
@@ -59,19 +71,28 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (!isMenuOpen) {
+    if (!isMenuOpen && !isMobileNavOpen) {
       return;
     }
 
     const handlePointerDown = (event: MouseEvent) => {
-      if (!menuRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      const clickedOutsideAccountMenu = !menuRef.current?.contains(target);
+      const clickedOutsideMobileNav = !mobileNavRef.current?.contains(target);
+
+      if (isMenuOpen && clickedOutsideAccountMenu) {
         setIsMenuOpen(false);
+      }
+
+      if (isMobileNavOpen && clickedOutsideMobileNav) {
+        setIsMobileNavOpen(false);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsMenuOpen(false);
+        setIsMobileNavOpen(false);
       }
     };
 
@@ -82,16 +103,18 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isMobileNavOpen]);
 
   if (pathname === "/login" || isHiddenByPage) {
     return null;
   }
 
+  const router = useRouter()
+
   return (
     <header className="fixed left-0 top-0 z-50 w-full">
       <nav
-        className={`flex h-[72px] w-full items-center justify-between border-b px-4 transition-all duration-300 sm:px-6 lg:px-28 ${
+        className={`relative flex h-[72px] w-full items-center justify-between border-b px-4 transition-all duration-300 sm:px-6 lg:px-28 ${
           isScrolled
             ? "border-black/5 bg-white/50 shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur-xl"
             : "border-transparent bg-transparent"
@@ -100,7 +123,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-3">
           <Image
             src="/logo.png"
-            alt="SkinorAI Logo"
+            alt="SkinorAI"
             width={168}
             height={40}
             className="h-8 w-auto sm:h-9"
@@ -111,21 +134,33 @@ export default function Navbar() {
         <div className="hidden items-center gap-8 lg:flex">
           {navItems.map((item) => (
             <Link
-              key={item.label}
+              key={item.labelKey}
               href={item.href}
               className="text-sm font-medium text-[#2b2b2b] transition hover:text-black"
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           ))}
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIsMobileNavOpen((current) => !current)}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ece7e3] bg-white/85 text-[#171717] transition hover:bg-[#f6f3ef] lg:hidden"
+            aria-label={isMobileNavOpen ? t("nav.closeMenu") : t("nav.openMenu")}
+            aria-expanded={isMobileNavOpen}
+            aria-controls="mobile-navbar-menu"
+          >
+            {isMobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+
           <Link
             href="/scan"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#c8a4ff] via-[#b986ff] to-[#9f72f2] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_26px_rgba(155,108,241,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(155,108,241,0.34)] sm:px-5"
           >
-            Start scanning
+            <span className="hidden sm:inline">{t("nav.scanCta")}</span>
+            <span className="sm:hidden">{t("nav.scanShort")}</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
 
@@ -134,8 +169,8 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setIsMenuOpen((current) => !current)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ece7e3] bg-[#f6f3ef] text-[#171717] transition hover:bg-[#efebe6]"
-                aria-label={`Compte de ${displayName}`}
+                className="inline-flex cursor-pointer h-11 w-11 items-center justify-center rounded-full border border-[#ece7e3] bg-[#f6f3ef] text-[#171717] transition hover:bg-[#efebe6]"
+                aria-label={formatMessage(t("nav.account"), { name: displayName })}
                 aria-haspopup="menu"
                 aria-expanded={isMenuOpen}
               >
@@ -159,11 +194,12 @@ export default function Navbar() {
                 <div className="mt-3 overflow-hidden rounded-[22px] border border-[#efebe7] bg-white">
                   <button
                     type="button"
+                    onClick={() => { router.push("/settings"); }}
                     className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
                     role="menuitem"
                   >
                     <Settings className="h-4 w-4 text-[#555]" />
-                    Settings
+                    {t("nav.settings")}
                   </button>
                   <button
                     type="button"
@@ -172,7 +208,7 @@ export default function Navbar() {
                     role="menuitem"
                   >
                     <LogOut className="h-4 w-4 text-[#555]" />
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </div>
               </div>
@@ -182,9 +218,30 @@ export default function Navbar() {
               href="/login"
               className="inline-flex items-center justify-center rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f1f1f]"
             >
-              Log In
+              {t("nav.login")}
             </Link>
           )}
+        </div>
+
+        <div
+          id="mobile-navbar-menu"
+          ref={mobileNavRef}
+          className={`absolute left-4 right-4 top-[calc(100%+12px)] rounded-[28px] border border-[#efebe7] bg-[#fbf9f6]/95 p-3 shadow-[0_24px_65px_rgba(15,23,42,0.14)] backdrop-blur-xl transition-all lg:hidden ${
+            isMobileNavOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden rounded-[22px] border border-[#efebe7] bg-white">
+            {navItems.map((item) => (
+              <Link
+                key={item.labelKey}
+                href={item.href}
+                className="flex items-center justify-between px-4 py-3 text-sm font-medium text-[#262626] transition hover:bg-[#f6f3ef]"
+              >
+                <span>{t(item.labelKey)}</span>
+                <ArrowRight className="h-4 w-4 text-[#8b5cf6]" />
+              </Link>
+            ))}
+          </div>
         </div>
       </nav>
     </header>

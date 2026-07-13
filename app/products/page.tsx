@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { translateStaticText, useI18n } from "@/lib/i18n";
 
 type SkinType = "all" | "dry" | "oily" | "combination" | "sensitive" | "normal";
 type SkinGoal =
@@ -229,6 +230,8 @@ function readStoredProfile(): RecommendationForm | null {
 }
 
 export default function ProductsPage() {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(value, locale);
   const [form, setForm] = useState<RecommendationForm>(initialForm);
   const [appliedForm, setAppliedForm] = useState<RecommendationForm>(initialForm);
   const [page, setPage] = useState(1);
@@ -491,13 +494,13 @@ export default function ProductsPage() {
           <div ref={heroRef} className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8b5cf6]">
-                Produits
+                {tr("Produits")}
               </p>
               <h1 className="mt-3 text-4xl font-semibold tracking-[-0.04em] text-[#171325]">
-                Produits recommandés
+                {tr("Produits recommandés")}
               </h1>
               <p className="mt-3 max-w-xl text-sm leading-6 text-[#6f687d]">
-                Découvrez des soins classés par type de peau, objectif et ingrédients clés.
+                {tr("Découvrez des soins classés par type de peau, objectif et ingrédients clés.")}
               </p>
             </div>
 
@@ -516,10 +519,10 @@ export default function ProductsPage() {
                   </span>
                   <div>
                     <h2 className="text-xl font-semibold tracking-[-0.03em] text-[#221d35]">
-                      Votre profil peau
+                      {tr("Votre profil peau")}
                     </h2>
                     <p className="mt-1 text-sm leading-6 text-[#756f88]">
-                      Optionnel. Personnalisez vos recommandations ou affichez tout le catalogue.
+                      {tr("Optionnel. Personnalisez vos recommandations ou affichez tout le catalogue.")}
                     </p>
                   </div>
                 </div>
@@ -533,7 +536,7 @@ export default function ProductsPage() {
                       className="h-10 cursor-pointer rounded-[10px] border-[#eadff7] bg-white text-[#6f6681] shadow-none hover:bg-[#fbf7ff]"
                     >
                       <X className="h-4 w-4" />
-                      Réinitialiser
+                      {tr("Réinitialiser")}
                     </Button>
                   )}
                   <Button
@@ -542,14 +545,14 @@ export default function ProductsPage() {
                     onClick={skipProfile}
                     className="h-10 cursor-pointer rounded-[10px] border-[#eadff7] bg-white text-[#6f6681] shadow-none hover:bg-[#fbf7ff]"
                   >
-                    Voir tous les produits
+                    {tr("Voir tous les produits")}
                   </Button>
                   <Button
                     type="button"
                     onClick={() => setIsProfileDialogOpen(true)}
                     className="h-10 cursor-pointer rounded-[10px] bg-[#111018] px-5 text-white shadow-none hover:bg-[#111018]/90"
                   >
-                    Personnaliser
+                    {tr("Personnaliser")}
                     <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -557,11 +560,11 @@ export default function ProductsPage() {
             </CardHeader>
 
             <CardContent className="grid gap-3 p-5 md:grid-cols-2 md:p-6 xl:grid-cols-5">
-              <ProfileSummary label="Type de peau" value={getSkinLabel(appliedForm.skinType)} />
-              <ProfileSummary label="Objectif" value={goals.find((item) => item.id === appliedForm.goal)?.label ?? "Tous"} />
-              <ProfileSummary label="Sensibilité" value={sensitivities.find((item) => item.id === appliedForm.sensitivity)?.label ?? "Je ne sais pas"} />
-              <ProfileSummary label="Produit" value={productTypes.find((item) => item.id === appliedForm.productType)?.label ?? "Tous"} />
-              <ProfileSummary label="À éviter" value={appliedForm.avoidIngredients || "Aucun"} />
+              <ProfileSummary label={tr("Type de peau")} value={tr(getSkinLabel(appliedForm.skinType))} />
+              <ProfileSummary label={tr("Objectif")} value={tr(goals.find((item) => item.id === appliedForm.goal)?.label ?? "Tous")} />
+              <ProfileSummary label={tr("Sensibilité")} value={tr(sensitivities.find((item) => item.id === appliedForm.sensitivity)?.label ?? "Je ne sais pas")} />
+              <ProfileSummary label={tr("Produit")} value={tr(productTypes.find((item) => item.id === appliedForm.productType)?.label ?? "Tous")} />
+              <ProfileSummary label={tr("À éviter")} value={appliedForm.avoidIngredients || tr("Aucun")} />
             </CardContent>
           </Card>
 
@@ -583,7 +586,7 @@ export default function ProductsPage() {
                       : "border-[#e7def3] bg-white text-[#4f4661] hover:border-[#cdb8ee] hover:bg-[#fbf8ff]"
                     }`}
                 >
-                  {category.label}
+                  {tr(category.label)}
                 </button>
               );
             })}
@@ -592,14 +595,14 @@ export default function ProductsPage() {
           <div ref={toolbarRef} className="mt-8 flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-[#221d35]">
-                {isLoading ? "Chargement des produits..." : `${response?.meta.total ?? 0} produits trouvés`}
+                {isLoading ? tr("Chargement des produits...") : `${response?.meta.total ?? 0} ${tr("produits trouvés")}`}
               </p>
               <p className="mt-1 text-xs text-[#837c95]">
                 {isPersonalized
-                  ? "Classés selon votre profil peau."
+                  ? tr("Classés selon votre profil peau.")
                   : hasSkippedProfile
-                    ? "Profil ignoré. Tous les produits actifs sont affichés."
-                    : "Ajoutez votre profil pour obtenir un classement plus précis."}
+                    ? tr("Profil ignoré. Tous les produits actifs sont affichés.")
+                    : tr("Ajoutez votre profil pour obtenir un classement plus précis.")}
               </p>
             </div>
 
@@ -612,14 +615,14 @@ export default function ProductsPage() {
                     setSearch(event.target.value);
                     setPage(1);
                   }}
-                  placeholder="Rechercher une marque..."
+                  placeholder={tr("Rechercher une marque...")}
                   className="h-auto w-48 border-0 bg-transparent p-0 shadow-none outline-none placeholder:text-[#9c94ae] focus-visible:ring-0"
                 />
               </div>
 
               <div className="inline-flex h-11 items-center gap-2 rounded-[10px] border border-[#eadff7] bg-white px-4 text-sm font-semibold text-[#756f88]">
                 <SlidersHorizontal className="h-4 w-4" />
-                Page {response?.meta.page ?? page}/{response?.meta.totalPages ?? 1}
+                {tr("Page")} {response?.meta.page ?? page}/{response?.meta.totalPages ?? 1}
               </div>
             </div>
           </div>
@@ -652,10 +655,10 @@ export default function ProductsPage() {
               <CardContent className="p-8">
                 <Leaf className="mx-auto h-10 w-10 text-[#9b75f2]" />
                 <h2 className="mt-4 text-xl font-semibold text-[#221d35]">
-                  Aucun produit trouvé
+                  {tr("Aucun produit trouvé")}
                 </h2>
                 <p className="mt-2 text-sm text-[#756f88]">
-                  Essayez un autre objectif ou affichez tous les produits.
+                  {tr("Essayez un autre objectif ou affichez tous les produits.")}
                 </p>
               </CardContent>
             </Card>
@@ -671,7 +674,7 @@ export default function ProductsPage() {
                 className="h-11 cursor-pointer rounded-[10px] border-[#eadff7] bg-white px-5 text-sm font-semibold text-[#574c70] shadow-none hover:bg-[#fbf7ff]"
               >
                 <ChevronLeft className="h-4 w-4" />
-                Précédent
+                {tr("Précédent")}
               </Button>
 
               <Badge className="rounded-[10px] bg-[#f5efff] px-4 py-2 text-sm font-semibold text-[#8b5cf6] shadow-none hover:bg-[#f5efff]">
@@ -685,7 +688,7 @@ export default function ProductsPage() {
                 disabled={!response.meta.hasNextPage}
                 className="h-11 cursor-pointer rounded-[10px] border-[#eadff7] bg-white px-5 text-sm font-semibold text-[#574c70] shadow-none hover:bg-[#fbf7ff]"
               >
-                Suivant
+                {tr("Suivant")}
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
@@ -747,6 +750,8 @@ function SkinProfileDialog({
   onSubmit: (event?: FormEvent<HTMLFormElement>) => void;
   onSkip: () => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(value, locale);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -788,46 +793,46 @@ function SkinProfileDialog({
               <Sparkles className="h-5 w-5" />
             </div>
             <DialogTitle className="text-2xl font-semibold tracking-[-0.04em] text-[#221d35]">
-              Personnaliser vos recommandations
+              {tr("Personnaliser vos recommandations")}
             </DialogTitle>
             <DialogDescription className="max-w-[560px] text-sm leading-6 text-[#756f88]">
-              Répondez à quelques questions pour classer les produits selon votre peau. Vous pouvez ignorer cette étape et voir tout le catalogue.
+              {tr("Répondez à quelques questions pour classer les produits selon votre peau. Vous pouvez ignorer cette étape et voir tout le catalogue.")}
             </DialogDescription>
           </DialogHeader>
 
           <div data-profile-dialog-part className="grid gap-4 p-6 lg:grid-cols-2">
             <SelectField
-              label="Type de peau"
+              label={tr("Type de peau")}
               value={form.skinType}
-              options={skinTypes}
+              options={skinTypes.map((option) => ({ ...option, label: tr(option.label) }))}
               onChange={(value) => onUpdate("skinType", value as SkinType)}
             />
             <SelectField
-              label="Objectif principal"
+              label={tr("Objectif principal")}
               value={form.goal}
-              options={goals}
+              options={goals.map((option) => ({ ...option, label: tr(option.label) }))}
               onChange={(value) => onUpdate("goal", value as SkinGoal)}
             />
             <SelectField
-              label="Sensibilité"
+              label={tr("Sensibilité")}
               value={form.sensitivity}
-              options={sensitivities}
+              options={sensitivities.map((option) => ({ ...option, label: tr(option.label) }))}
               onChange={(value) => onUpdate("sensitivity", value as Sensitivity)}
             />
             <SelectField
-              label="Produit recherché"
+              label={tr("Produit recherché")}
               value={form.productType}
-              options={productTypes}
+              options={productTypes.map((option) => ({ ...option, label: tr(option.label) }))}
               onChange={(value) => onUpdate("productType", value as ProductType)}
             />
             <div className="md:col-span-2">
               <Label className="text-xs font-semibold uppercase tracking-[0.13em] text-[#8f86a5]">
-                Ingrédients à éviter
+                {tr("Ingrédients à éviter")}
               </Label>
               <Input
                 value={form.avoidIngredients}
                 onChange={(event) => onUpdate("avoidIngredients", event.target.value)}
-                placeholder="Parfum, alcohol denat, huiles essentielles..."
+                placeholder={tr("Parfum, alcohol denat, huiles essentielles...")}
                 className="mt-2 h-11 rounded-[10px] border-[#eadff7] bg-[#fffdfd] text-sm font-semibold text-[#221d35] shadow-none focus-visible:ring-[#f2e9ff]"
               />
             </div>
@@ -840,10 +845,10 @@ function SkinProfileDialog({
               onClick={onSkip}
               className="w-full rounded-[10px] border-[#eadff7] bg-white text-[#6f6681] shadow-none hover:bg-[#fbf7ff] sm:w-auto"
             >
-              Ignorer pour l’instant
+              {tr("Ignorer pour l’instant")}
             </Button>
             <Button type="submit" className="w-full rounded-[10px] bg-[#111018] text-white shadow-none hover:bg-[#111018]/90 sm:w-auto">
-              Voir mes recommandations
+              {tr("Voir mes recommandations")}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </DialogFooter>
@@ -894,6 +899,8 @@ function ProductCard({
   isPersonalized: boolean;
   onOpen: () => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(value, locale);
   const fallback = useDefaultProductImage();
 
   return (
@@ -909,7 +916,7 @@ function ProductCard({
         >
           {product.badges?.[0] && (
             <Badge className="absolute left-3 top-3 z-10 rounded-[10px] border border-[#eadcff] bg-white/90 px-3 py-1 text-[11px] font-medium text-[#7c4ee4] shadow-none hover:bg-white/90">
-              {product.badges[0]}
+              {tr(product.badges[0])}
             </Badge>
           )}
 
@@ -939,7 +946,7 @@ function ProductCard({
                   key={skinType}
                   className="rounded-[10px] bg-[#f4f0ff] px-2.5 py-1 text-[11px] font-medium text-[#6f45dc] shadow-none hover:bg-[#f4f0ff]"
                 >
-                  {getSkinLabel(skinType)}
+                  {tr(getSkinLabel(skinType))}
                 </Badge>
               ))}
             </div>
@@ -955,12 +962,12 @@ function ProductCard({
               {product.watchoutIngredients?.length > 0 ? (
                 <p className="line-clamp-1">
                   <span className="text-[#e38a2f]">⚠</span>{" "}
-                  À surveiller: {product.watchoutIngredients.slice(0, 2).join(", ")}
+                  {tr("À surveiller")}: {product.watchoutIngredients.slice(0, 2).join(", ")}
                 </p>
               ) : (
                 <p>
                   <span className="text-[#18a35b]">✓</span>{" "}
-                  Sans parfum irritant détecté
+                  {tr("Sans parfum irritant détecté")}
                 </p>
               )}
             </div>
@@ -969,10 +976,10 @@ function ProductCard({
           <div className="mt-auto flex items-center justify-between border-t border-[#f0eaf8] px-4 py-3">
             <div>
               <p className="text-[11px] text-[#8a8299]">
-                {isPersonalized ? "Score SkinorAI" : "Score global"}
+                {isPersonalized ? tr("Score SkinorAI") : tr("Score global")}
               </p>
               <p className="text-sm font-semibold text-[#18a35b]">
-                {product.matchScore ? `${product.matchScore}% · ${scoreLabel(product.matchScore)}` : "Global"}
+                {product.matchScore ? `${product.matchScore}% · ${tr(scoreLabel(product.matchScore))}` : tr("Global")}
               </p>
             </div>
 
@@ -982,7 +989,7 @@ function ProductCard({
               onClick={onOpen}
               className="rounded-[10px] cursor-pointer border-[#e4d8fb] px-4 py-2 text-[12px] font-semibold text-[#6f45dc] shadow-none hover:border-[#b998f4] hover:bg-[#f8f3ff]"
             >
-              Voir
+              {tr("Voir")}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -1001,6 +1008,8 @@ function ProductDetailsDialog({
   isPersonalized: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(value, locale);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const fallback = useDefaultProductImage();
   const open = Boolean(product);
@@ -1064,7 +1073,7 @@ function ProductDetailsDialog({
             <div data-product-detail-media className="relative flex min-h-[360px] items-center justify-center overflow-hidden border-b border-[#f1eaf9] bg-[#faf8fc] p-0 lg:border-b-0 lg:border-r">
               {product.badges?.[0] && (
                 <Badge className="absolute left-5 top-5 rounded-[10px] border border-[#eadcff] bg-white/90 px-3 py-1 text-[11px] font-medium text-[#7c4ee4] shadow-none hover:bg-white/90">
-                  {product.badges[0]}
+                  {tr(product.badges[0])}
                 </Badge>
               )}
               <img
@@ -1082,59 +1091,59 @@ function ProductDetailsDialog({
                   {product.name}
                 </DialogTitle>
                 <DialogDescription className="mt-3 text-sm leading-6 text-[#6f687d]">
-                  {product.description || "Produit skincare classé selon ses ingrédients, objectifs et types de peau."}
+                  {product.description || tr("Produit skincare classé selon ses ingrédients, objectifs et types de peau.")}
                 </DialogDescription>
               </DialogHeader>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                <InfoBox label="Type" value={getProductTypeLabel(product.productType)} />
+                <InfoBox label={tr("Type")} value={tr(getProductTypeLabel(product.productType))} />
                 <InfoBox
-                  label={isPersonalized ? "Score SkinorAI" : "Score global"}
-                  value={product.matchScore ? `${product.matchScore}% · ${scoreLabel(product.matchScore)}` : "Global"}
+                  label={isPersonalized ? tr("Score SkinorAI") : tr("Score global")}
+                  value={product.matchScore ? `${product.matchScore}% · ${tr(scoreLabel(product.matchScore))}` : tr("Global")}
                 />
               </div>
 
               <div className="mt-5 space-y-4">
-                <DetailSection title="Adapté pour">
+                <DetailSection title={tr("Adapté pour")}>
                   <div className="flex flex-wrap gap-2">
                     {product.skinTypes?.map((skinType) => (
                       <Badge key={skinType} className="rounded-[10px] bg-[#f4f0ff] text-[#6f45dc] hover:bg-[#f4f0ff]">
-                        {getSkinLabel(skinType)}
+                        {tr(getSkinLabel(skinType))}
                       </Badge>
                     ))}
                     {product.goals?.map((goal) => (
                       <Badge key={goal} className="rounded-[10px] bg-[#eef8f2] text-[#138f4c] hover:bg-[#eef8f2]">
-                        {getGoalLabel(goal)}
+                        {tr(getGoalLabel(goal))}
                       </Badge>
                     ))}
                   </div>
                 </DetailSection>
 
-                <DetailSection title="Ingrédients clés">
+                <DetailSection title={tr("Ingrédients clés")}>
                   <p className="text-sm leading-6 text-[#625b73]">
-                    {product.keyIngredients?.length ? product.keyIngredients.join(", ") : "Non renseigné"}
+                    {product.keyIngredients?.length ? product.keyIngredients.join(", ") : tr("Non renseigné")}
                   </p>
                 </DetailSection>
 
-                <DetailSection title="Pourquoi ce produit">
+                <DetailSection title={tr("Pourquoi ce produit")}>
                   <ul className="space-y-2 text-sm leading-6 text-[#625b73]">
                     {(product.matchReasons?.length ? product.matchReasons : product.benefits ?? []).slice(0, 4).map((reason) => (
                       <li key={reason} className="flex gap-2">
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#8b5cf6]" />
-                        {reason}
+                        {tr(reason)}
                       </li>
                     ))}
                   </ul>
                 </DetailSection>
 
-                <DetailSection title="À surveiller">
+                <DetailSection title={tr("À surveiller")}>
                   {product.watchoutIngredients?.length || product.warnings?.length ? (
                     <div className="space-y-2 text-sm leading-6 text-[#8a5b20]">
-                      {product.watchoutIngredients?.map((item) => <p key={item}>⚠ {item}</p>)}
-                      {product.warnings?.map((item) => <p key={item}>⚠ {item}</p>)}
+                      {product.watchoutIngredients?.map((item) => <p key={item}>⚠ {tr(item)}</p>)}
+                      {product.warnings?.map((item) => <p key={item}>⚠ {tr(item)}</p>)}
                     </div>
                   ) : (
-                    <p className="text-sm text-[#138f4c]">Aucun ingrédient à surveiller renseigné.</p>
+                    <p className="text-sm text-[#138f4c]">{tr("Aucun ingrédient à surveiller renseigné.")}</p>
                   )}
                 </DetailSection>
               </div>
@@ -1189,8 +1198,3 @@ function ProductSkeleton() {
     </Card>
   );
 }
-
-
-
-
-

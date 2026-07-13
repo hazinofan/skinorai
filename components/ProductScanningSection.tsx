@@ -17,21 +17,22 @@ import {
   useTransform,
 } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
 const ingredients = [
   {
-    name: "Niacinamide",
-    detail: "Barrier support",
+    nameKey: "scan.niacinamide",
+    detailKey: "scan.niacinamideDetail",
     icon: ShieldCheck,
   },
   {
-    name: "Hyaluronic Acid",
-    detail: "Deep hydration",
+    nameKey: "scan.hyaluronic",
+    detailKey: "scan.hydration",
     icon: Droplets,
   },
   {
-    name: "Panthenol",
-    detail: "Soothing",
+    nameKey: "scan.panthenol",
+    detailKey: "scan.panthenolDetail",
     icon: Sparkles,
   },
 ];
@@ -92,6 +93,7 @@ export default function ProductScanningSection() {
 
   const analysisX = useTransform(smoothProgress, [0.62, 0.82], [80, 0]);
   const router = useRouter();
+  const { t } = useI18n();
 
   const score = useTransform(smoothProgress, [0.63, 0.84], [0, 92]);
   const roundedScore = useTransform(score, (value) => Math.round(value).toString());
@@ -122,20 +124,18 @@ export default function ProductScanningSection() {
           <div className="relative z-20 max-w-xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#e8d8ef] bg-white/70 px-4 py-2 text-sm font-medium text-[#7f4b91] shadow-sm backdrop-blur-xl">
               <ScanLine className="h-4 w-4" />
-              Intelligent ingredient scanner
+              {t("scan.badge")}
             </div>
 
             <h2 className="text-balance text-4xl font-semibold leading-[1.04] tracking-[-0.045em] text-[#251c2a] sm:text-5xl lg:text-6xl">
-              Scan the label.
+              {t("scan.title")}
               <span className="block bg-gradient-to-r from-[#8d4ea0] via-[#bc72cf] to-[#6e59c9] bg-clip-text text-transparent">
-                Understand the formula.
+                {t("scan.titleAccent")}
               </span>
             </h2>
 
             <p className="mt-6 max-w-lg text-base leading-7 text-[#6f6374] sm:text-lg">
-              Upload a skincare label and let SkinorAI identify the
-              ingredients, explain their benefits and reveal what your skin
-              should watch out for.
+              {t("scan.text")}
             </p>
 
             <button
@@ -144,7 +144,7 @@ export default function ProductScanningSection() {
               className="mt-9 cursor-pointer inline-flex items-center justify-center gap-2 rounded-full bg-[#2c2430] px-6 py-3.5 text-sm font-medium text-white shadow-[0_18px_45px_rgba(44,36,48,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#3b2f40]"
             >
               <ScanLine className="h-4 w-4" />
-              Scan a product
+              {t("scan.cta")}
             </button>
           </div>
 
@@ -188,7 +188,7 @@ export default function ProductScanningSection() {
                   <div className="relative h-full w-full">
                     <Image
                       src="/productScan.png"
-                      alt="Skincare product being scanned"
+                      alt={t("scan.imageAlt")}
                       fill
                       sizes="(min-width: 640px) 320px, 290px"
                       className="object-cover object-center drop-shadow-[0_28px_40px_rgba(64,47,74,0.18)]"
@@ -224,7 +224,7 @@ export default function ProductScanningSection() {
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f3e6f6] text-[#865097]">
                         <ScanLine className="h-3.5 w-3.5" />
                       </span>
-                      Reading formula
+                      {t("scan.reading")}
                     </span>
                   </div>
 
@@ -246,10 +246,10 @@ export default function ProductScanningSection() {
 
                 return (
                   <IngredientCard
-                    key={ingredient.name}
+                    key={ingredient.nameKey}
                     icon={Icon}
-                    name={ingredient.name}
-                    detail={ingredient.detail}
+                    name={t(ingredient.nameKey)}
+                    detail={t(ingredient.detailKey)}
                     progress={smoothProgress}
                     inputRange={[revealStart, revealEnd]}
                     align={index === 1 ? "right" : "left"}
@@ -275,7 +275,7 @@ export default function ProductScanningSection() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-medium uppercase tracking-[0.16em] text-[#aa9bb0]">
-                    Skin compatibility
+                    {t("scan.compatibility")}
                   </p>
 
                   <p className="mt-2 text-[3rem] font-semibold leading-none tracking-[-0.06em] text-[#322637]">
@@ -295,8 +295,8 @@ export default function ProductScanningSection() {
                     <Droplets className="h-4.5 w-4.5" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-[#342a38]">Hyaluronic Acid</p>
-                    <p className="mt-1 text-xs leading-5 text-[#87798d]">Deep hydration</p>
+                    <p className="text-sm font-semibold text-[#342a38]">{t("scan.hyaluronic")}</p>
+                    <p className="mt-1 text-xs leading-5 text-[#87798d]">{t("scan.hydration")}</p>
                   </div>
                 </div>
               </div>
@@ -304,14 +304,14 @@ export default function ProductScanningSection() {
               <div className="my-5 h-px bg-[#e9dfea]" />
 
               <div className="space-y-3">
-                <ResultRow icon={ShieldCheck} text="Barrier-friendly formula" positive />
-                <ResultRow icon={Droplets} text="Strong hydration support" positive />
-                <ResultRow icon={TriangleAlert} text="Fragrance detected" />
+                <ResultRow icon={ShieldCheck} text={t("scan.barrier")} positive />
+                <ResultRow icon={Droplets} text={t("scan.hydrationSupport")} positive />
+                <ResultRow icon={TriangleAlert} text={t("scan.fragrance")} />
               </div>
 
               <div className="mt-5 rounded-[1.35rem] border border-[#eee4ef] bg-white/72 p-3.5">
-                <p className="text-xs font-medium text-[#786a7d]">Recommended for</p>
-                <p className="mt-1 text-sm font-semibold text-[#3b303f]">Normal to dry skin</p>
+                <p className="text-xs font-medium text-[#786a7d]">{t("scan.recommendedFor")}</p>
+                <p className="mt-1 text-sm font-semibold text-[#3b303f]">{t("scan.skinType")}</p>
               </div>
             </motion.div>
           </div>
@@ -323,7 +323,7 @@ export default function ProductScanningSection() {
           }}
           className="absolute bottom-7 left-1/2 z-30 hidden -translate-x-1/2 flex-col items-center gap-2 text-[11px] font-medium uppercase tracking-[0.18em] text-[#8a7b8f] md:flex"
         >
-          <span>Scroll to scan</span>
+          <span>{t("scan.scroll")}</span>
 
           <div className="relative h-10 w-px overflow-hidden bg-[#ded1e2]">
             <motion.div

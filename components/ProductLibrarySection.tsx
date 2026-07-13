@@ -4,6 +4,9 @@ import dynamic from "next/dynamic";
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useI18n } from "@/lib/i18n";
 
 const CircularGallery = dynamic(() => import("@/components/CircularGallery"), {
   ssr: false,
@@ -69,6 +72,7 @@ const masonryItems = products.map((fileName, index) => ({
 
 export default function ProductLibrarySection() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const { t } = useI18n();
 
   useLayoutEffect(() => {
     const root = sectionRef.current;
@@ -192,11 +196,10 @@ export default function ProductLibrarySection() {
 
     return () => ctx.revert();
   }, []);
-
   return (
     <section
       ref={sectionRef}
-      className="relative overflow-hidden bg-[#fbf9ff] py-20 sm:py-24 lg:py-28"
+      className="relative overflow-hidden bg-[#fbf9ff] pt-20 sm:pt-24 lg:pt-28"
     >
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#d9c9e5] to-transparent" />
@@ -216,9 +219,10 @@ export default function ProductLibrarySection() {
       >
         <SectionHeader
           id="products"
-          eyebrow="Page produits"
-          title="Explorez les produits skincare en un coup d'oeil."
-          text="La page produits permet de parcourir les nettoyants, serums, cremes et soins cibles avant d'ouvrir une fiche detaillee. La galerie circulaire rend la comparaison plus fluide, visuelle et intuitive."
+          eyebrow={t("library.productsEyebrow")}
+          title={t("library.productsTitle")}
+          text={t("library.productsText")}
+          nature="products"
         />
       </div>
 
@@ -228,17 +232,19 @@ export default function ProductLibrarySection() {
       >
         <div
           data-animate="circular-glow"
-          className="absolute inset-x-0 top-1/2 h-[78%] -translate-y-1/2 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.9),_rgba(255,255,255,0)_68%)]"
+          className="pointer-events-none absolute inset-x-0 top-1/2 z-0 h-[68%] -translate-y-1/2 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.42),_rgba(255,255,255,0)_72%)]"
         />
-        <CircularGallery
-          items={circularItems}
-          bend={2.6}
-          borderRadius={0.04}
-          textColor="#33243a"
-          font="bold 26px Arial"
-          scrollSpeed={2.3}
-          scrollEase={0.06}
-        />
+        <div className="relative z-10 h-full">
+          <CircularGallery
+            items={circularItems}
+            bend={2.6}
+            borderRadius={0.04}
+            textColor="#33243a"
+            font="bold 26px Arial"
+            scrollSpeed={2.3}
+            scrollEase={0.06}
+          />
+        </div>
       </div>
 
       <div
@@ -247,13 +253,15 @@ export default function ProductLibrarySection() {
       >
         <SectionHeader
           id="ingredients"
-          eyebrow="Bibliotheque d'ingredients"
-          title="Transformez les formules en bibliotheque visuelle claire."
-          text="La bibliotheque d'ingredients aide les utilisateurs a relier chaque produit aux actifs qu'il contient. Le masonry garde une vue riche et dynamique, tout en restant simple a explorer par benefice, preoccupation ou etape de routine."
+          eyebrow={t("library.ingredientsEyebrow")}
+          title={t("library.ingredientsTitle")}
+          text={t("library.ingredientsText")}
+          nature="ingredients"
         />
 
         <div
           data-animate="masonry-shell"
+          dir="ltr"
           className="relative mt-10 h-[980px] overflow-hidden p-3 sm:h-[1100px] sm:p-4 lg:h-[1220px]"
         >
           <Masonry
@@ -278,9 +286,13 @@ type SectionHeaderProps = {
   eyebrow: string;
   title: string;
   text: string;
+  nature?: string;
 };
 
-function SectionHeader({ id, eyebrow, title, text }: SectionHeaderProps) {
+function SectionHeader({ id, eyebrow, title, text, nature }: SectionHeaderProps) {
+  const router = useRouter();
+  const { t } = useI18n();
+
   return (
     <div className="mx-auto max-w-3xl text-center">
       <p
@@ -304,6 +316,19 @@ function SectionHeader({ id, eyebrow, title, text }: SectionHeaderProps) {
       >
         {text}
       </p>
+
+      <div className="mt-6 flex justify-center">
+        <button
+          type="button"
+          onClick={() => {
+            router.push(`/${nature === "products" ? "products" : "ingredient-library"}`);
+          }}
+          className="inline-flex cursor-pointer min-h-12 items-center justify-center gap-2 rounded-md border border-[#ddcdf2] bg-[#f1e4ff] px-6 py-3 text-center text-sm font-semibold text-[#17151c] transition hover:-translate-y-0.5 hover:bg-[#ead8ff]"
+        >
+          {nature === "products" ? t("library.productsCta") : t("library.ingredientsCta")}
+          <ArrowRight className="h-4 w-4 shrink-0" />
+        </button>
+      </div>
     </div>
   );
 }

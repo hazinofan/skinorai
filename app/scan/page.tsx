@@ -55,6 +55,7 @@ import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { getStoredAuthToken, useAuth } from "@/components/AuthProvider";
+import { translateStaticText, useI18n } from "@/lib/i18n";
 import { normalizeSkinGoalId, SKIN_GOAL_STORAGE_KEY } from "@/lib/skinGoals";
 
 const stepLabels = [
@@ -1976,6 +1977,8 @@ function ChatWorkspace({
   onScanAnother: () => void;
   initialSelectedChatId?: string | null;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [selectedHistoryChatId, setSelectedHistoryChatId] = useState<
@@ -2518,14 +2521,14 @@ useEffect(() => {
             className="mt-6 flex h-[45px] cursor-pointer items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[#F4D2DF] hover:via-[#EFC9DB] hover:to-[#E8D1F4] active:translate-y-0"
           >
             <Plus className="h-5 w-5" />
-            Nouvelle discussion
+            {tr("Nouvelle discussion")}
           </button>
 
           <div className="mt-6">
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              Menu
+              {tr("Menu")}
             </p>
             <nav className="mt-3 space-y-2">
               <button
@@ -2540,7 +2543,7 @@ useEffect(() => {
                   <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />
                 )}
                 <CircleHelp className="h-5 w-5" />
-                Discussions
+                {tr("Discussions")}
               </button>
               <button
                 type="button"
@@ -2551,7 +2554,7 @@ useEffect(() => {
                 className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}
               >
                 <FlaskConical className="h-5 w-5" />
-                Bibliothèque d’ingrédients
+                {tr("Bibliothèque d’ingrédients")}
               </button>
             </nav>
           </div>
@@ -2560,14 +2563,14 @@ useEffect(() => {
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              Récent
+              {tr("Récent")}
             </p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
                 <p
                   className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}
                 >
-                  Chargement des discussions...
+                  {tr("Chargement des discussions...")}
                 </p>
               ) : recentDiscussions.length > 0 ? (
                 recentDiscussions.map((chat) => {
@@ -2607,7 +2610,7 @@ useEffect(() => {
                 <p
                   className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}
                 >
-                  Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.
+                  {tr("Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.")}
                 </p>
               )}
             </div>
@@ -2622,17 +2625,17 @@ useEffect(() => {
             <h2
               className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}
             >
-              Débloquer Premium
+              {tr("Débloquer Premium")}
             </h2>
             <p className={`mt-2 text-sm leading-5 ${palette.premiumText}`}>
-              Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.
+              {tr("Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.")}
             </p>
             <button
               type="button"
               onClick={() => router.push('/pricing')}
               className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold cursor-pointer ${palette.premiumButton}`}
             >
-              Passer à Premium
+              {tr("Passer à Premium")}
             </button>
           </div>
         </aside>
@@ -2655,14 +2658,14 @@ useEffect(() => {
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-                {isDarkTheme ? "Clair" : "Sombre"}
+                {isDarkTheme ? tr("Clair") : tr("Sombre")}
               </button>
               <button
                 type="button"
                 onClick={() => router.push('/settings')}
                 className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-xs font-medium backdrop-blur transition-colors duration-300 hover:!bg-gray-50 ${palette.headerButton}`}
               >
-                Paramètres
+                {tr("Paramètres")}
                 <Settings className="h-4 w-4" />
               </button>
             </div>
@@ -2972,7 +2975,7 @@ useEffect(() => {
                                 : "text-[#33243c] hover:bg-[#f5eefe]"
                                 }`}
                             >
-                              Bibliothèque d’ingrédients
+                              {tr("Bibliothèque d’ingrédients")}
                             </button>
                           </div>
                         )}
@@ -3050,7 +3053,7 @@ useEffect(() => {
                   data-chat-hero
                   className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}
                 >
-                  Prête à mieux comprendre votre peau ?
+                  {tr("Prête à mieux comprendre votre peau ?")}
                 </h1>
                 {/* <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
                   Your AI skincare companion for science-backed insights and personalized recommendations.
@@ -3070,12 +3073,12 @@ useEffect(() => {
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        Scanner un produit
+                        {tr("Scanner un produit")}
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        Scannez un produit pour analyser ses ingrédients et sa formule.
+                        {tr("Scannez un produit pour analyser ses ingrédients et sa formule.")}
                       </span>
                       <img src="/icons/scan.png" alt="scan product" />
                     </span>
@@ -3090,12 +3093,12 @@ useEffect(() => {
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        Scan du visage <span className="bg-yellow-200 text-[#171b36] px-2 py-1 rounded-md text-[8px] font-bold"> PREMIUM </span>
+                        {tr("Scan du visage")} <span className="bg-yellow-200 text-[#171b36] px-2 py-1 rounded-md text-[8px] font-bold"> {tr("PREMIUM")} </span>
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        Décodez les ingrédients et comprenez ce qui convient à votre peau.
+                        {tr("Décodez les ingrédients et comprenez ce qui convient à votre peau.")}
                       </span>
                       <img src="/icons/face.png" alt="analyze ingredients" />
                     </span>
@@ -3122,11 +3125,11 @@ useEffect(() => {
                         <h3
                           className={`mt-3 text-[15px] font-semibold tracking-[-0.02em] ${palette.featureTitle}`}
                         >
-                          {card.title}
+                          {tr(card.title)}
                         </h3>
 
                         <p className={`mt-1.5 text-[11px] leading-5 ${palette.featureText}`}>
-                          {card.text}
+                          {tr(card.text)}
                         </p>
 
                         <ArrowRight
@@ -4755,6 +4758,9 @@ function FaceScanComingSoonDialog({
   isDarkTheme: boolean;
   onClose: () => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   return (
     <div className="dialog-overlay-fade fixed inset-0 z-[95] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
       <div
@@ -4783,7 +4789,7 @@ function FaceScanComingSoonDialog({
               ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
               : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
               }`}
-            aria-label="Fermer la fenêtre"
+            aria-label={tr("Fermer la fenêtre")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -4805,7 +4811,7 @@ function FaceScanComingSoonDialog({
 
             <img
               src="/icons/face.png"
-              alt="Face scanning preview"
+              alt={tr("Aperçu du scan du visage")}
               className="relative z-10 max-h-[180px] w-auto object-contain drop-shadow-[0_18px_35px_rgba(122,63,92,0.16)]"
             />
           </div>
@@ -4815,21 +4821,21 @@ function FaceScanComingSoonDialog({
           className={`mt-6 text-xs font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
             }`}
         >
-          Bientôt disponible
+          {tr("Bientôt disponible")}
         </p>
 
         <h2
           id="face-scan-coming-soon-title"
           className="mt-2 text-2xl font-bold tracking-[-0.03em]"
         >
-          Le scan du visage arrive bientôt
+          {tr("Le scan du visage arrive bientôt")}
         </h2>
 
         <p
           className={`mt-3 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"
             }`}
         >
-          Bientôt, SkinorAI aidera les utilisateurs à scanner leur visage, comprendre les préoccupations visibles de la peau et recevoir des conseils plus personnalisés.
+          {tr("Bientôt, SkinorAI aidera les utilisateurs à scanner leur visage, comprendre les préoccupations visibles de la peau et recevoir des conseils plus personnalisés.")}
         </p>
 
         <div className="mt-6 space-y-3">
@@ -4858,7 +4864,7 @@ function FaceScanComingSoonDialog({
                 className={`text-sm leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"
                   }`}
               >
-                {point}
+              {tr(point)}
               </p>
             </div>
           ))}
@@ -4870,7 +4876,7 @@ function FaceScanComingSoonDialog({
             onClick={onClose}
             className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(202,105,179,0.22)] transition hover:-translate-y-0.5"
           >
-            Compris
+            {tr("Compris")}
           </button>
         </div>
       </div>
@@ -4889,6 +4895,8 @@ function FeatureCardDialog({
   onClose: () => void;
   onPrimaryAction: () => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
   const Icon = card.icon;
   const hasPrimaryCta = Boolean(card.primaryCtaLabel);
 
@@ -4919,14 +4927,14 @@ function FeatureCardDialog({
                 className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
                   }`}
               >
-                Fonctionnalité SkinorAI
+                {tr("Fonctionnalité SkinorAI")}
               </p>
 
               <h2
                 id="feature-card-dialog-title"
                 className="mt-1 text-xl font-bold tracking-[-0.03em]"
               >
-                {card.title}
+                {tr(card.title)}
               </h2>
             </div>
           </div>
@@ -4938,7 +4946,7 @@ function FeatureCardDialog({
               ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
               : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
               }`}
-            aria-label="Fermer la fenêtre"
+            aria-label={tr("Fermer la fenêtre")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -4946,7 +4954,7 @@ function FeatureCardDialog({
 
         <img
           src={card.image}
-          alt={card.imageAlt}
+          alt={tr(card.imageAlt)}
           className="relative my-5 w-full rounded-lg z-10 w-auto object-contain drop-shadow-[0_18px_35px_rgba(122,63,92,0.16)]"
         />
 
@@ -4972,7 +4980,7 @@ function FeatureCardDialog({
                 className={`text-sm leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"
                   }`}
               >
-                {point}
+                {tr(point)}
               </p>
             </div>
           ))}
@@ -4985,7 +4993,7 @@ function FeatureCardDialog({
               onClick={onPrimaryAction}
               className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(202,105,179,0.22)] transition hover:-translate-y-0.5"
             >
-              {card.primaryCtaLabel}
+              {card.primaryCtaLabel ? tr(card.primaryCtaLabel) : null}
             </button>
           </div>
         )}

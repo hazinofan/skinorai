@@ -28,6 +28,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
+import { translateStaticText, useI18n } from "@/lib/i18n";
 
 type Category = "all" | "hydration" | "acne" | "brightening" | "barrier" | "sensitive" | "oily";
 type CompatibiliteState = "great" | "caution" | "avoid";
@@ -1296,6 +1297,7 @@ function compatTeint(state: CompatibiliteState) {
 }
 
 export default function IngredientLibraryPage() {
+  const { locale } = useI18n();
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
@@ -1311,6 +1313,7 @@ export default function IngredientLibraryPage() {
   const detailPanelRef = useRef<HTMLElement | null>(null);
   const hasAnimatedDetailRef = useRef(false);
   const router = useRouter()
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
 
 
   useEffect(() => {
@@ -1530,53 +1533,53 @@ export default function IngredientLibraryPage() {
           </div>
           <Link href="/scan" onClick={() => setIsSidebarOpen(false)} className="mt-6 flex h-[45px] items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition hover:-translate-y-0.5">
             <Plus className="h-5 w-5" />
-            Nouvelle discussion
+            {tr("Nouvelle discussion")}
           </Link>
           <div className="mt-6">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>Menu</p>
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>{tr("Menu")}</p>
             <nav className="mt-3 space-y-2">
               <Link href="/scan" onClick={() => setIsSidebarOpen(false)} className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${isSombre ? "text-white/70 hover:bg-white/[0.05]" : "text-[#5c5671] hover:bg-[#f6f1ff]"}`}>
                 <CircleHelp className="h-5 w-5" />
-                Discussions
+                {tr("Discussions")}
               </Link>
               <div className={`relative flex h-11 w-full items-center gap-3 rounded-xl px-4 text-sm font-medium ${isSombre ? "bg-white/[0.08] text-white" : "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"}`}>
                 <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />
                 <FlaskConical className="h-5 w-5" />
-                Bibliothèque d'ingrédients
+                {tr("Bibliothèque d'ingrédients")}
               </div>
             </nav>
           </div>
           <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>Récent</p>
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>{tr("Récent")}</p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
                 <p className={`rounded-xl border px-3 py-2.5 text-xs ${isSombre ? "border-white/10 bg-white/[0.04] text-white/60" : "border-[#ece5f7] bg-white/90 text-[#7c7693]"}`}>
-                  Chargement des discussions...
+                  {tr("Chargement des discussions...")}
                 </p>
               ) : historyDiscussions.length > 0 ? (
                 historyDiscussions.map((chat) => (
-                  <Link href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
+                  <Link key={chat.id} href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
                     <p className={`truncate text-sm font-medium ${isSombre ? "text-white" : "text-[#221d35]"}`}>
-                      {chat.productName || "Discussion enregistrée"}
+                      {chat.productName || tr("Discussion enregistrée")}
                     </p>
                     <p className="mt-1 text-sm">{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
                     <p className="mt-2 line-clamp-2 text-sm leading-5">
-                      {chat.analysisSummary || "Discussion enregistrée dans votre historique SkinorAI."}
+                      {chat.analysisSummary || tr("Discussion enregistrée dans votre historique SkinorAI.")}
                     </p>
                   </Link>
                 ))
               ) : (
                 <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/60" : "border-[#ece5f7] bg-white/90 text-[#7c7693]"}`}>
-                  Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.
+                  {tr("Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.")}
                 </p>
               )}
             </div>
           </div>
           <div className={`mt-4 rounded-2xl p-4 text-center ${isSombre ? "border border-white/10 bg-white/[0.05]" : "border border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]"}`}>
             <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]"><Sparkles className="h-4 w-4" /></span>
-            <h2 className={`mt-3 text-sm font-semibold ${isSombre ? "text-[#f0a8d9]" : "text-[#b1689b]"}`}>Débloquer Premium</h2>
-            <p className={`mt-2 text-sm leading-5 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.</p>
-            <button type="button" className="mt-4 h-10 w-full rounded-xl bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-sm font-semibold text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]">Passer à Premium</button>
+            <h2 className={`mt-3 text-sm font-semibold ${isSombre ? "text-[#f0a8d9]" : "text-[#b1689b]"}`}>{tr("Débloquer Premium")}</h2>
+            <p className={`mt-2 text-sm leading-5 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>{tr("Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.")}</p>
+            <button type="button" className="mt-4 h-10 w-full rounded-xl bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-sm font-semibold text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]">{tr("Passer à Premium")}</button>
           </div>
         </aside>
         <div className={`fixed inset-0 z-40 bg-[#120d20]/30 backdrop-blur-[4px] transition lg:hidden ${isSidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"}`} onClick={() => setIsSidebarOpen(false)} />
@@ -1589,53 +1592,53 @@ export default function IngredientLibraryPage() {
           </div>
           <Link href="/scan" onClick={() => setIsSidebarOpen(false)} className="mt-6 flex h-[45px] items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition hover:-translate-y-0.5">
             <Plus className="h-5 w-5" />
-            Nouvelle discussion
+            {tr("Nouvelle discussion")}
           </Link>
           <div className="mt-6">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>Menu</p>
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>{tr("Menu")}</p>
             <nav className="mt-3 space-y-2">
               <Link href="/scan" onClick={() => setIsSidebarOpen(false)} className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${isSombre ? "text-white/70 hover:bg-white/[0.05]" : "text-[#5c5671] hover:bg-[#f6f1ff]"}`}>
                 <CircleHelp className="h-5 w-5" />
-                Discussions
+                {tr("Discussions")}
               </Link>
               <div className={`relative flex h-11 w-full items-center gap-3 rounded-xl px-4 text-sm font-medium ${isSombre ? "bg-white/[0.08] text-white" : "bg-[#f6f1ff] text-[#231f36] shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]"}`}>
                 <span className="absolute -left-5 h-8 w-1 rounded-full bg-[#ef8fdf]" />
                 <FlaskConical className="h-5 w-5" />
-                Bibliothèque d'ingrédients
+                {tr("Bibliothèque d'ingrédients")}
               </div>
             </nav>
           </div>
           <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1">
-            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>Récent</p>
+            <p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${isSombre ? "text-white/35" : "text-[#968da9]"}`}>{tr("Récent")}</p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
                 <p className={`rounded-xl border px-3 py-2.5 text-xs ${isSombre ? "border-white/10 bg-white/[0.04] text-white/60" : "border-[#ece5f7] bg-white/90 text-[#7c7693]"}`}>
-                  Chargement des discussions...
+                  {tr("Chargement des discussions...")}
                 </p>
               ) : historyDiscussions.length > 0 ? (
                 historyDiscussions.map((chat) => (
-                  <Link href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
+                  <Link key={chat.id} href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
                     <p className={`truncate text-sm font-medium ${isSombre ? "text-white" : "text-[#221d35]"}`}>
-                      {chat.productName || "Discussion enregistrée"}
+                      {chat.productName || tr("Discussion enregistrée")}
                     </p>
                     <p className="mt-1 text-sm">{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
                     <p className="mt-2 line-clamp-2 text-sm leading-5">
-                      {chat.analysisSummary || "Discussion enregistrée dans votre historique SkinorAI."}
+                      {chat.analysisSummary || tr("Discussion enregistrée dans votre historique SkinorAI.")}
                     </p>
                   </Link>
                 ))
               ) : (
                 <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/60" : "border-[#ece5f7] bg-white/90 text-[#7c7693]"}`}>
-                  Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.
+                  {tr("Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.")}
                 </p>
               )}
             </div>
           </div>
           <div className={`mt-4 rounded-2xl p-4 text-center ${isSombre ? "border border-white/10 bg-white/[0.05]" : "border border-[#ecdff7] bg-[linear-gradient(180deg,#fbf7ff_0%,#f7effa_100%)] shadow-[0_14px_38px_rgba(136,101,184,0.12)]"}`}>
             <span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]"><Sparkles className="h-4 w-4" /></span>
-            <h2 className={`mt-3 text-sm font-semibold ${isSombre ? "text-[#f0a8d9]" : "text-[#b1689b]"}`}>Débloquer Premium</h2>
-            <p className={`mt-2 text-sm leading-5 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.</p>
-            <button type="button" className="mt-4 h-10 w-full rounded-xl bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-sm font-semibold text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]">Passer à Premium</button>
+            <h2 className={`mt-3 text-sm font-semibold ${isSombre ? "text-[#f0a8d9]" : "text-[#b1689b]"}`}>{tr("Débloquer Premium")}</h2>
+            <p className={`mt-2 text-sm leading-5 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>{tr("Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.")}</p>
+            <button type="button" className="mt-4 h-10 w-full rounded-xl bg-[linear-gradient(135deg,#c882bf_0%,#e7a0cf_100%)] text-sm font-semibold text-white shadow-[0_10px_22px_rgba(198,111,177,0.18)]">{tr("Passer à Premium")}</button>
           </div>
         </aside>
 
@@ -1647,10 +1650,10 @@ export default function IngredientLibraryPage() {
             <div className="flex items-center gap-3">
               <button type="button" onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))} className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium backdrop-blur transition ${isSombre ? "border-white/10 bg-white/[0.04] text-white" : "border-[#e7def4] bg-white/85 text-[#2a2440]"}`}>
                 {isSombre ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                {isSombre ? "Clair" : "Sombre"}
+                {isSombre ? tr("Clair") : tr("Sombre")}
               </button>
               <button type="button" className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-xs font-medium transition ${isSombre ? "border-white/10 bg-white/[0.04] text-white" : "border-[#e7def4] bg-white/85 text-[#2a2440]"}`}>
-                Paramètres
+                {tr("Paramètres")}
                 <Settings className="h-4 w-4" />
               </button>
             </div>
@@ -1661,14 +1664,14 @@ export default function IngredientLibraryPage() {
               <div data-animate="library-hero" className="flex items-start gap-4">
                 <span className={`flex h-13 w-13 shrink-0 items-center justify-center rounded-[18px] border shadow-[0_18px_35px_rgba(190,137,222,0.12)] ${isSombre ? "border-white/10 bg-white/[0.05] text-[#eea2d1]" : "border-[#f0ddfb] bg-[linear-gradient(180deg,#fff8ff_0%,#f7ecff_100%)] text-[#b25add]"}`}><FlaskConical className="h-7 w-7" /></span>
                 <div>
-                  <h1 className={`text-[34px] font-semibold tracking-[-0.04em] ${isSombre ? "text-white" : "text-[#241f36]"}`}>Bibliothèque d'ingrédients</h1>
-                  <p className={`mt-2 max-w-2xl text-sm leading-6 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>Découvrez, apprenez et créez des routines plus intelligentes avec des ingrédients adaptés à votre peau.</p>
+                  <h1 className={`text-[34px] font-semibold tracking-[-0.04em] ${isSombre ? "text-white" : "text-[#241f36]"}`}>{tr("Bibliothèque d'ingrédients")}</h1>
+                  <p className={`mt-2 max-w-2xl text-sm leading-6 ${isSombre ? "text-white/60" : "text-[#7d7792]"}`}>{tr("Découvrez, apprenez et créez des routines plus intelligentes avec des ingrédients adaptés à votre peau.")}</p>
                 </div>
               </div>
 
               <div data-animate="library-search" className={`mt-8 flex items-center gap-3 rounded-[24px] border px-5 py-4 shadow-[0_18px_45px_rgba(136,101,184,0.10)] ${isSombre ? "border-white/10 bg-[#14111d]" : "border-[#ead8ef] bg-white/90"}`}>
                 <Search className={`h-5 w-5 shrink-0 ${isSombre ? "text-white/45" : "text-[#8f88a5]"}`} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Rechercher niacinamide, rétinol, acide salicylique..." className={`min-w-0 flex-1 bg-transparent text-sm outline-none ${isSombre ? "text-white placeholder:text-white/35" : "text-[#33243c] placeholder:text-[#8f88a5]"}`} />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={tr("Rechercher niacinamide, rétinol, acide salicylique...")} className={`min-w-0 flex-1 bg-transparent text-sm outline-none ${isSombre ? "text-white placeholder:text-white/35" : "text-[#33243c] placeholder:text-[#8f88a5]"}`} />
                 <button type="button" className={`flex h-10 w-10 items-center justify-center rounded-2xl border ${isSombre ? "border-white/10 bg-white/[0.04] text-white/70" : "border-[#ead8ef] bg-[#fbf6ff] text-[#7c58de]"}`}><Settings className="h-4 w-4" /></button>
               </div>
 
@@ -1679,7 +1682,7 @@ export default function IngredientLibraryPage() {
                   return (
                     <button key={category.id} type="button" onClick={() => setSelectedCategory(category.id)} className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition ${active ? (isSombre ? "border-[#dfb7fb] bg-[#3c294f] text-white" : "border-[#edd8ff] bg-[linear-gradient(135deg,#f7dbe7_0%,#f0e2ff_100%)] text-[#6e40c9]") : (isSombre ? "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.06]" : "border-[#ece4f8] bg-white text-[#665f7f] hover:bg-[#fbf6ff]")}`}>
                       <Icon className="h-4 w-4" />
-                      {normalizeDisplayText(category.label)}
+                      {tr(category.label)}
                     </button>
                   );
                 })}
@@ -1687,8 +1690,8 @@ export default function IngredientLibraryPage() {
               </div>
 
               <div data-animate="library-meta" className={`mt-6 flex items-center justify-between text-sm ${isSombre ? "text-white/55" : "text-[#7d7792]"}`}>
-                <p>{filtered.length} ingrédients trouvés</p>
-                <button type="button" className="inline-flex items-center gap-2">Trier par : <span className={isSombre ? "text-white" : "text-[#36294a]"}>Pertinence</span><ChevronDown className="h-4 w-4" /></button>
+                <p>{filtered.length} {tr("ingrédients trouvés")}</p>
+                <button type="button" className="inline-flex items-center gap-2">{tr("Trier par")} : <span className={isSombre ? "text-white" : "text-[#36294a]"}>{tr("Pertinence")}</span><ChevronDown className="h-4 w-4" /></button>
               </div>
 
               <div className={`mt-5 grid gap-4 md:grid-cols-2 ${detailOpen ? "2xl:grid-cols-3" : "xl:grid-cols-3 2xl:grid-cols-4"}`}>
@@ -1701,10 +1704,10 @@ export default function IngredientLibraryPage() {
                         <div className={`flex h-20 w-20 items-center justify-center rounded-[24px] bg-gradient-to-br ${ingredient.accent} shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]`}><span className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-white/60 backdrop-blur"><Icon className="h-7 w-7 text-[#cd6ca7]" /></span></div>
                         {active && <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#b35de0] text-white"><Check className="h-3.5 w-3.5" /></span>}
                       </div>
-                      <h2 className={`mt-5 text-[29px]/none font-semibold tracking-[-0.03em] ${isSombre ? "text-white" : "text-[#231d37]"}`}>{normalizeDisplayText(ingredient.name)}</h2>
-                      <p className={`mt-2 text-sm leading-6 ${isSombre ? "text-white/55" : "text-[#7d7792]"}`}>{normalizeDisplayText(ingredient.description)}</p>
-                      <div className="mt-4 flex flex-wrap gap-2">{ingredient.tags.map((tag) => <span key={tag} className={`rounded-full border px-3 py-1 text-xs ${isSombre ? "border-white/10 bg-white/[0.05] text-white/65" : "border-[#efe5fb] bg-[#fbf8ff] text-[#8c71c7]"}`}>{normalizeDisplayText(tag)}</span>)}</div>
-                      <div className={`mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${badgeTeint(ingredient.badgeTeint)}`}>{ingredient.badgeTeint === "orange" ? <AlertTriangle className="h-3.5 w-3.5" /> : <Leaf className="h-3.5 w-3.5" />}{normalizeDisplayText(ingredient.badge)}</div>
+                      <h2 className={`mt-5 text-[29px]/none font-semibold tracking-[-0.03em] ${isSombre ? "text-white" : "text-[#231d37]"}`}>{tr(ingredient.name)}</h2>
+                      <p className={`mt-2 text-sm leading-6 ${isSombre ? "text-white/55" : "text-[#7d7792]"}`}>{tr(ingredient.description)}</p>
+                      <div className="mt-4 flex flex-wrap gap-2">{ingredient.tags.map((tag) => <span key={tag} className={`rounded-full border px-3 py-1 text-xs ${isSombre ? "border-white/10 bg-white/[0.05] text-white/65" : "border-[#efe5fb] bg-[#fbf8ff] text-[#8c71c7]"}`}>{tr(tag)}</span>)}</div>
+                      <div className={`mt-4 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${badgeTeint(ingredient.badgeTeint)}`}>{ingredient.badgeTeint === "orange" ? <AlertTriangle className="h-3.5 w-3.5" /> : <Leaf className="h-3.5 w-3.5" />}{tr(ingredient.badge)}</div>
                     </button>
                   );
                 })}
@@ -1717,16 +1720,16 @@ export default function IngredientLibraryPage() {
                 <div className="mt-2 flex items-start gap-4">
                   <div className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-[28px] bg-gradient-to-br ${selected.accent} shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]`}><SelectedIcon className="h-9 w-9 text-[#cd6ca7]" /></div>
                   <div className="min-w-0">
-                    <h2 className={`text-[22px] font-semibold tracking-[-0.03em] ${isSombre ? "text-white" : "text-[#221d35]"}`}>{normalizeDisplayText(selected.name)}</h2>
-                    <div className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${badgeTeint(selected.badgeTeint)}`}><Leaf className="h-3.5 w-3.5" />{normalizeDisplayText(selected.badge)}</div>
-                    <p className={`mt-3 text-sm ${isSombre ? "text-white/55" : "text-[#7d7792]"}`}>{normalizeDisplayText(selected.subtitle)}</p>
+                    <h2 className={`text-[22px] font-semibold tracking-[-0.03em] ${isSombre ? "text-white" : "text-[#221d35]"}`}>{tr(selected.name)}</h2>
+                    <div className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs ${badgeTeint(selected.badgeTeint)}`}><Leaf className="h-3.5 w-3.5" />{tr(selected.badge)}</div>
+                    <p className={`mt-3 text-sm ${isSombre ? "text-white/55" : "text-[#7d7792]"}`}>{tr(selected.subtitle)}</p>
                   </div>
                 </div>
-                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><Sparkles className="h-4.5 w-4.5 text-[#b566dd]" />Bienfaits clés</h3><div className="mt-4 space-y-3">{selected.benefits.map((benefit) => <div key={benefit} className="flex gap-3"><span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f2e6ff] text-[#a459db]"><Check className="h-3 w-3" /></span><p className={`text-sm leading-6 ${isSombre ? "text-white/70" : "text-[#625a79]"}`}>{normalizeDisplayText(benefit)}</p></div>)}</div></section>
-                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><UserRound className="h-4.5 w-4.5 text-[#b566dd]" />Idéal pour</h3><div className="mt-4 flex flex-wrap gap-2">{selected.idealFor.map((item) => <span key={item} className={`rounded-full border px-3 py-1.5 text-xs ${isSombre ? "border-white/10 bg-white/[0.05] text-white/70" : "border-[#efe5fb] bg-[#fbf8ff] text-[#8c71c7]"}`}>{normalizeDisplayText(item)}</span>)}</div></section>
-                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><BadgeInfo className="h-4.5 w-4.5 text-[#b566dd]" />Conseils d'utilisation</h3><p className={`mt-4 text-sm leading-6 ${isSombre ? "text-white/65" : "text-[#625a79]"}`}>{normalizeDisplayText(selected.usage)}</p></section>
-                <section data-animate="library-info" className={`mt-8 border-t pt-6 ${isSombre ? "border-white/10" : "border-[#f0e5f7]"}`}><div className="flex items-center justify-between gap-3"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><Heart className="h-4.5 w-4.5 text-[#b566dd]" />Compatibilité</h3><div className={`flex flex-wrap items-center gap-3 text-[11px] ${isSombre ? "text-white/50" : "text-[#7b7390]"}`}><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#43c57a]" />Excellent</span><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#f0a13b]" />À utiliser avec prudence</span><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ef6e86]" />Éviter</span></div></div><div className="mt-4 grid gap-3 sm:grid-cols-2">{selected.compatibility.map((item) => <div key={item.name} className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${compatTeint(item.state)}`}><span>{normalizeDisplayText(item.name)}</span><span className="h-2.5 w-2.5 rounded-full bg-current" /></div>)}</div></section>
-                <button type="button" className={`mt-8 inline-flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium ${isSombre ? "border-white/10 bg-white/[0.04] text-white" : "border-[#eadcf5] bg-[#fbf7ff] text-[#7b4edf]"}`}>Voir l'analyse détaillée de l'ingrédient<ChevronRight className="h-4 w-4" /></button>
+                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><Sparkles className="h-4.5 w-4.5 text-[#b566dd]" />{tr("Bienfaits clés")}</h3><div className="mt-4 space-y-3">{selected.benefits.map((benefit) => <div key={benefit} className="flex gap-3"><span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#f2e6ff] text-[#a459db]"><Check className="h-3 w-3" /></span><p className={`text-sm leading-6 ${isSombre ? "text-white/70" : "text-[#625a79]"}`}>{tr(benefit)}</p></div>)}</div></section>
+                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><UserRound className="h-4.5 w-4.5 text-[#b566dd]" />{tr("Idéal pour")}</h3><div className="mt-4 flex flex-wrap gap-2">{selected.idealFor.map((item) => <span key={item} className={`rounded-full border px-3 py-1.5 text-xs ${isSombre ? "border-white/10 bg-white/[0.05] text-white/70" : "border-[#efe5fb] bg-[#fbf8ff] text-[#8c71c7]"}`}>{tr(item)}</span>)}</div></section>
+                <section data-animate="library-info" className="mt-8"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><BadgeInfo className="h-4.5 w-4.5 text-[#b566dd]" />{tr("Conseils d'utilisation")}</h3><p className={`mt-4 text-sm leading-6 ${isSombre ? "text-white/65" : "text-[#625a79]"}`}>{tr(selected.usage)}</p></section>
+                <section data-animate="library-info" className={`mt-8 border-t pt-6 ${isSombre ? "border-white/10" : "border-[#f0e5f7]"}`}><div className="flex items-center justify-between gap-3"><h3 className={`flex items-center gap-2 text-lg font-semibold ${isSombre ? "text-white" : "text-[#2a2440]"}`}><Heart className="h-4.5 w-4.5 text-[#b566dd]" />{tr("Compatibilité")}</h3><div className={`flex flex-wrap items-center gap-3 text-[11px] ${isSombre ? "text-white/50" : "text-[#7b7390]"}`}><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#43c57a]" />{tr("Excellent")}</span><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#f0a13b]" />{tr("À utiliser avec prudence")}</span><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-[#ef6e86]" />{tr("Éviter")}</span></div></div><div className="mt-4 grid gap-3 sm:grid-cols-2">{selected.compatibility.map((item) => <div key={item.name} className={`flex items-center justify-between rounded-2xl border px-4 py-3 text-sm ${compatTeint(item.state)}`}><span>{tr(item.name)}</span><span className="h-2.5 w-2.5 rounded-full bg-current" /></div>)}</div></section>
+                <button type="button" className={`mt-8 inline-flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium ${isSombre ? "border-white/10 bg-white/[0.04] text-white" : "border-[#eadcf5] bg-[#fbf7ff] text-[#7b4edf]"}`}>{tr("Voir l'analyse détaillée de l'ingrédient")}<ChevronRight className="h-4 w-4" /></button>
               </aside>
             </div>
           </div>

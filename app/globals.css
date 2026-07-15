@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --font-manrope: Manrope, "Segoe UI", Arial, sans-serif;
   --background: #fdf8f5;
   --foreground: #1f1a17;
 }

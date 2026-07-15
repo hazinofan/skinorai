@@ -1,8 +1,8 @@
 import HowItWorks from "@/components/HowItWorks";
 import ProductScanningSection from "@/components/ProductScanningSection";
-import ProductLibrarySection from "@/components/ProductLibrarySection";
-import SkinHero from "@/components/SkinHero";
+import ProductLibrarySection from "@/components/ProductLibrarySection"; 
 import { SkinorAITestimonialsSection } from "@/components/Testimonials";
+import SkinHero from "@/components/skinHero";
 
 export default function Home() {
   return (

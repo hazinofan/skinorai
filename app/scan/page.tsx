@@ -51,18 +51,19 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Stepper } from "primereact/stepper";
 import { StepperPanel } from "primereact/stepperpanel";
-import { ChangeEvent, DragEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, DragEvent, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { getStoredAuthToken, useAuth } from "@/components/AuthProvider";
 import { translateStaticText, useI18n } from "@/lib/i18n";
 import { normalizeSkinGoalId, SKIN_GOAL_STORAGE_KEY } from "@/lib/skinGoals";
+import FaceScanDialog from "@/components/scan/FaceScanDialog";
 
 const stepLabels = [
   "Objectif peau",
-  "Importer l’étiquette",
-  "Ingrédients détectés",
-  "Résultat IA",
+  "Importer l'ÃƒÆ’Ã‚Â©tiquette",
+  "IngrÃƒÆ’Ã‚Â©dients dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â©s",
+  "RÃƒÆ’Ã‚Â©sultat IA",
 ];
 
 type SkinGoal = {
@@ -236,7 +237,7 @@ const goals: SkinGoal[] = [
   },
 ];
 
-type IngredientStatus = "OK" | "À surveiller";
+type IngredientStatus = "OK" | "ÃƒÆ’Ã¢â€šÂ¬ surveiller";
 
 type IngredientItem = {
   name: string;
@@ -292,24 +293,116 @@ type AnalysisResult = {
   quota?: QuotaStatus;
 };
 
+type LibrarySuggestions = {
+  products: Array<{
+    id: string;
+    slug: string;
+    name: string;
+    brand: string;
+    imagePath: string;
+    productType: string;
+    matchScore: number;
+    reason: string;
+  }>;
+  ingredients: Array<{
+    id: string;
+    name: string;
+    category: string;
+    reason: string;
+  }>;
+};
+
 type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
   createdAt?: string;
+  attachment?: {
+    type: "image";
+    mimeType: string;
+    previewUrl?: string;
+    url?: string;
+  };
+  librarySuggestions?: LibrarySuggestions;
 };
 
 type ScanChatResponse = {
   answer: string;
   suggestions: string[];
   quota?: QuotaStatus;
+  messages?: ChatMessage[];
+  librarySuggestions?: LibrarySuggestions;
 };
 
-type ExtractIngredientsResponse = {
-  rawText: string;
-  ingredientsText: string;
+type SelectedChatImage = {
+  file: File;
+  previewUrl: string;
+};
+
+function useChatImageAttachment() {
+  const [image, setImage] = useState<SelectedChatImage | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const urlsRef = useRef(new Set<string>());
+
+  useEffect(() => {
+    const urls = urlsRef.current;
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+      urls.clear();
+    };
+  }, []);
+
+  const selectFile = (file?: File | null) => {
+    if (!file) return null;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      throw new Error("Utilisez une image JPEG, PNG ou WebP.");
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      throw new Error("L image doit peser au maximum 8 Mo.");
+    }
+    if (image) {
+      URL.revokeObjectURL(image.previewUrl);
+      urlsRef.current.delete(image.previewUrl);
+    }
+    const previewUrl = URL.createObjectURL(file);
+    urlsRef.current.add(previewUrl);
+    const selected = { file, previewUrl };
+    setImage(selected);
+    return selected;
+  };
+
+  const remove = () => {
+    if (image) {
+      URL.revokeObjectURL(image.previewUrl);
+      urlsRef.current.delete(image.previewUrl);
+    }
+    setImage(null);
+  };
+
+  const consume = () => {
+    const selected = image;
+    setImage(null);
+    return selected;
+  };
+
+  return { image, inputRef, selectFile, remove, consume };
+}
+
+type ProductExtractionResponse = {
+  extractionId: string;
+  usable: boolean;
+  imageType: "product_front" | "product_label" | "product_multiple" | "unrelated" | "unclear";
+  brand: string | null;
+  productName: string | null;
+  productCategory: string | null;
+  visibleText: string;
+  visibleClaims: string[];
   ingredients: string[];
+  fullIngredientListVisible: boolean;
+  uncertainText: string[];
+  confidence: "low" | "medium" | "high";
   warnings: string[];
+  retakeInstructions: string[];
 };
 
 type ScanHistoryItem = {
@@ -330,8 +423,9 @@ type ScanConversationDetail = ScanHistoryItem & {
 };
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+const DEFAULT_PRODUCT_IMAGE = "/products/default-product.png";
 type PlanStatus = "free" | "pro";
-type UpgradeDialogReason = "scan-limit" | "prompt-limit";
+type UpgradeDialogReason = "scan-limit" | "prompt-limit" | "face-scan-pro-required";
 
 const FREE_SCAN_LIMIT = 3;
 const FREE_PROMPT_LIMIT = 1;
@@ -368,7 +462,7 @@ function buildIngredientItems(names: string[]): IngredientItem[] {
     const shouldWatch = watchTerms.some((term) => normalized.includes(term));
     return {
       name,
-      status: shouldWatch ? "À surveiller" : "OK",
+      status: shouldWatch ? "ÃƒÆ’Ã¢â€šÂ¬ surveiller" : "OK",
     };
   });
 }
@@ -382,7 +476,7 @@ function parseIngredientText(value: string): string[] {
 
 function formatProductName(imageName?: string | null) {
   if (!imageName) {
-    return "Produit analysé";
+    return "Produit analysÃƒÆ’Ã‚Â©";
   }
 
   return imageName
@@ -460,6 +554,24 @@ const skinGoalApiMap: Record<string, string> = {
   morning: "morning_routine",
 };
 
+function buildAttachmentImageUrl(url?: string | null) {
+  if (!url) return null;
+  if (url.startsWith("blob:") || url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url.startsWith("/") ? url : `/${url}`}`;
+}
+function buildProductImageUrl(imagePath?: string | null) {
+  if (!imagePath) return `${API_BASE_URL}${DEFAULT_PRODUCT_IMAGE}`;
+  if (imagePath.startsWith("http")) return imagePath;
+
+  const normalizedPath = imagePath.startsWith("/public/")
+    ? imagePath.replace("/public", "")
+    : imagePath.startsWith("public/")
+      ? `/${imagePath.replace("public/", "")}`
+      : imagePath;
+
+  return `${API_BASE_URL}${normalizedPath.startsWith("/") ? normalizedPath : `/${normalizedPath}`}`;
+}
+
 function requestScanHistory() {
   return getJson<ScanHistoryItem[]>("/api/scans");
 }
@@ -480,7 +592,7 @@ function formatScanHistoryDate(value: string) {
   const yesterday = new Date(now);
   yesterday.setDate(now.getDate() - 1);
   const label = isToday
-    ? "Aujourd hui"
+    ? "Aujourd'hui"
     : date.toDateString() === yesterday.toDateString()
       ? "Hier"
       : date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
@@ -488,102 +600,152 @@ function formatScanHistoryDate(value: string) {
   return `${label} - ${date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-function normalizeDisplayText(value: string) {
-  if (!/[???]/.test(value)) {
-    return value;
+const WINDOWS_1252_BYTE_OVERRIDES = new Map<number, number>([
+  [0x20ac, 0x80], [0x201a, 0x82], [0x0192, 0x83], [0x201e, 0x84], [0x2026, 0x85], [0x2020, 0x86], [0x2021, 0x87],
+  [0x02c6, 0x88], [0x2030, 0x89], [0x0160, 0x8a], [0x2039, 0x8b], [0x0152, 0x8c], [0x017d, 0x8e],
+  [0x2018, 0x91], [0x2019, 0x92], [0x201c, 0x93], [0x201d, 0x94], [0x2022, 0x95], [0x2013, 0x96], [0x2014, 0x97],
+  [0x02dc, 0x98], [0x2122, 0x99], [0x0161, 0x9a], [0x203a, 0x9b], [0x0153, 0x9c], [0x017e, 0x9e], [0x0178, 0x9f],
+]);
+
+function countEncodingArtifacts(value: string) {
+  return (value.match(/[\u00c3\u00c2\u00e2\u00d8\u00d9\u00c5\u00d0\ufffd]/g) ?? []).length + (value.match(/\u00ef\u00bf\u00bd/g) ?? []).length * 3;
+}
+
+function countReplacementCharacters(value: string) {
+  return (value.match(/[\ufffd]/g) ?? []).length + (value.match(/\u00ef\u00bf\u00bd/g) ?? []).length;
+}
+
+function encodeWindows1252(value: string) {
+  const bytes: number[] = [];
+
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0;
+    if (code <= 0xff) {
+      bytes.push(code);
+    } else if (WINDOWS_1252_BYTE_OVERRIDES.has(code)) {
+      bytes.push(WINDOWS_1252_BYTE_OVERRIDES.get(code)!);
+    } else {
+      return null;
+    }
   }
 
-  try {
-    const bytes = Uint8Array.from(value, (char) => char.charCodeAt(0));
-    return new TextDecoder("utf-8").decode(bytes);
-  } catch {
-    return value;
+  return Uint8Array.from(bytes);
+}
+
+function normalizeDisplayText(value: string) {
+  let normalized = value;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (countEncodingArtifacts(normalized) === 0) {
+      break;
+    }
+
+    const bytes = encodeWindows1252(normalized);
+    if (!bytes) {
+      break;
+    }
+
+    const decoded = new TextDecoder("utf-8").decode(bytes);
+    if (
+      countEncodingArtifacts(decoded) < countEncodingArtifacts(normalized) &&
+      countReplacementCharacters(decoded) <= countReplacementCharacters(normalized)
+    ) {
+      normalized = decoded;
+    } else {
+      break;
+    }
   }
+
+  return normalized;
 }
 
 function requestScanAnalysis({
   goal,
-  productName,
+  extractionId,
   ingredients,
-  ingredientsText,
 }: {
   goal: SkinGoal;
-  productName: string;
+  extractionId: string | null;
   ingredients: IngredientItem[];
-  ingredientsText: string;
 }) {
   return postJson<AnalysisResult>("/api/scans/analyze", {
     skinGoal: skinGoalApiMap[goal.id] ?? goal.id,
-    productName,
-    productCategory: undefined,
-    ingredients: ingredients.map((item) => item.name),
-    ingredientsText,
+    extractionId: extractionId || undefined,
+    confirmedIngredients: ingredients.map((item) => item.name),
   });
 }
 
-async function requestIngredientExtraction(
+async function requestProductExtraction(
   file: File,
-): Promise<ExtractIngredientsResponse> {
+): Promise<ProductExtractionResponse> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("image", file);
   const token = getStoredAuthToken();
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/scans/extract-ingredients`,
-    {
-      method: "POST",
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: formData,
+  const response = await fetch(`${API_BASE_URL}/api/scans/extract-product`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
-  );
+    body: formData,
+  });
 
   if (!response.ok) {
-    let message = `OCR request failed with status ${response.status}`;
-
+    let message = `Extraction request failed with status ${response.status}`;
     try {
-      const errorBody = (await response.json()) as {
-        message?: string | string[];
-      };
-      if (Array.isArray(errorBody.message)) {
-        message = errorBody.message.join(" ");
-      } else if (errorBody.message) {
-        message = errorBody.message;
-      }
-    } catch {
-      // Keep the status-based message when the backend does not return JSON.
-    }
-
+      const errorBody = (await response.json()) as { message?: string | string[] };
+      message = Array.isArray(errorBody.message)
+        ? errorBody.message.join(" ")
+        : errorBody.message || message;
+    } catch {}
     throw new Error(message);
   }
 
-  return response.json() as Promise<ExtractIngredientsResponse>;
+  return response.json() as Promise<ProductExtractionResponse>;
 }
 
-function requestScanChat({
-  question,
-  productName,
-  selectedGoal,
-  ingredientItems,
-  analysisResult,
+async function requestScanChat({
   scanId,
+  message,
+  image,
 }: {
-  question: string;
-  productName: string;
-  selectedGoal: SkinGoal;
-  ingredientItems: IngredientItem[];
-  analysisResult: AnalysisResult;
   scanId: string | null;
+  message: string;
+  image?: File | null;
 }) {
-  return postJson<ScanChatResponse>("/scan/chat", {
-    scanId,
-    question,
-    productName,
-    goalLabel: selectedGoal.label,
-    ingredients: ingredientItems,
-    analysisResult,
+  if (!scanId) {
+    throw new Error("A saved scan is required before starting chat.");
+  }
+  const formData = new FormData();
+  formData.append("message", message);
+  if (image) formData.append("image", image);
+  const token = getStoredAuthToken();
+  const response = await fetch(`${API_BASE_URL}/api/scans/${scanId}/messages`, {
+    method: "POST",
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: formData,
   });
+
+  if (!response.ok) {
+    let messageText = `Request failed with status ${response.status}`;
+    let reason: UpgradeDialogReason | undefined;
+    let quota: QuotaStatus | undefined;
+    try {
+      const body = (await response.json()) as {
+        message?: string | string[];
+        reason?: UpgradeDialogReason;
+        quota?: QuotaStatus;
+      };
+      messageText = Array.isArray(body.message) ? body.message.join(" ") : body.message || messageText;
+      reason = body.reason;
+      quota = body.quota;
+    } catch {}
+    if (response.status === 402 && reason) {
+      throw new UpgradeRequiredError(reason, messageText, quota);
+    }
+    throw new Error(messageText);
+  }
+  return response.json() as Promise<ScanChatResponse>;
 }
 
 function buildFallbackChatAnswer(
@@ -612,6 +774,8 @@ function buildFallbackChatAnswer(
 export default function ScanPage() {
   const router = useRouter();
   const { isReady: isAuthReady, token, user } = useAuth();
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedGoalId, setSelectedGoalId] = useState(goals[0].id);
@@ -624,6 +788,8 @@ export default function ScanPage() {
   const [isExtractingIngredients, setIsExtractingIngredients] = useState(false);
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [ocrRawText, setOcrRawText] = useState("");
+  const [productExtraction, setProductExtraction] =
+    useState<ProductExtractionResponse | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisRequestId, setAnalysisRequestId] = useState(0);
   const [isResultReady, setIsResultReady] = useState(false);
@@ -631,7 +797,10 @@ export default function ScanPage() {
     null,
   );
   const [activeScanId, setActiveScanId] = useState<string | null>(null);
-  const [chatScanIdToOpen, setChatScanIdToOpen] = useState<string | null>(null);
+  const [chatScanIdToOpen, setChatScanIdToOpen] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return new URLSearchParams(window.location.search).get("chat");
+  });
   const [analysisError, setAnalysisError] = useState("");
   const [planStatus, setPlanStatus] = useState<PlanStatus>("free");
   const [freeScansUsed, setFreeScansUsed] = useState(0);
@@ -662,6 +831,7 @@ export default function ScanPage() {
 
   const activatePlan = () => {
     setUpgradeDialogReason(null);
+    router.push("/pricing");
   };
   const goToStep = (step: number) => {
     const nextStep = Math.min(Math.max(step, 1), 4);
@@ -685,7 +855,11 @@ export default function ScanPage() {
     uploadedImages.find((image) => image.id === selectedImageId) ??
     uploadedImages[0] ??
     null;
-  const productName = formatProductName(selectedImage?.file.name ?? null);
+  const extractedDisplayName = [productExtraction?.brand, productExtraction?.productName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const productName = extractedDisplayName || formatProductName(selectedImage?.file.name ?? null);
 
   const resetFlow = () => {
     uploadedImagesRef.current.forEach((image) =>
@@ -700,6 +874,7 @@ export default function ScanPage() {
     setIsExtractingIngredients(false);
     setOcrWarnings([]);
     setOcrRawText("");
+    setProductExtraction(null);
     setIsAnalyzing(false);
     setAnalysisRequestId(0);
     setIsResultReady(false);
@@ -722,7 +897,7 @@ export default function ScanPage() {
     if (preferredGoal) {
       setSelectedGoalId(preferredGoal);
     }
-    setIsWizardOpen(true);
+    setIsWizardOpen(false);
   };
 
   useEffect(() => {
@@ -744,20 +919,23 @@ export default function ScanPage() {
   }, [isAuthReady, router, token]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
+    const syncChatIdFromUrl = () => {
+      setChatScanIdToOpen(new URLSearchParams(window.location.search).get("chat"));
+    };
 
-    const chatId = new URLSearchParams(window.location.search).get("chat");
-    setChatScanIdToOpen(chatId);
+    window.addEventListener("popstate", syncChatIdFromUrl);
+    return () => window.removeEventListener("popstate", syncChatIdFromUrl);
   }, []);
   useEffect(() => {
     if (!isAuthReady || !user) {
       return;
     }
 
-    setPlanStatus(user.planStatus ?? "free");
-    setFreeScansUsed(user.freeScansUsed ?? 0);
+    const timeoutId = window.setTimeout(() => {
+      setPlanStatus(user.planStatus ?? "free");
+      setFreeScansUsed(user.freeScansUsed ?? 0);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [isAuthReady, user]);
 
   useEffect(() => {
@@ -771,9 +949,9 @@ export default function ScanPage() {
         (typeof window !== "undefined" ? window.localStorage.getItem(SKIN_GOAL_STORAGE_KEY) : null),
     );
 
-    if (preferredGoal) {
-      setSelectedGoalId(preferredGoal);
-    }
+    if (!preferredGoal) return;
+    const timeoutId = window.setTimeout(() => setSelectedGoalId(preferredGoal), 0);
+    return () => window.clearTimeout(timeoutId);
   }, [isAuthReady, user?.preferredSkinGoal, user?.skinGoal]);
   useEffect(() => {
     if (!isWizardOpen || isResultReady || currentStep === 4) {
@@ -799,9 +977,8 @@ export default function ScanPage() {
       try {
         const response = await requestScanAnalysis({
           goal: selectedGoal,
-          productName,
+          extractionId: productExtraction?.extractionId ?? null,
           ingredients: ingredientItems,
-          ingredientsText: manualIngredientsInput,
         });
 
         if (isCancelled) {
@@ -824,7 +1001,7 @@ export default function ScanPage() {
           setCurrentStep(3);
         } else {
           setAnalysisError(
-            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et réessayez.",
+            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et rÃƒÆ’Ã‚Â©essayez.",
           );
         }
         setAnalysisResult(null);
@@ -853,8 +1030,7 @@ export default function ScanPage() {
     currentStep,
     ingredientItems,
     isResultReady,
-    manualIngredientsInput,
-    productName,
+    productExtraction?.extractionId,
     selectedGoal,
   ]);
 
@@ -883,34 +1059,54 @@ export default function ScanPage() {
 
     try {
       const extractionResults = await Promise.all(
-        validFiles.map((file) => requestIngredientExtraction(file)),
+        validFiles.map((file) => requestProductExtraction(file)),
       );
-      const detectedIngredients = extractionResults.flatMap(
-        (result) => result.ingredients,
-      );
-      const detectedIngredientsText = extractionResults
-        .map((result) => result.ingredientsText)
-        .filter(Boolean)
-        .join("\n\n");
-      const warnings = extractionResults.flatMap((result) => result.warnings);
+      const usableResults = extractionResults.filter((result) => result.usable);
+      const primaryResult = usableResults
+        .slice()
+        .sort((left, right) => {
+          const rank = { high: 3, medium: 2, low: 1 };
+          return rank[right.confidence] - rank[left.confidence];
+        })[0] ?? extractionResults[0];
+
+      setProductExtraction(primaryResult ?? null);
+      const detectedIngredients = usableResults.flatMap((result) => result.ingredients);
+      const uniqueIngredients = Array.from(new Set(detectedIngredients));
+      const detectedIngredientsText = uniqueIngredients.join(", ");
+      const extractionWarnings = extractionResults.flatMap((result) => [
+        ...result.warnings,
+        ...(result.fullIngredientListVisible ? [] : ["La liste INCI complÃƒÆ’Ã‚Â¨te n'est pas visible. L'analyse sera partielle."]),
+        ...(result.confidence === "low" ? ["Confiance d'extraction faible. VÃƒÆ’Ã‚Â©rifiez chaque ingrÃƒÆ’Ã‚Â©dient."] : []),
+        ...(result.imageType === "product_front" ? ["Seule la face avant du produit est visible. Ajoutez une photo nette de l'ÃƒÆ’Ã‚Â©tiquette ingrÃƒÆ’Ã‚Â©dients."] : []),
+        ...(result.uncertainText.length ? [`Texte incertain: ${result.uncertainText.join(", ")}`] : []),
+        ...(!result.usable ? result.retakeInstructions : []),
+      ]);
       const rawText = extractionResults
-        .map((result) => result.rawText)
+        .map((result) => result.visibleText)
         .filter(Boolean)
         .join("\n\n---\n\n");
 
       setManualIngredientsInput(detectedIngredientsText);
-      setOcrWarnings(warnings);
+      setOcrWarnings(Array.from(new Set(extractionWarnings)));
       setOcrRawText(rawText);
 
-      if (!detectedIngredients.length) {
+      if (!primaryResult?.usable) {
+        setIngredientItems([]);
+        setStepTwoError(primaryResult?.retakeInstructions.join(" ") || "Cette image n'est pas exploitable. Reprenez une photo plus nette.");
+        return;
+      }
+
+      if (!uniqueIngredients.length) {
         setIngredientItems([]);
         setStepTwoError(
-          "OCR termine, mais aucun ingredient clair n a ete detecte. Collez ou corrigez la liste manuellement.",
+          primaryResult.imageType === "product_front"
+            ? "La face avant a ÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â© reconnue, mais aucune liste d'ingrÃƒÆ’Ã‚Â©dients n'est visible. Ajoutez l'ÃƒÆ’Ã‚Â©tiquette INCI ou saisissez-la manuellement."
+            : "Aucun ingrÃƒÆ’Ã‚Â©dient lisible n'a ÃƒÆ’Ã‚Â©tÃƒÆ’Ã‚Â© dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â©. Corrigez la liste manuellement ou reprenez la photo.",
         );
         return;
       }
 
-      setIngredientItems(buildIngredientItems(detectedIngredients));
+      setIngredientItems(buildIngredientItems(uniqueIngredients));
       setStepTwoError("");
       setCurrentStep(3);
     } catch (error) {
@@ -1003,7 +1199,7 @@ export default function ScanPage() {
   if (!isWizardOpen) {
     return (
       <ChatWorkspace
-        onScanAnother={startNewScan}
+        onScanAnother={() => undefined}
         initialSelectedChatId={chatScanIdToOpen}
       />
     );
@@ -1025,8 +1221,8 @@ export default function ScanPage() {
             </h1>
             <p className="mx-auto mt-2 max-w-[820px] text-[15px] leading-6 text-[#66708f] sm:text-[17px]">
               {currentStep === 3
-                ? "Verifiez les ingredients detectes par l IA avant de lancer l analyse complete."
-                : "Scannez l etiquette d un produit de soin pour obtenir une analyse simple des ingredients par IA."}
+                ? tr("Verifiez les ingredients detectes par l IA avant de lancer l analyse complete.")
+                : tr("Scannez l etiquette d un produit de soin pour obtenir une analyse simple des ingredients par IA.") }
             </p>
           </div>
 
@@ -1047,13 +1243,13 @@ export default function ScanPage() {
                 panelContainer: { className: "mt-8" },
               }}
             >
-              <StepperPanel header={stepLabels[0]}>
+              <StepperPanel header={tr(stepLabels[0])}>
                 <GoalStep
                   selectedGoalId={selectedGoalId}
                   onSelectGoal={setSelectedGoalId}
                 />
               </StepperPanel>
-              <StepperPanel header={stepLabels[1]}>
+              <StepperPanel header={tr(stepLabels[1])}>
                 <UploadStep
                   uploadedImages={uploadedImages}
                   selectedImage={selectedImage}
@@ -1066,7 +1262,7 @@ export default function ScanPage() {
                   onOpenManualDialog={() => setIsManualDialogOpen(true)}
                 />
               </StepperPanel>
-              <StepperPanel header={stepLabels[2]}>
+              <StepperPanel header={tr(stepLabels[2])}>
                 <IngredientsStep
                   ingredientItems={ingredientItems}
                   ingredientText={manualIngredientsInput}
@@ -1077,7 +1273,7 @@ export default function ScanPage() {
                   onContinue={confirmIngredients}
                 />
               </StepperPanel>
-              <StepperPanel header={stepLabels[3]}>
+              <StepperPanel header={tr(stepLabels[3])}>
                 <AnalysisLoadingStep
                   selectedGoal={selectedGoal}
                   ingredientCount={ingredientItems.length}
@@ -1262,6 +1458,9 @@ function ScanProgress({
   onStepClick: (step: number) => void;
   selectedGoalLabel: string;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   return (
     <div className="mx-auto flex max-w-[860px] items-center pb-8">
       {stepLabels.map((label, index) => {
@@ -1291,10 +1490,10 @@ function ScanProgress({
                 className={`absolute left-1/2 top-10 w-40 -translate-x-1/2 text-center text-xs font-semibold ${currentStep >= step ? "text-[#6b3ee4]" : "text-[#66708f]"
                   }`}
               >
-                {label}
+                {tr(label)}
                 {step === 1 && (
                   <span className="mt-1 block text-xs font-medium text-[#7f86a3]">
-                    {selectedGoalLabel}
+                    {tr(selectedGoalLabel)}
                   </span>
                 )}
               </span>
@@ -1302,8 +1501,8 @@ function ScanProgress({
             {step < stepLabels.length && (
               <span className="mx-2 h-0.5 flex-1 rounded bg-[#dfe2ee]">
                 <span
-                  className={`block h-full rounded bg-[#7548e8] transition-all ${currentStep > step ? "w-full" : "w-0"
-                    }`}
+                  className={`block h-full rounded bg-[#7548e8] transition-all ${currentStep > step ? "w-full" : "w-0"}
+                  }`}
                 />
               </span>
             )}
@@ -1321,13 +1520,16 @@ function GoalStep({
   selectedGoalId: string;
   onSelectGoal: (goalId: string) => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   return (
     <div className="mx-auto mt-9 grid max-w-[1280px] gap-6 lg:grid-cols-[minmax(0,840px)_360px] lg:items-center lg:justify-center">
       <Panel className="min-h-[420px] px-7 pb-20 pt-6">
         <StepTitle
           number="1"
-          title="Choisissez votre objectif peau"
-          description="Selectionnez votre priorite du moment pour personnaliser l analyse."
+          title={tr("Choisissez votre objectif peau")}
+          description={tr("Selectionnez votre priorite du moment pour personnaliser l analyse.")}
         />
         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {goals.map((goal) => {
@@ -1337,7 +1539,7 @@ function GoalStep({
                 key={goal.label}
                 type="button"
                 onClick={() => onSelectGoal(goal.id)}
-                className={`relative flex min-h-[112px] flex-col cursor-pointer items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${isSelected
+                className={`relative flex min-h-[112px] cursor-pointer flex-col items-center justify-center rounded-2xl border bg-white px-3 py-3 text-center transition hover:-translate-y-0.5 ${isSelected
                   ? "border-[#8c57eb] bg-[radial-gradient(circle_at_center,_#fbf8ff_0%,_#ffffff_72%)] shadow-[0_16px_40px_rgba(123,86,238,0.12)]"
                   : "border-[#e2e5f0] shadow-[0_8px_24px_rgba(65,58,105,0.04)]"
                   }`}
@@ -1357,10 +1559,10 @@ function GoalStep({
                   />
                 </span>
                 <span className="mt-3 text-[15px] font-semibold">
-                  {goal.label}
+                  {tr(goal.label)}
                 </span>
                 <span className="mt-1 text-xs text-[#7a819e]">
-                  {goal.accentLabel}
+                  {tr(goal.accentLabel)}
                 </span>
               </button>
             );
@@ -1466,7 +1668,7 @@ function UploadStep({
               </span>
               <span className="mt-5 flex items-center gap-2 text-xs text-[#727a99]">
                 <Lock className="h-4 w-4" />
-                Vos images sont privées et sécurisées.
+                Vos images sont privÃƒÆ’Ã‚Â©es et sÃƒÆ’Ã‚Â©curisÃƒÆ’Ã‚Â©es.
               </span>
             </button>
             {uploadedImages.length > 0 && (
@@ -1716,7 +1918,7 @@ function IngredientsStep({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-bold text-[#171b36]">
-                  Prochaine étape : Résultat IA
+                  Prochaine ÃƒÆ’Ã‚Â©tape : RÃƒÆ’Ã‚Â©sultat IA
                 </span>
                 <span className="mt-1 block text-xs text-[#727a99]">
                   L IA analysera vos ingredients pour vous fournir une
@@ -1845,7 +2047,7 @@ function AnalysisLoadingStep({
             />
             <LoadingInfoCard
               icon={ClipboardCheck}
-              title="Ingrédients vérifiés"
+              title="IngrÃƒÆ’Ã‚Â©dients vÃƒÆ’Ã‚Â©rifiÃƒÆ’Ã‚Â©s"
               text={`${ingredientCount} elements confirmes`}
             />
             <LoadingInfoCard
@@ -1861,7 +2063,7 @@ function AnalysisLoadingStep({
             </div>
             <div className="mt-4 flex items-center justify-between text-sm font-medium text-[#7b829e]">
               <span>Lecture de la formule</span>
-              <span>Évaluation de compatibilité</span>
+              <span>ÃƒÆ’Ã¢â‚¬Â°valuation de compatibilitÃƒÆ’Ã‚Â©</span>
               <span>Preparation du resultat</span>
             </div>
           </div>
@@ -1911,31 +2113,31 @@ const featureCards: FeatureCard[] = [
   {
     id: "ingredient-analyzer",
     icon: FlaskConical,
-    title: "Analyseur d’ingrédients",
-    text: "Décodez les ingrédients, vérifiez les points à surveiller et comprenez ce qui convient à votre peau.",
+    title: "Analyseur d'ingrÃƒÆ’Ã‚Â©dients",
+    text: "DÃƒÆ’Ã‚Â©codez les ingrÃƒÆ’Ã‚Â©dients, vÃƒÆ’Ã‚Â©rifiez les points ÃƒÆ’Ã‚Â  surveiller et comprenez ce qui convient ÃƒÆ’Ã‚Â  votre peau.",
     image: "/chat/ingredients.png",
-    imageAlt: "Illustration de l’analyse des ingrédients",
+    imageAlt: "Illustration de l'analyse des ingrÃƒÆ’Ã‚Â©dients",
     points: [
-      "Collez ou scannez la liste d’ingrédients d’un produit de soin.",
-      "Comprenez le rôle de chaque ingrédient.",
-      "Repérez les ingrédients pouvant irriter les peaux sensibles.",
-      "Obtenez une explication claire, sans jargon INCI compliqué.",
+      "Collez ou scannez la liste d'ingrÃƒÆ’Ã‚Â©dients d'un produit de soin.",
+      "Comprenez le rÃƒÆ’Ã‚Â´le de chaque ingrÃƒÆ’Ã‚Â©dient.",
+      "RepÃƒÆ’Ã‚Â©rez les ingrÃƒÆ’Ã‚Â©dients pouvant irriter les peaux sensibles.",
+      "Obtenez une explication claire, sans jargon INCI compliquÃƒÆ’Ã‚Â©.",
     ],
-    primaryCtaLabel: "Analyser les ingrédients",
+    primaryCtaLabel: "Analyser les ingrÃƒÆ’Ã‚Â©dients",
     action: "scan",
   },
   {
     id: "routine-coach",
     icon: Bot,
     title: "Coach routine",
-    text: "Recevez des routines personnalisées selon vos objectifs peau.",
+    text: "Recevez des routines personnalisÃƒÆ’Ã‚Â©es selon vos objectifs peau.",
     image: "/chat/routine.png",
     imageAlt: "Illustration du coach routine",
     points: [
       "Construisez une routine simple pour le matin ou le soir.",
       "Sachez quel produit appliquer en premier, ensuite et en dernier.",
-      "Évitez de mélanger trop d’actifs puissants.",
-      "Recevez des rappels sur le SPF et la fréquence d’utilisation.",
+      "ÃƒÆ’Ã¢â‚¬Â°vitez de mÃƒÆ’Ã‚Â©langer trop d'actifs puissants.",
+      "Recevez des rappels sur le SPF et la frÃƒÆ’Ã‚Â©quence d'utilisation.",
     ],
   },
   {
@@ -1946,10 +2148,10 @@ const featureCards: FeatureCard[] = [
     image: "/chat/scan.png",
     imageAlt: "Illustration du scanner produit",
     points: [
-      "Importez une photo claire de l’étiquette du produit.",
-      "Extrayez automatiquement les ingrédients grâce à l’OCR.",
-      "Corrigez la liste détectée avant l’analyse.",
-      "Recevez un score, un verdict, des points forts et des ingrédients à surveiller.",
+      "Importez une photo claire de l'ÃƒÆ’Ã‚Â©tiquette du produit.",
+      "Extrayez automatiquement les ingrÃƒÆ’Ã‚Â©dients grÃƒÆ’Ã‚Â¢ce ÃƒÆ’Ã‚Â  l'OCR.",
+      "Corrigez la liste dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â©e avant l'analyse.",
+      "Recevez un score, un verdict, des points forts et des ingrÃƒÆ’Ã‚Â©dients ÃƒÆ’Ã‚Â  surveiller.",
     ],
     primaryCtaLabel: "Scanner un produit",
     action: "scan",
@@ -1958,14 +2160,14 @@ const featureCards: FeatureCard[] = [
     id: "skin-insights",
     icon: Sparkles,
     title: "Insights peau",
-    text: "Suivez vos analyses et obtenez des insights plus précis sur votre peau.",
+    text: "Suivez vos analyses et obtenez des insights plus prÃƒÆ’Ã‚Â©cis sur votre peau.",
     image: "/chat/insights.png",
     imageAlt: "Illustration des insights peau",
     points: [
-      "Comprenez les tendances dans vos produits scannés.",
-      "Identifiez les ingrédients qui correspondent le plus souvent à vos objectifs peau.",
-      "Repérez ce que votre peau semble mieux tolérer.",
-      "Préparez des recommandations plus intelligentes avec le temps.",
+      "Comprenez les tendances dans vos produits scannÃƒÆ’Ã‚Â©s.",
+      "Identifiez les ingrÃƒÆ’Ã‚Â©dients qui correspondent le plus souvent ÃƒÆ’Ã‚Â  vos objectifs peau.",
+      "RepÃƒÆ’Ã‚Â©rez ce que votre peau semble mieux tolÃƒÆ’Ã‚Â©rer.",
+      "PrÃƒÆ’Ã‚Â©parez des recommandations plus intelligentes avec le temps.",
     ],
   },
 ];
@@ -1978,12 +2180,13 @@ function ChatWorkspace({
   initialSelectedChatId?: string | null;
 }) {
   const { locale } = useI18n();
+  const { user, updateUser } = useAuth();
   const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const [selectedHistoryChatId, setSelectedHistoryChatId] = useState<
     string | null
-  >(null);
+  >(() => initialSelectedChatId);
   const [selectedHistoryDetail, setSelectedHistoryDetail] =
     useState<ScanConversationDetail | null>(null);
   const [isConversationLoading, setIsConversationLoading] = useState(false);
@@ -1997,6 +2200,18 @@ function ChatWorkspace({
   const [selectedFeatureCard, setSelectedFeatureCard] =
     useState<FeatureCard | null>(null);
   const [isFaceScanDialogOpen, setIsFaceScanDialogOpen] = useState(false);
+  const [localUpgradeReason, setLocalUpgradeReason] = useState<UpgradeDialogReason | null>(null);
+  const chatAttachment = useChatImageAttachment();
+  const scanUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const [isNewScanOpen, setIsNewScanOpen] = useState(false);
+  const [newScanImage, setNewScanImage] = useState<{ file: File; previewUrl: string } | null>(null);
+  const [newScanExtraction, setNewScanExtraction] = useState<ProductExtractionResponse | null>(null);
+  const [newScanIngredientText, setNewScanIngredientText] = useState("");
+  const [newScanWarnings, setNewScanWarnings] = useState<string[]>([]);
+  const [newScanError, setNewScanError] = useState("");
+  const [isNewScanExtracting, setIsNewScanExtracting] = useState(false);
+  const [isNewScanAnalyzing, setIsNewScanAnalyzing] = useState(false);
+  const [selectedNewScanGoalId, setSelectedNewScanGoalId] = useState(() => normalizeSkinGoalId(user?.preferredSkinGoal ?? user?.skinGoal) ?? goals[0].id);
 
   const [theme, setTheme] = useState<"dark" | "light">("light");
   const workspaceRef = useRef<HTMLDivElement | null>(null);
@@ -2078,6 +2293,16 @@ function ChatWorkspace({
 
     setSelectedHistoryChatId(initialSelectedChatId);
   }, [initialSelectedChatId]);
+
+  useEffect(() => {
+    const nextUrl = selectedHistoryChatId
+      ? `/scan?chat=${encodeURIComponent(selectedHistoryChatId)}`
+      : "/scan";
+
+    if (`${window.location.pathname}${window.location.search}` !== nextUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [selectedHistoryChatId]);
 
   useEffect(() => {
     if (editingChatId && editingChatId !== selectedHistoryChatId) {
@@ -2208,6 +2433,9 @@ useEffect(() => {
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const selectedHistoryChat =
     scanHistory.find((chat) => chat.id === selectedHistoryChatId) ?? null;
+  const selectedNewScanGoal = goals.find((goal) => goal.id === selectedNewScanGoalId) ?? goals[0];
+  const newScanIngredientItems = buildIngredientItems(parseIngredientText(newScanIngredientText));
+  const hasSavedGoalPreference = Boolean(normalizeSkinGoalId(user?.preferredSkinGoal ?? user?.skinGoal));
   const isDarkTheme = theme === "dark";
   const selectedGoal =
     goals.find(
@@ -2220,17 +2448,17 @@ useEffect(() => {
       score: 0,
       verdict: "good_choice",
       verdictLabel:
-        selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
+        selectedHistoryChat.analysisVerdict || "Analyse enregistrÃƒÆ’Ã‚Â©e",
       summary:
         selectedHistoryChat.analysisSummary ||
-        "Analyse enregistrée pour ce produit.",
+        "Analyse enregistrÃƒÆ’Ã‚Â©e pour ce produit.",
       positives: [],
       watchouts: [],
       recommendations: selectedGoal.tips,
       nextStep: selectedGoal.nextStep,
       followUpQuestions: selectedGoal.questions,
       disclaimer:
-        "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
+        "Analyse informative, non mÃƒÆ’Ã‚Â©dicale. Consultez un professionnel en cas de doute.",
     })
     : null;
   const selectedIngredientItems = buildIngredientItems(
@@ -2239,7 +2467,7 @@ useEffect(() => {
   const selectedProductName =
     selectedHistoryDetail?.productName ||
     selectedHistoryChat?.productName ||
-    "Produit scanné";
+    "Produit scannÃƒÆ’Ã‚Â©";
   const selectedDisplayName = getChatDisplayName(
     selectedHistoryChat?.id,
     selectedProductName,
@@ -2256,6 +2484,137 @@ useEffect(() => {
     setChatMessages(conversationMessages);
   }, [selectedHistoryDetail?.id, selectedHistoryDetail?.updatedAt]);
 
+  const refreshScanHistory = async () => {
+    try {
+      const scans = await requestScanHistory();
+      setScanHistory(scans);
+    } catch {
+      setScanHistory([]);
+    }
+  };
+
+  const resetNewScanDraft = () => {
+    if (newScanImage?.previewUrl) {
+      URL.revokeObjectURL(newScanImage.previewUrl);
+    }
+    setNewScanImage(null);
+    setNewScanExtraction(null);
+    setNewScanIngredientText("");
+    setNewScanWarnings([]);
+    setNewScanError("");
+    setIsNewScanExtracting(false);
+    setIsNewScanAnalyzing(false);
+  };
+
+  const beginConversationScan = () => {
+    setSelectedHistoryChatId(null);
+    resetNewScanDraft();
+    const preferredGoal = normalizeSkinGoalId(user?.preferredSkinGoal ?? user?.skinGoal ?? (typeof window !== "undefined" ? window.localStorage.getItem(SKIN_GOAL_STORAGE_KEY) : null));
+    setSelectedNewScanGoalId(preferredGoal ?? goals[0].id);
+    setIsNewScanOpen(true);
+  };
+
+  const savePreferredScanGoal = async (goalId: string) => {
+    setSelectedNewScanGoalId(goalId);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SKIN_GOAL_STORAGE_KEY, goalId);
+    }
+    updateUser({ preferredSkinGoal: goalId, skinGoal: goalId });
+
+    const token = getStoredAuthToken();
+    if (!token) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/me`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ preferredSkinGoal: goalId }),
+      });
+    } catch {
+      // Local preference is still useful if the profile update cannot be saved now.
+    }
+  };
+
+  const handleConversationScanFile = async (file?: File | null) => {
+    if (!file) return;
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setNewScanError("Ajoutez une image JPG, PNG ou WEBP.");
+      return;
+    }
+
+    if (newScanImage?.previewUrl) {
+      URL.revokeObjectURL(newScanImage.previewUrl);
+    }
+
+    setNewScanImage({ file, previewUrl: URL.createObjectURL(file) });
+    setNewScanExtraction(null);
+    setNewScanIngredientText("");
+    setNewScanWarnings([]);
+    setNewScanError("");
+    setIsNewScanExtracting(true);
+
+    try {
+      const extraction = await requestProductExtraction(file);
+      setNewScanExtraction(extraction);
+      setNewScanIngredientText(extraction.ingredients.join(", "));
+      setNewScanWarnings(Array.from(new Set([
+        ...extraction.warnings,
+        ...(extraction.fullIngredientListVisible ? [] : ["La liste complÃƒÆ’Ã‚Â¨te n'est pas visible. L'analyse sera partielle."]),
+        ...(extraction.confidence === "low" ? ["Confiance d'extraction faible. VÃƒÆ’Ã‚Â©rifiez les ingrÃƒÆ’Ã‚Â©dients."] : []),
+        ...(extraction.imageType === "product_front" ? ["Ajoutez la photo de l'ÃƒÆ’Ã‚Â©tiquette INCI si possible."] : []),
+        ...(extraction.uncertainText.length ? [`Texte incertain: ${extraction.uncertainText.join(", ")}`] : []),
+        ...(!extraction.usable ? extraction.retakeInstructions : []),
+      ])));
+      if (!extraction.usable) {
+        setNewScanError(extraction.retakeInstructions.join(" ") || "Cette image n'est pas exploitable.");
+      } else if (!extraction.ingredients.length) {
+        setNewScanError("Je n'ai pas trouvÃƒÆ’Ã‚Â© de liste d'ingrÃƒÆ’Ã‚Â©dients lisible. Collez-la ci-dessous ou ajoutez une photo plus nette.");
+      }
+    } catch (error) {
+      setNewScanError(error instanceof Error ? error.message : "Impossible d'extraire les informations du produit.");
+    } finally {
+      setIsNewScanExtracting(false);
+    }
+  };
+
+  const analyzeConversationScan = async () => {
+    const ingredients = buildIngredientItems(parseIngredientText(newScanIngredientText));
+    if (!ingredients.length) {
+      setNewScanError("Ajoutez ou confirmez au moins un ingrÃƒÆ’Ã‚Â©dient avant l'analyse.");
+      return;
+    }
+
+    setNewScanError("");
+    setIsNewScanAnalyzing(true);
+
+    try {
+      const result = await requestScanAnalysis({
+        goal: selectedNewScanGoal,
+        extractionId: newScanExtraction?.extractionId ?? null,
+        ingredients,
+      });
+      await refreshScanHistory();
+      if (result.scanId) {
+        setSelectedHistoryChatId(result.scanId);
+      }
+      setIsNewScanOpen(false);
+      setNewScanImage(null);
+      setNewScanExtraction(null);
+      setNewScanIngredientText("");
+      setNewScanWarnings([]);
+    } catch (error) {
+      if (error instanceof UpgradeRequiredError) {
+        setLocalUpgradeReason(error.reason);
+      }
+      setNewScanError(error instanceof Error ? error.message : "Impossible de gÃƒÆ’Ã‚Â©nÃƒÆ’Ã‚Â©rer l'analyse pour le moment.");
+    } finally {
+      setIsNewScanAnalyzing(false);
+    }
+  };
+
   const askSavedQuestion = async (rawQuestion: string) => {
     const question = rawQuestion.trim();
 
@@ -2268,12 +2627,16 @@ useEffect(() => {
       return;
     }
 
+    const pendingImage = chatAttachment.consume();
     const createdAt = new Date().toISOString();
     const userMessage: ChatMessage = {
       id: `history-user-${chatMessageIdRef.current++}`,
       role: "user",
       content: question,
       createdAt,
+      attachment: pendingImage
+        ? { type: "image", mimeType: pendingImage.file.type, previewUrl: pendingImage.previewUrl }
+        : undefined,
     };
 
     setChatInput("");
@@ -2282,11 +2645,8 @@ useEffect(() => {
 
     try {
       const response = await requestScanChat({
-        question,
-        productName: selectedProductName,
-        selectedGoal,
-        ingredientItems: selectedIngredientItems,
-        analysisResult: selectedAnalysisResult,
+        message: question,
+        image: pendingImage?.file,
         scanId: selectedHistoryChat.id,
       });
 
@@ -2295,6 +2655,7 @@ useEffect(() => {
         role: "assistant",
         content: response.answer,
         createdAt: new Date().toISOString(),
+        librarySuggestions: response.librarySuggestions,
       };
 
       setChatMessages((messages) => [...messages, assistantMessage]);
@@ -2323,14 +2684,18 @@ useEffect(() => {
             : item,
         ),
       );
-    } catch {
+    } catch (error) {
+      if (error instanceof UpgradeRequiredError) {
+        setLocalUpgradeReason(error.reason);
+      }
       setChatMessages((messages) => [
         ...messages,
         {
           id: `history-assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
-          content:
-            "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
+          content: error instanceof Error
+            ? error.message
+            : "Impossible de rÃƒÆ’Ã‚Â©pondre pour le moment. RÃƒÆ’Ã‚Â©essayez dans quelques instants.",
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -2515,8 +2880,7 @@ useEffect(() => {
             type="button"
             onClick={() => {
               setIsSidebarOpen(false);
-              setSelectedHistoryChatId(null);
-              onScanAnother();
+              beginConversationScan();
             }}
             className="mt-6 flex h-[45px] cursor-pointer items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)] transition-all duration-300 hover:-translate-y-0.5 hover:from-[#F4D2DF] hover:via-[#EFC9DB] hover:to-[#E8D1F4] active:translate-y-0"
           >
@@ -2554,7 +2918,7 @@ useEffect(() => {
                 className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}
               >
                 <FlaskConical className="h-5 w-5" />
-                {tr("Bibliothèque d’ingrédients")}
+                {tr("BibliothÃƒÆ’Ã‚Â¨que d'ingrÃƒÆ’Ã‚Â©dients")}
               </button>
             </nav>
           </div>
@@ -2563,7 +2927,7 @@ useEffect(() => {
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              {tr("Récent")}
+              {tr("RÃƒÆ’Ã‚Â©cent")}
             </p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
@@ -2625,17 +2989,17 @@ useEffect(() => {
             <h2
               className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}
             >
-              {tr("Débloquer Premium")}
+              {tr("DÃƒÆ’Ã‚Â©bloquer Premium")}
             </h2>
             <p className={`mt-2 text-sm leading-5 ${palette.premiumText}`}>
-              {tr("Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.")}
+              {tr("Obtenez des analyses plus poussÃƒÆ’Ã‚Â©es, des scans illimitÃƒÆ’Ã‚Â©s et des routines personnalisÃƒÆ’Ã‚Â©es.")}
             </p>
             <button
               type="button"
               onClick={() => router.push('/pricing')}
               className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold cursor-pointer ${palette.premiumButton}`}
             >
-              {tr("Passer à Premium")}
+              {tr("Passer ÃƒÆ’Ã‚Â  Premium")}
             </button>
           </div>
         </aside>
@@ -2665,7 +3029,7 @@ useEffect(() => {
                 onClick={() => router.push('/settings')}
                 className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-xs font-medium backdrop-blur transition-colors duration-300 hover:!bg-gray-50 ${palette.headerButton}`}
               >
-                {tr("Paramètres")}
+                {tr("ParamÃƒÆ’Ã‚Â¨tres")}
                 <Settings className="h-4 w-4" />
               </button>
             </div>
@@ -2744,8 +3108,8 @@ useEffect(() => {
                     <p
                       className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}
                     >
-                      Reprenez votre analyse, retrouvez le résultat précédent et
-                      continuez la discussion dans le même fil.
+                      Reprenez votre analyse, retrouvez le rÃƒÆ’Ã‚Â©sultat prÃƒÆ’Ã‚Â©cÃƒÆ’Ã‚Â©dent et
+                      continuez la discussion dans le mÃƒÆ’Ã‚Âªme fil.
                     </p>
                   </div>
                   <button
@@ -2753,7 +3117,7 @@ useEffect(() => {
                     onClick={() => setSelectedHistoryChatId(null)}
                     className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
                   >
-                    Retour à l'accueil
+                    Retour ÃƒÆ’Ã‚Â  l&apos;accueil
                   </button>
                 </div>
 
@@ -2775,8 +3139,8 @@ useEffect(() => {
                           <p
                             className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}
                           >
-                            J&apos;ai scanné ce produit pour vérifier s&apos;il
-                            est bien adapté à mon objectif peau et à ma routine.
+                            J&apos;ai scannÃƒÆ’Ã‚Â© ce produit pour vÃƒÆ’Ã‚Â©rifier s&apos;il
+                            est bien adaptÃƒÆ’Ã‚Â© ÃƒÆ’Ã‚Â  mon objectif peau et ÃƒÆ’Ã‚Â  ma routine.
                           </p>
                         </div>
                       </div>
@@ -2798,7 +3162,7 @@ useEffect(() => {
                                   <h2
                                     className={`text-xl font-bold ${palette.heading}`}
                                   >
-                                    Résultat de l&apos;analyse IA
+                                    RÃƒÆ’Ã‚Â©sultat de l&apos;analyse IA
                                   </h2>
                                   <span
                                     className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}
@@ -2830,7 +3194,7 @@ useEffect(() => {
                               isDarkTheme={isDarkTheme}
                             />
                             <InsightCard
-                              title="À surveiller"
+                              title="ÃƒÆ’Ã¢â€šÂ¬ surveiller"
                               tone="orange"
                               items={(selectedAnalysisResult.watchouts ?? []).map((item) => ({ ...item, ingredient: normalizeDisplayText(item.ingredient), reason: normalizeDisplayText(item.reason) }))}
                               isDarkTheme={isDarkTheme}
@@ -2853,14 +3217,14 @@ useEffect(() => {
                             className={`mt-5 rounded-2xl px-4 py-3 text-xs leading-5 ${isDarkTheme ? "bg-white/[0.04] text-white/65" : "bg-[#faf7ff] text-[#68708b]"}`}
                           >
                             {selectedAnalysisResult.disclaimer ||
-                              "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
+                              "Analyse informative, non mÃƒÆ’Ã‚Â©dicale. Consultez un professionnel en cas de doute."}
                           </p>
 
                           <div className="mt-5">
                             <h3
                               className={`text-base font-semibold ${palette.heading}`}
                             >
-                              Questions à poser
+                              Questions ÃƒÆ’Ã‚Â  poser
                             </h3>
                             <div className="mt-3 flex flex-wrap gap-2">
                               {selectedFollowUpQuestions.map((question) => (
@@ -2909,7 +3273,20 @@ useEffect(() => {
                                     : "border-[#ece5fb] bg-white text-[#59617d]"
                                   }`}
                               >
-                                <p>{message.content}</p>
+                                {message.attachment && (
+                                  <div className={`mb-2 overflow-hidden rounded-xl border ${isDarkTheme ? "border-white/10" : "border-[#ece5fb]"}`}>
+                                    {buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url) ? (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img src={buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url)!} alt={tr("Image jointe")} className="max-h-44 w-full object-cover" />
+                                    ) : (
+                                      <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold"><Paperclip className="h-3.5 w-3.5" />{tr("Image jointe")}</div>
+                                    )}
+                                  </div>
+                                )}
+                                <AnimatedChatText content={message.content} animate={message.role === "assistant"} />
+                                {message.role === "assistant" && (
+                                  <LibrarySuggestionStrip suggestions={message.librarySuggestions} isDarkTheme={isDarkTheme} />
+                                )}
                                 <p
                                   className={`mt-2 text-[11px] ${message.role === "user" ? (isDarkTheme ? "text-white/80" : "text-[#7a6ea6]") : palette.subtext}`}
                                 >
@@ -2927,11 +3304,7 @@ useEffect(() => {
                       ) : (
                         <div
                           className={`rounded-2xl border p-4 text-sm ${palette.detailCard} ${palette.subtext}`}
-                        >
-                          Aucune question enregistrée pour ce scan pour le
-                          moment. Vous pouvez reprendre la conversation
-                          ci-dessous.
-                        </div>
+                        >{tr("Aucune question enregistree pour ce scan pour le moment. Vous pouvez reprendre la conversation ci-dessous.")}</div>
                       )}
 
                       {isChatSending && (
@@ -2940,7 +3313,7 @@ useEffect(() => {
                             className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}
                           >
                             <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                            SkinorAI réfléchit...
+                            SkinorAI rÃƒÆ’Ã‚Â©flÃƒÆ’Ã‚Â©chit...
                           </div>
                         </div>
                       )}
@@ -2950,6 +3323,34 @@ useEffect(() => {
                   <div
                     className={`sticky bottom-0 z-20 mt-auto -mx-5 px-5 pb-3 pt-3 backdrop-blur-xl lg:-mx-7 lg:px-7`}
                   >
+                    <input
+                      ref={chatAttachment.inputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="sr-only"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        try {
+                          chatAttachment.selectFile(file);
+                        } catch (error) {
+                          setChatMessages((messages) => [...messages, {
+                            id: `history-assistant-${chatMessageIdRef.current++}`,
+                            role: "assistant",
+                            content: error instanceof Error ? error.message : tr("Image invalide."),
+                            createdAt: new Date().toISOString(),
+                          }]);
+                        }
+                      }}
+                    />
+                    {chatAttachment.image && (
+                      <div className={`mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 rounded-2xl border p-2 ${isDarkTheme ? "border-white/10 bg-[#15111d]" : "border-[#ead8ef] bg-white"}`}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={chatAttachment.image.previewUrl} alt={tr("Image sÃƒÆ’Ã‚Â©lectionnÃƒÆ’Ã‚Â©e")} className="h-12 w-12 rounded-xl object-cover" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold">{chatAttachment.image.file.name}</span>
+                        <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full" aria-label={tr("Retirer l image")}><X className="h-4 w-4" /></button>
+                      </div>
+                    )}
                     <div
                       className={`mx-auto flex h-12 w-full max-w-3xl items-center gap-2 rounded-full border px-3 shadow-[0_14px_35px_rgba(122,63,92,0.12)] transition ${isDarkTheme
                         ? "border-white/10 bg-[#15111d]"
@@ -2968,6 +3369,20 @@ useEffect(() => {
                               type="button"
                               onClick={() => {
                                 setShowPlusMenu(false);
+                                chatAttachment.inputRef.current?.click();
+                              }}
+                              className={`flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm transition ${isDarkTheme
+                                ? "text-white/85 hover:bg-white/10"
+                                : "text-[#33243c] hover:bg-[#f5eefe]"
+                                }`}
+                            >
+                              <Paperclip className="h-4 w-4" />
+                              {tr("Joindre une image")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowPlusMenu(false);
                                 router.push("/ingredient-library");
                               }}
                               className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm transition ${isDarkTheme
@@ -2975,7 +3390,7 @@ useEffect(() => {
                                 : "text-[#33243c] hover:bg-[#f5eefe]"
                                 }`}
                             >
-                              {tr("Bibliothèque d’ingrédients")}
+                              {tr("BibliothÃƒÆ’Ã‚Â¨que d'ingrÃƒÆ’Ã‚Â©dients")}
                             </button>
                           </div>
                         )}
@@ -3014,7 +3429,7 @@ useEffect(() => {
                         onClick={() => void askSavedQuestion(chatInput)}
                         disabled={!chatInput.trim() || isChatSending}
                         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#9b7cff] to-[#d78ac8] text-white shadow-[0_8px_18px_rgba(139,92,246,0.24)] transition hover:scale-105 hover:shadow-[0_10px_24px_rgba(139,92,246,0.30)] disabled:cursor-not-allowed disabled:opacity-50"
-                        aria-label="Envoyer"
+                        aria-label={tr("Envoyer")}
                       >
                         <Send className="h-4 w-4" />
                       </button>
@@ -3024,12 +3439,39 @@ useEffect(() => {
                       className={`mt-2 text-center text-[10px] ${isDarkTheme ? "text-white/35" : "text-[#9a8faa]"
                         }`}
                     >
-                      SkinorAI peut faire des erreurs. Vérifiez les informations
+                      SkinorAI peut faire des erreurs. VÃƒÆ’Ã‚Â©rifiez les informations
                       importantes.
                     </p>
                   </div>
                 </div>
               </div>
+            ) : isNewScanOpen ? (
+              <NewScanConversationPanel
+                isDarkTheme={isDarkTheme}
+                palette={palette}
+                tr={tr}
+                goals={goals}
+                selectedGoal={selectedNewScanGoal}
+                selectedGoalId={selectedNewScanGoalId}
+                hasSavedGoalPreference={hasSavedGoalPreference}
+                uploadInputRef={scanUploadInputRef}
+                image={newScanImage}
+                extraction={newScanExtraction}
+                ingredientText={newScanIngredientText}
+                ingredientItems={newScanIngredientItems}
+                warnings={newScanWarnings}
+                error={newScanError}
+                isExtracting={isNewScanExtracting}
+                isAnalyzing={isNewScanAnalyzing}
+                onPickFile={handleConversationScanFile}
+                onSelectGoal={savePreferredScanGoal}
+                onIngredientTextChange={setNewScanIngredientText}
+                onAnalyze={analyzeConversationScan}
+                onCancel={() => {
+                  resetNewScanDraft();
+                  setIsNewScanOpen(false);
+                }}
+              />
             ) : (
               <div
                 ref={heroRef}
@@ -3039,21 +3481,13 @@ useEffect(() => {
                   data-chat-hero
                   className="relative mt-1 flex justify-center"
                 >
-                  <div
-                    data-chat-orb
-                    className={`relative flex h-[82px] w-[82px] items-center justify-center rounded-full border ${palette.orb}`}
-                  >
-                    <div
-                      className={`absolute inset-1.5 rounded-full border-r-2 ${palette.orbRing}`}
-                    />
-                    <Leaf className="h-10 w-10" />
-                  </div>
+                  <img src={isDarkTheme ? "/favicon.png" : "/favicon.png"} alt="Scan hero" className="w-[16px] h-20" />
                 </div>
                 <h1
                   data-chat-hero
                   className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}
                 >
-                  {tr("Prête à mieux comprendre votre peau ?")}
+                  {tr("PrÃƒÆ’Ã‚Âªte ÃƒÆ’Ã‚Â  mieux comprendre votre peau ?")}
                 </h1>
                 {/* <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
                   Your AI skincare companion for science-backed insights and personalized recommendations.
@@ -3065,7 +3499,7 @@ useEffect(() => {
                 >
                   <button
                     type="button"
-                    onClick={onScanAnother}
+                    onClick={beginConversationScan}
                     className={`group cursor-pointer flex min-h-[316px] gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
                   >
                     {/* <ScanBarcode className="h-10 w-10 text-[#bce58d]" /> */}
@@ -3073,19 +3507,22 @@ useEffect(() => {
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        {tr("Scanner un produit")}
+                        {tr("Scanner un produit")} <span className="ml-1 rounded-full bg-emerald-500/12 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-emerald-500">{tr("Inclus en Free")}</span>
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        {tr("Scannez un produit pour analyser ses ingrédients et sa formule.")}
+                        {tr("Extrayez les informations visibles du produit et analysez les ingrÃƒÆ’Ã‚Â©dients confirmÃƒÆ’Ã‚Â©s.")}
                       </span>
                       <img src="/icons/scan.png" alt="scan product" />
                     </span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIsFaceScanDialogOpen(true)}
+                    onClick={() => {
+                      if (user?.planStatus === "pro") setIsFaceScanDialogOpen(true);
+                      else setLocalUpgradeReason("face-scan-pro-required");
+                    }}
                     className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
                   >
                     {/* <Leaf className="h-7 w-7 text-[#f09ac7]" /> */}
@@ -3093,12 +3530,12 @@ useEffect(() => {
                       <span
                         className={`block text-[17px] font-semibold ${palette.actionTitle}`}
                       >
-                        {tr("Scan du visage")} <span className="bg-yellow-200 text-[#171b36] px-2 py-1 rounded-md text-[8px] font-bold"> {tr("PREMIUM")} </span>
+                        {tr("Scan du visage")} <span className="rounded-full bg-[#ce98fb]/20 px-2 py-1 text-[9px] font-black uppercase tracking-[0.1em] text-[#ad6ee0]">Pro</span>
                       </span>
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        {tr("Décodez les ingrédients et comprenez ce qui convient à votre peau.")}
+                        {tr("Analysez des caractÃƒÆ’Ã‚Â©ristiques cosmÃƒÆ’Ã‚Â©tiques visibles avec des conseils prudents.")}
                       </span>
                       <img src="/icons/face.png" alt="analyze ingredients" />
                     </span>
@@ -3152,7 +3589,7 @@ useEffect(() => {
           onPrimaryAction={() => {
             if (selectedFeatureCard.action === "scan") {
               setSelectedFeatureCard(null);
-              onScanAnother();
+              beginConversationScan();
               return;
             }
 
@@ -3162,9 +3599,27 @@ useEffect(() => {
       )}
 
       {isFaceScanDialogOpen && (
-        <FaceScanComingSoonDialog
+        <FaceScanDialog
           isDarkTheme={isDarkTheme}
+          skinGoal={user?.preferredSkinGoal ?? user?.skinGoal}
           onClose={() => setIsFaceScanDialogOpen(false)}
+          onUpgradeRequired={() => {
+            setIsFaceScanDialogOpen(false);
+            setLocalUpgradeReason("face-scan-pro-required");
+          }}
+        />
+      )}
+
+      {localUpgradeReason && (
+        <UpgradePlanDialog
+          reason={localUpgradeReason}
+          scansUsed={user?.freeScansUsed ?? 0}
+          scansRemaining={user?.planStatus === "pro" ? 999999 : Math.max(0, FREE_SCAN_LIMIT - (user?.freeScansUsed ?? 0))}
+          onClose={() => setLocalUpgradeReason(null)}
+          onUpgrade={() => {
+            setLocalUpgradeReason(null);
+            router.push("/pricing");
+          }}
         />
       )}
 
@@ -3204,339 +3659,342 @@ useEffect(() => {
   );
 }
 
-function SavedConversationWorkspace({
-  detail,
-  fallbackHistoryItem,
-  isConversationLoading,
-  historyItems,
-  isHistoryLoading,
-  onScanAnother,
-}: {
-  detail: ScanConversationDetail | null;
-  fallbackHistoryItem: ScanHistoryItem;
-  isConversationLoading: boolean;
-  historyItems: Array<{
-    id: string;
-    name: string;
-    date: string;
-    active: boolean;
-    image: string;
-  }>;
-  isHistoryLoading: boolean;
-  onScanAnother: () => void;
-}) {
-  const [chatInput, setChatInput] = useState("");
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [isChatSending, setIsChatSending] = useState(false);
-  const chatMessageIdRef = useRef(0);
 
-  useEffect(() => {
-    document.body.dataset.navbarHidden = "true";
+type NewScanConversationPanelProps = {
+  isDarkTheme: boolean;
+  palette: Record<string, string>;
+  tr: (value: string) => string;
+  goals: SkinGoal[];
+  selectedGoal: SkinGoal;
+  selectedGoalId: string;
+  hasSavedGoalPreference: boolean;
+  uploadInputRef: React.RefObject<HTMLInputElement | null>;
+  image: { file: File; previewUrl: string } | null;
+  extraction: ProductExtractionResponse | null;
+  ingredientText: string;
+  ingredientItems: IngredientItem[];
+  warnings: string[];
+  error: string;
+  isExtracting: boolean;
+  isAnalyzing: boolean;
+  onPickFile: (file?: File | null) => void;
+  onSelectGoal: (goalId: string) => void;
+  onIngredientTextChange: (value: string) => void;
+  onAnalyze: () => void;
+  onCancel: () => void;
+};
 
-    return () => {
-      delete document.body.dataset.navbarHidden;
-    };
-  }, []);
+function AnimatedChatText({ content, animate }: { content: string; animate: boolean }) {
+  const textRef = useRef<HTMLParagraphElement | null>(null);
 
-  const selectedGoal =
-    goals.find(
-      (goal) =>
-        goal.id === detail?.skinGoal ||
-        skinGoalApiMap[goal.id] === detail?.skinGoal,
-    ) ?? goals[0];
+  useLayoutEffect(() => {
+    if (!animate || !textRef.current) return;
+    const ctx = gsap.context(() => {
+      const words = gsap.utils.toArray<HTMLElement>("[data-chat-word]");
+      gsap.fromTo(
+        words,
+        { opacity: 0, y: 7, filter: "blur(3px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.26, stagger: 0.018, ease: "power2.out" },
+      );
+    }, textRef);
+    return () => ctx.revert();
+  }, [animate, content]);
 
-  const analysisResult: AnalysisResult = detail?.analysisResult ?? {
-    score: 0,
-    verdict: "good_choice",
-    verdictLabel: fallbackHistoryItem.analysisVerdict || "Analyse enregistrée",
-    summary:
-      fallbackHistoryItem.analysisSummary ||
-      "Analyse enregistrée pour ce produit.",
-    positives: [],
-    watchouts: [],
-    recommendations: selectedGoal.tips,
-    nextStep: selectedGoal.nextStep,
-    followUpQuestions: selectedGoal.questions,
-    disclaimer:
-      "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
-  };
-
-  const followUpQuestions = analysisResult.followUpQuestions?.length
-    ? analysisResult.followUpQuestions
-    : selectedGoal.questions;
-  const restoredMessages = (detail?.conversation ?? []).filter(
-    (message, index) => !(index === 0 && message.role === "assistant"),
-  );
-  const ingredientItems = buildIngredientItems(detail?.ingredients ?? []);
-  const productName =
-    detail?.productName || fallbackHistoryItem.productName || "Produit scanné";
-  const messageTimestamp =
-    detail?.updatedAt ||
-    fallbackHistoryItem.updatedAt ||
-    fallbackHistoryItem.createdAt;
-
-  useEffect(() => {
-    setChatMessages(restoredMessages);
-  }, [detail?.id]);
-
-  const askQuestion = async (rawQuestion: string) => {
-    const question = rawQuestion.trim();
-
-    if (!question || !detail || isChatSending) {
-      return;
-    }
-
-    const userMessage: ChatMessage = {
-      id: `saved-user-${chatMessageIdRef.current++}`,
-      role: "user",
-      content: question,
-      createdAt: new Date().toISOString(),
-    };
-
-    setChatInput("");
-    setChatMessages((messages) => [...messages, userMessage]);
-    setIsChatSending(true);
-
-    try {
-      const response = await requestScanChat({
-        question,
-        productName,
-        selectedGoal,
-        ingredientItems,
-        analysisResult,
-        scanId: detail.id,
-      });
-
-      setChatMessages((messages) => [
-        ...messages,
-        {
-          id: `saved-assistant-${chatMessageIdRef.current++}`,
-          role: "assistant",
-          content: response.answer,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    } catch {
-      setChatMessages((messages) => [
-        ...messages,
-        {
-          id: `saved-assistant-${chatMessageIdRef.current++}`,
-          role: "assistant",
-          content:
-            "Impossible de charger la réponse pour le moment. Réessayez dans quelques instants.",
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setIsChatSending(false);
-    }
-  };
+  if (!animate) return <p className="whitespace-pre-wrap">{content}</p>;
 
   return (
-    <main className="h-screen w-full overflow-hidden bg-[radial-gradient(circle_at_top,_rgba(165,120,255,0.12),_transparent_32%),linear-gradient(180deg,_#fcfbff_0%,_#f7f4ff_100%)] text-sm text-[#161a35] [&_button:not(:disabled)]:cursor-pointer [&_button:disabled]:cursor-not-allowed">
-      <div className="flex h-screen w-full bg-white/85">
-        <ResultSidebarShell
-          historyItems={historyItems}
-          isHistoryLoading={isHistoryLoading}
-          onScanAnother={onScanAnother}
-          selectedImage={null}
-        />
-        <section className="flex h-screen min-w-0 flex-1 flex-col overflow-hidden">
-          <div className="shrink-0 flex items-center justify-end border-b border-[#ede7fb] px-5 py-4 sm:px-8">
-            <div className="flex items-center gap-4 text-[#636b88]">
+    <p ref={textRef} className="whitespace-pre-wrap">
+      {content.split(/(\s+)/).map((part, index) =>
+        part.trim() ? (
+          <span key={`${part}-${index}`} data-chat-word className="inline-block will-change-transform">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </p>
+  );
+}
+
+function LibrarySuggestionStrip({
+  suggestions,
+  isDarkTheme,
+}: {
+  suggestions?: LibrarySuggestions;
+  isDarkTheme: boolean;
+}) {
+  const router = useRouter();
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(value, locale);
+  const [isOpen, setIsOpen] = useState(false);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const products = suggestions?.products ?? [];
+  const ingredients = suggestions?.ingredients ?? [];
+  const hasProducts = products.length > 0;
+  const hasIngredients = ingredients.length > 0;
+  const suggestionCount = products.length + ingredients.length;
+
+  useLayoutEffect(() => {
+    const body = bodyRef.current;
+    if (!body) return;
+
+    const ctx = gsap.context(() => {
+      if (isOpen) {
+        gsap.set(body, { display: "block", overflow: "hidden" });
+        gsap.fromTo(
+          body,
+          { height: 0, opacity: 0 },
+          {
+            height: "auto",
+            opacity: 1,
+            duration: 0.28,
+            ease: "power2.out",
+            onComplete: () => gsap.set(body, { height: "auto", overflow: "visible" }),
+          },
+        );
+        gsap.fromTo(
+          body.querySelectorAll("[data-library-suggestion-item]"),
+          { opacity: 0, y: 8 },
+          { opacity: 1, y: 0, duration: 0.24, stagger: 0.035, ease: "power2.out", delay: 0.05 },
+        );
+      } else {
+        gsap.to(body, {
+          height: 0,
+          opacity: 0,
+          duration: 0.22,
+          ease: "power2.inOut",
+          onStart: () => gsap.set(body, { overflow: "hidden" }),
+          onComplete: () => gsap.set(body, { display: "none" }),
+        });
+      }
+    }, body);
+
+    return () => ctx.revert();
+  }, [isOpen]);
+
+  if (!hasProducts && !hasIngredients) return null;
+
+  return (
+    <div className={`mt-3 rounded-2xl border ${isDarkTheme ? "border-white/10 bg-white/[0.04]" : "border-[#eee5fb] bg-[#fbf8ff]"}`}>
+      <button
+        type="button"
+        onClick={() => setIsOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 px-3 py-3 text-left"
+        aria-expanded={isOpen}
+      >
+        <span className="flex min-w-0 items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-[#8b6eea]">
+          <Sparkles className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{tr("Suggestions de la bibliotheque")}</span>
+          <span className={`rounded-full px-2 py-0.5 text-[10px] ${isDarkTheme ? "bg-white/10 text-white/70" : "bg-white text-[#8b6eea]"}`}>{suggestionCount}</span>
+        </span>
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#8b6eea] transition ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+
+      <div ref={bodyRef} className="hidden px-3 pb-3">
+        {hasProducts && (
+          <div className="grid gap-2 sm:grid-cols-2">
+            {products.slice(0, 3).map((product) => (
               <button
+                key={product.id}
                 type="button"
-                className="inline-flex items-center gap-2 text-sm font-medium transition hover:text-[#151833]"
+                data-library-suggestion-item
+                onClick={() => router.push(`/products?product=${encodeURIComponent(product.slug || product.id)}&search=${encodeURIComponent(product.name)}`)}
+                className={`flex min-w-0 items-center gap-3 rounded-xl border p-2 text-left transition hover:-translate-y-0.5 ${isDarkTheme ? "border-white/10 bg-black/10" : "border-[#eadff8] bg-white"}`}
               >
-                <CircleHelp className="h-5 w-5" />
-                Aide
+                <span className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-[#f5f1fb]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={buildProductImageUrl(product.imagePath)} alt={product.name} className="h-full w-full object-cover" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block truncate text-xs font-bold ${isDarkTheme ? "text-white" : "text-[#24213f]"}`}>{product.name}</span>
+                  <span className={`block truncate text-[11px] ${isDarkTheme ? "text-white/55" : "text-[#7b7592]"}`}>{product.brand} - {product.matchScore}%</span>
+                  <span className={`mt-0.5 block line-clamp-2 text-[11px] leading-4 ${isDarkTheme ? "text-white/60" : "text-[#6b6384]"}`}>{tr(product.reason)}</span>
+                </span>
               </button>
-              <button
-                type="button"
-                className="relative rounded-full border border-[#ebe4fb] p-2.5 transition hover:bg-[#faf7ff]"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#8f64f2]" />
-              </button>
-            </div>
+            ))}
           </div>
+        )}
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 lg:px-10">
-            <div className="mx-auto max-w-[1050px]">
-              <ScanProgress
-                currentStep={4}
-                onStepClick={() => undefined}
-                selectedGoalLabel={selectedGoal.label}
-              />
+        {hasIngredients && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {ingredients.slice(0, 4).map((ingredient) => (
+              <button
+                key={ingredient.id}
+                type="button"
+                data-library-suggestion-item
+                onClick={() => router.push(`/ingredient-library?ingredient=${encodeURIComponent(ingredient.id)}&search=${encodeURIComponent(ingredient.name)}`)}
+                className={`inline-flex max-w-full items-start gap-2 rounded-xl border px-3 py-2 text-left transition hover:-translate-y-0.5 ${isDarkTheme ? "border-white/10 bg-black/10" : "border-[#eadff8] bg-white"}`}
+              >
+                <FlaskConical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#8b6eea]" />
+                <span className="min-w-0">
+                  <span className={`block text-xs font-bold ${isDarkTheme ? "text-white" : "text-[#24213f]"}`}>{ingredient.name}</span>
+                  <span className={`block text-[11px] leading-4 ${isDarkTheme ? "text-white/60" : "text-[#6b6384]"}`}>{tr(ingredient.reason)}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+function NewScanConversationPanel({
+  isDarkTheme,
+  palette,
+  tr,
+  goals,
+  selectedGoal,
+  selectedGoalId,
+  hasSavedGoalPreference,
+  uploadInputRef,
+  image,
+  extraction,
+  ingredientText,
+  ingredientItems,
+  warnings,
+  error,
+  isExtracting,
+  isAnalyzing,
+  onPickFile,
+  onSelectGoal,
+  onIngredientTextChange,
+  onAnalyze,
+  onCancel,
+}: NewScanConversationPanelProps) {
+  const productName = [extraction?.brand, extraction?.productName].filter(Boolean).join(" ").trim() || image?.file.name || tr("Nouveau produit");
 
-              <div className="mt-4 flex items-start justify-end gap-3">
-                <div className="max-w-[680px] rounded-[22px] border border-[#ece5fb] bg-[linear-gradient(180deg,_rgba(247,242,255,0.95)_0%,_rgba(243,238,255,0.95)_100%)] px-5 py-4 shadow-[0_16px_40px_rgba(104,78,171,0.08)]">
-                  <p className="text-sm font-semibold text-[#1a1e39] sm:text-[15px]">
-                    {productName} - objectif: {selectedGoal.label}
-                  </p>
-                  <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">
-                    J'ai scanné ce produit pour vérifier s'il est bien adapté à
-                    mon objectif peau et à ma routine.
-                  </p>
-                </div>
-                <div className="hidden items-center gap-3 sm:flex">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#f1eaff] text-[#7b57ec] shadow-sm">
-                    <UserRound className="h-5 w-5" />
-                  </span>
-                  <span className="text-xs text-[#868daa]">
-                    {formatScanHistoryDate(messageTimestamp)}
-                  </span>
-                </div>
-              </div>
+  return (
+    <div className="flex flex-1 flex-col pt-4">
+      <div data-chat-hero className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${palette.subtext}`}>{tr("Nouveau scan")}</p>
+          <h1 className={`mt-2 text-[28px] font-medium leading-tight tracking-[-0.04em] sm:text-[38px] ${palette.heading}`}>
+            {tr("Scannez un produit dans la conversation")}
+          </h1>
+          <p className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}>
+            {tr("Ajoutez une photo ou collez les ingrÃƒÆ’Ã‚Â©dients, confirmez votre objectif peau, puis l'analyse sera enregistrÃƒÆ’Ã‚Â©e comme discussion.")}
+          </p>
+        </div>
+        <button type="button" onClick={onCancel} className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}>
+          {tr("Annuler")}
+        </button>
+      </div>
 
-              <div className="mt-6 rounded-[28px] border border-[#ece5fb] px-4 py-5 shadow-[0_22px_50px_rgba(89,62,165,0.08)] sm:px-6 sm:py-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="flex items-start gap-3">
-                    <span className="mt-1 flex h-11 w-11 items-center justify-center rounded-full bg-[#f3edff] text-[#7a55ea]">
-                      <Sparkles className="h-5 w-5" />
-                    </span>
-                    <div>
-                      <div className="flex flex-wrap items-center gap-3">
-                        <h2 className="text-xl font-bold text-[#171b36]">
-                          Résultat de l'analyse IA
-                        </h2>
-                        <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">
-                          {analysisResult.verdictLabel ||
-                            fallbackHistoryItem.analysisVerdict ||
-                            "Analyse enregistrée"}
-                        </span>
-                      </div>
-                      <p className="mt-3 max-w-[760px] text-sm leading-6 text-[#5f6784]">
-                        {analysisResult.summary ||
-                          "Analyse enregistrée pour ce produit."}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-[16px] bg-[#e9faef] px-3 py-2 text-2xl font-bold text-[#20a45c] shadow-sm">
-                    {analysisResult.score > 0
-                      ? `${analysisResult.score}/10`
-                      : "--/10"}
-                  </span>
-                </div>
-
-                <div className="mt-5 grid gap-4 xl:grid-cols-3">
-                  <InsightCard
-                    title="Points forts"
-                    tone="green"
-                    items={analysisResult.positives ?? []}
-                  />
-                  <InsightCard
-                    title="À surveiller"
-                    tone="orange"
-                    items={analysisResult.watchouts ?? []}
-                  />
-                  <NextStepCard
-                    tips={
-                      analysisResult.recommendations?.length
-                        ? analysisResult.recommendations
-                        : selectedGoal.tips
-                    }
-                    nextStep={analysisResult.nextStep || selectedGoal.nextStep}
-                  />
-                </div>
-
-                <p className="mt-5 rounded-2xl bg-[#faf7ff] px-4 py-3 text-xs leading-5 text-[#68708b]">
-                  {analysisResult.disclaimer ||
-                    "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
-                </p>
-
-                <div className="mt-5">
-                  <h3 className="text-base font-semibold text-[#171b36]">
-                    Questions à poser
-                  </h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {followUpQuestions.map((question) => (
-                      <button
-                        key={question}
-                        type="button"
-                        onClick={() => void askQuestion(question)}
-                        className="rounded-xl border border-[#e7defc] bg-[#faf7ff] px-3 py-2 text-xs font-semibold text-[#7350e5] transition hover:bg-[#f1eaff]"
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-3 pb-3">
-                {isConversationLoading ? (
-                  <div className="space-y-3">
-                    <div className="h-16 rounded-[22px] border border-[#ece5fb] bg-white shadow-sm" />
-                    <div className="ml-auto h-16 w-[72%] rounded-[22px] border border-[#ece5fb] bg-[#f7f2ff] shadow-sm" />
-                  </div>
+      <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <section data-chat-card className={`rounded-[24px] border p-5 ${palette.detailCard}`}>
+          <div className={`rounded-[22px] border border-dashed p-4 ${isDarkTheme ? "border-white/12 bg-white/[0.03]" : "border-[#dfd2f4] bg-white/70"}`}>
+            <input
+              ref={uploadInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                onPickFile(file);
+              }}
+            />
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={() => uploadInputRef.current?.click()}
+                className={`flex min-h-40 flex-1 items-center justify-center rounded-2xl border transition ${isDarkTheme ? "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]" : "border-[#eadff7] bg-[#fbf8ff] hover:bg-white"}`}
+              >
+                {image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={image.previewUrl} alt={tr("Produit sÃƒÆ’Ã‚Â©lectionnÃƒÆ’Ã‚Â©")} className="max-h-56 w-full rounded-2xl object-cover" />
                 ) : (
-                  chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                      <div
-                        className={`max-w-[760px] rounded-[22px] border px-4 py-3 text-sm leading-6 shadow-sm ${message.role === "user"
-                          ? "border-[#e8defc] bg-[#f7f2ff] text-[#252044]"
-                          : "border-[#ece5fb] bg-white text-[#59617d]"
-                          }`}
-                      >
-                        {message.content}
-                      </div>
-                    </div>
-                  ))
+                  <span className={`flex flex-col items-center gap-3 text-sm font-semibold ${palette.subtext}`}>
+                    <UploadCloud className="h-8 w-8 text-[#9b75f2]" />
+                    {tr("Importer une photo de l'ÃƒÆ’Ã‚Â©tiquette")}
+                  </span>
                 )}
-
-                {isChatSending && (
-                  <div className="flex justify-start">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-[#ece5fb] bg-white px-4 py-2 text-xs font-medium text-[#7a55ea] shadow-sm">
-                      <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                      SkinorAI réfléchit...
-                    </div>
+              </button>
+              <div className="min-w-0 flex-1 text-left">
+                <p className={`text-sm font-semibold ${palette.heading}`}>{normalizeDisplayText(productName)}</p>
+                <p className={`mt-2 text-sm leading-6 ${palette.subtext}`}>
+                  {isExtracting
+                    ? tr("Extraction des informations visibles...")
+                    : extraction
+                      ? tr("VÃƒÆ’Ã‚Â©rifiez les ingrÃƒÆ’Ã‚Â©dients dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â©s avant de lancer l'analyse.")
+                      : tr("Vous pouvez aussi coller directement la liste INCI ci-dessous.")}
+                </p>
+                {extraction && (
+                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
+                    <span className={`rounded-full px-2.5 py-1 ${isDarkTheme ? "bg-white/8 text-white/70" : "bg-[#f1eaff] text-[#7654de]"}`}>{extraction.confidence}</span>
+                    <span className={`rounded-full px-2.5 py-1 ${isDarkTheme ? "bg-white/8 text-white/70" : "bg-[#f1eaff] text-[#7654de]"}`}>{extraction.fullIngredientListVisible ? tr("Liste complÃƒÆ’Ã‚Â¨te") : tr("Liste partielle")}</span>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="shrink-0 border-t border-[#ede7fb] bg-white/90 px-4 py-3 shadow-[0_-14px_35px_rgba(90,66,165,0.06)] backdrop-blur sm:px-8 lg:px-10">
-            <div className="mx-auto max-w-[1050px] rounded-[24px] border border-[#e8e0fb] bg-white px-4 py-4 shadow-[0_12px_35px_rgba(90,66,165,0.06)] sm:px-5">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-[#7a55ea]">
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-sm font-semibold">
-                      Posez une question sur ce produit...
-                    </span>
-                  </div>
-                  <input
-                    value={chatInput}
-                    onChange={(event) => setChatInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        void askQuestion(chatInput);
-                      }
-                    }}
-                    className="mt-3 w-full border-0 bg-transparent text-sm text-[#171b36] outline-none placeholder:text-[#98a0bc]"
-                    placeholder="Compatibilité, usage, sensibilité, routine..."
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void askQuestion(chatInput)}
-                  disabled={!chatInput.trim() || isChatSending || !detail}
-                  className="ml-auto flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white shadow-[0_14px_28px_rgba(112,75,225,0.24)] transition disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
+          <div className="mt-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className={`text-base font-semibold ${palette.heading}`}>{tr("IngrÃƒÆ’Ã‚Â©dients confirmÃƒÆ’Ã‚Â©s")}</h2>
+              <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDarkTheme ? "bg-white/8 text-white/65" : "bg-[#f7f2ff] text-[#7a55ea]"}`}>{ingredientItems.length}</span>
             </div>
+            <textarea
+              value={ingredientText}
+              onChange={(event) => onIngredientTextChange(event.target.value)}
+              placeholder={tr("Collez les ingrÃƒÆ’Ã‚Â©dients ici, sÃƒÆ’Ã‚Â©parÃƒÆ’Ã‚Â©s par des virgules.")}
+              className={`mt-3 min-h-36 w-full resize-none rounded-2xl border px-4 py-3 text-sm leading-6 outline-none ${isDarkTheme ? "border-white/10 bg-white/[0.04] text-white placeholder:text-white/35" : "border-[#e7def4] bg-white text-[#241f36] placeholder:text-[#9a8faa]"}`}
+            />
+            {warnings.length > 0 && (
+              <div className={`mt-3 rounded-2xl border px-4 py-3 text-xs leading-5 ${isDarkTheme ? "border-amber-300/20 bg-amber-300/10 text-amber-100" : "border-[#ffe3a8] bg-[#fffaf0] text-[#9b6500]"}`}>
+                {warnings.slice(0, 3).map((warning) => <p key={warning}>{normalizeDisplayText(warning)}</p>)}
+              </div>
+            )}
+            {error && (
+              <p className={`mt-3 rounded-2xl border px-4 py-3 text-xs font-semibold ${isDarkTheme ? "border-red-300/20 bg-red-300/10 text-red-100" : "border-[#ffd6df] bg-[#fff4f6] text-[#c6405f]"}`}>{normalizeDisplayText(error)}</p>
+            )}
           </div>
         </section>
+
+        <aside data-chat-card className={`rounded-[24px] border p-5 ${palette.detailCard}`}>
+          <div className="flex items-center gap-3">
+            <span className={`flex h-11 w-11 items-center justify-center rounded-full ${isDarkTheme ? "bg-white/8 text-[#f0a6d6]" : "bg-[#f1eaff] text-[#7a55ea]"}`}>
+              <Target className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className={`text-base font-semibold ${palette.heading}`}>{tr("Objectif peau")}</h2>
+              <p className={`mt-1 text-xs ${palette.subtext}`}>
+                {hasSavedGoalPreference ? tr("PrÃƒÆ’Ã‚Â©fÃƒÆ’Ã‚Â©rence chargÃƒÆ’Ã‚Â©e depuis vos paramÃƒÆ’Ã‚Â¨tres.") : tr("Choisissez une fois, vous pourrez la changer dans ParamÃƒÆ’Ã‚Â¨tres.")}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-2">
+            {goals.map((goal) => {
+              const Icon = goal.icon;
+              const isSelected = goal.id === selectedGoalId;
+              return (
+                <button
+                  key={goal.id}
+                  type="button"
+                  onClick={() => onSelectGoal(goal.id)}
+                  className={`flex items-center gap-3 rounded-2xl border px-3 py-3 text-left transition ${isSelected ? "border-[#9b75f2] bg-[#f5efff] text-[#241f36]" : isDarkTheme ? "border-white/10 bg-white/[0.03] text-white/75 hover:bg-white/[0.07]" : "border-[#eadff7] bg-white/70 text-[#5c5671] hover:bg-white"}`}
+                >
+                  <Icon className="h-4 w-4 text-[#9b75f2]" />
+                  <span className="min-w-0 flex-1 text-sm font-semibold">{normalizeDisplayText(goal.label)}</span>
+                  {isSelected && <Check className="h-4 w-4 text-[#7a55ea]" />}
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={onAnalyze}
+            disabled={isExtracting || isAnalyzing || ingredientItems.length === 0}
+            className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-[#9b75f2] to-pink-300 px-5 text-sm font-bold text-white shadow-[0_16px_32px_rgba(139,92,246,0.22)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            {isAnalyzing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+            {isAnalyzing ? tr("Analyse en cours...") : tr("Analyser dans la conversation")}
+          </button>
+          <p className={`mt-3 text-center text-[11px] leading-5 ${palette.subtext}`}>{tr("Le rÃƒÆ’Ã‚Â©sultat sera enregistrÃƒÆ’Ã‚Â© et ouvert comme une discussion.")}</p>
+        </aside>
       </div>
-    </main>
+    </div>
   );
 }
 function ResultWorkspace({
@@ -3582,6 +4040,9 @@ function ResultWorkspace({
   onChangeGoal: () => void;
   onScanAnother: () => void;
 }) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   useEffect(() => {
     document.body.dataset.navbarHidden = "true";
 
@@ -3596,10 +4057,13 @@ function ResultWorkspace({
       id: "assistant-intro",
       role: "assistant",
       content:
-        "Je peux maintenant répondre à vos questions sur ce résultat, la routine, les ingrédients à surveiller ou la fréquence d’utilisation.",
+        "Je peux maintenant rÃƒÆ’Ã‚Â©pondre ÃƒÆ’Ã‚Â  vos questions sur ce rÃƒÆ’Ã‚Â©sultat, la routine, les ingrÃƒÆ’Ã‚Â©dients ÃƒÆ’Ã‚Â  surveiller ou la frÃƒÆ’Ã‚Â©quence d'utilisation.",
     },
   ]);
   const [isChatSending, setIsChatSending] = useState(false);
+  const chatAttachment = useChatImageAttachment();
+
+
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const chatMessageIdRef = useRef(0);
@@ -3658,10 +4122,14 @@ function ResultWorkspace({
       return;
     }
 
+    const pendingImage = chatAttachment.consume();
     const userMessage: ChatMessage = {
       id: `user-${chatMessageIdRef.current++}`,
       role: "user",
       content: question,
+      attachment: pendingImage
+        ? { type: "image", mimeType: pendingImage.file.type, previewUrl: pendingImage.previewUrl }
+        : undefined,
     };
 
     setChatInput("");
@@ -3670,11 +4138,8 @@ function ResultWorkspace({
 
     try {
       const response = await requestScanChat({
-        question,
-        productName,
-        selectedGoal,
-        ingredientItems,
-        analysisResult,
+        message: question,
+        image: pendingImage?.file,
         scanId,
       });
 
@@ -3688,6 +4153,7 @@ function ResultWorkspace({
           id: `assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
           content: response.answer,
+          librarySuggestions: response.librarySuggestions,
         },
       ]);
     } catch (error) {
@@ -3702,8 +4168,9 @@ function ResultWorkspace({
         {
           id: `assistant-${chatMessageIdRef.current++}`,
           role: "assistant",
-          content:
-            "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
+          content: error instanceof Error
+            ? error.message
+            : "Impossible de rÃƒÆ’Ã‚Â©pondre pour le moment. RÃƒÆ’Ã‚Â©essayez dans quelques instants.",
         },
       ]);
     } finally {
@@ -3768,8 +4235,8 @@ function ResultWorkspace({
                     {productName} - objectif: {selectedGoal.label}
                   </p>
                   <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">
-                    J'ai scanné ce produit pour vérifier s'il est bien adapté à
-                    mon objectif peau et à ma routine.
+                    J&apos;ai scannÃƒÆ’Ã‚Â© ce produit pour vÃƒÆ’Ã‚Â©rifier s&apos;il est bien adaptÃƒÆ’Ã‚Â© ÃƒÆ’Ã‚Â 
+                    mon objectif peau et ÃƒÆ’Ã‚Â  ma routine.
                   </p>
                 </div>
                 <div className="hidden items-center gap-3 sm:flex">
@@ -3789,7 +4256,7 @@ function ResultWorkspace({
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-xl font-bold text-[#171b36]">
-                          Résultat de l'analyse IA
+                          RÃƒÆ’Ã‚Â©sultat de l&apos;analyse IA
                         </h2>
                         <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">
                           {analysisResult.verdictLabel}
@@ -3812,7 +4279,7 @@ function ResultWorkspace({
                     items={analysisResult.positives}
                   />
                   <InsightCard
-                    title="À surveiller"
+                    title="ÃƒÆ’Ã¢â€šÂ¬ surveiller"
                     tone="orange"
                     items={analysisResult.watchouts}
                   />
@@ -3828,7 +4295,7 @@ function ResultWorkspace({
 
                 <div className="mt-5">
                   <h3 className="text-base font-semibold text-[#171b36]">
-                    Questions à poser
+                    Questions ÃƒÆ’Ã‚Â  poser
                   </h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {analysisResult.followUpQuestions.map((question) => (
@@ -3857,7 +4324,20 @@ function ResultWorkspace({
                         : "border-[#ece5fb] bg-white text-[#59617d]"
                         }`}
                     >
-                      {message.content}
+                      {message.attachment && (
+                        <div className="mb-2 overflow-hidden rounded-xl border border-[#e5ddfb]">
+                          {buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url)!} alt={tr("Image jointe")} className="max-h-48 w-full object-cover" />
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-2 text-xs font-semibold"><Paperclip className="h-3.5 w-3.5" />{tr("Image jointe")}</div>
+                          )}
+                        </div>
+                      )}
+                      <AnimatedChatText content={message.content} animate={message.role === "assistant"} />
+                      {message.role === "assistant" && (
+                        <LibrarySuggestionStrip suggestions={message.librarySuggestions} isDarkTheme={false} />
+                      )}
                     </div>
                   </div>
                 ))}
@@ -3866,7 +4346,7 @@ function ResultWorkspace({
                   <div className="flex justify-start">
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#ece5fb] bg-white px-4 py-2 text-xs font-medium text-[#7a55ea] shadow-sm">
                       <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                      SkinorAI reflechit...
+                      {tr("SkinorAI reflechit...")}
                     </div>
                   </div>
                 )}
@@ -3881,9 +4361,36 @@ function ResultWorkspace({
                   <div className="flex items-center gap-2 text-[#7a55ea]">
                     <Sparkles className="h-4 w-4" />
                     <span className="text-sm font-semibold">
-                      Posez une question sur ce produit...
+                      {tr("Posez une question sur ce produit...")}
                     </span>
                   </div>
+                  <input
+                    ref={chatAttachment.inputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      event.target.value = "";
+                      try {
+                        chatAttachment.selectFile(file);
+                      } catch (error) {
+                        setChatMessages((messages) => [...messages, {
+                          id: `assistant-${chatMessageIdRef.current++}`,
+                          role: "assistant",
+                          content: error instanceof Error ? error.message : "Image invalide.",
+                        }]);
+                      }
+                    }}
+                  />
+                  {chatAttachment.image && (
+                    <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[#e5ddfb] bg-[#faf7ff] p-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={chatAttachment.image.previewUrl} alt="Image sÃƒÆ’Ã‚Â©lectionnÃƒÆ’Ã‚Â©e" className="h-12 w-12 rounded-xl object-cover" />
+                      <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#59617d]">{chatAttachment.image.file.name}</span>
+                      <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full text-[#6a7290]" aria-label={tr("Retirer l image")}><X className="h-4 w-4" /></button>
+                    </div>
+                  )}
                   <input
                     value={chatInput}
                     onChange={(event) => setChatInput(event.target.value)}
@@ -3899,6 +4406,7 @@ function ResultWorkspace({
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
+                      onClick={() => chatAttachment.inputRef.current?.click()}
                       className="inline-flex items-center gap-2 rounded-full border border-[#e5ddfb] px-3 py-1.5 text-xs font-medium text-[#6a7290]"
                     >
                       <Paperclip className="h-3.5 w-3.5" />
@@ -3989,6 +4497,9 @@ function StepTitle({
 }
 
 function HowItWorksCard() {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   const items = [
     [
       Target,
@@ -4010,7 +4521,7 @@ function HowItWorksCard() {
   return (
     <Panel className="min-h-[420px] px-7 py-7">
       <h2 className="flex items-center justify-between text-xl font-bold">
-        Comment ca marche
+        {tr("Comment ca marche")}
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
       <div className="mt-7 space-y-6">
@@ -4025,7 +4536,7 @@ function HowItWorksCard() {
                 <div className="absolute top-8 h-[calc(100%+36px)] w-px bg-[#b894ff]" />
               )}
 
-              <div className="mt-4 relative z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-b from-[#9b75f2] to-pink-200 text-sm font-bold text-white shadow-[0_0_18px_rgba(155,99,255,0.45)]">
+              <div className="relative z-10 mt-4 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-b from-[#9b75f2] to-pink-200 text-sm font-bold text-white shadow-[0_0_18px_rgba(155,99,255,0.45)]">
                 {index + 1}
               </div>
             </div>
@@ -4038,11 +4549,11 @@ function HowItWorksCard() {
             {/* Text */}
             <div className="pt-1">
               <h3 className="text-[14px] font-extrabold leading-5 text-[#101632]">
-                {title}
+                {tr(title)}
               </h3>
 
               <p className="mt-1.5 max-w-[210px] text-[14px] leading-5 text-[#66708f]">
-                {text}
+                {tr(text)}
               </p>
             </div>
           </div>
@@ -4053,15 +4564,18 @@ function HowItWorksCard() {
 }
 
 function TipsCard() {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   const tips = [
     [
       Lightbulb,
-      "Bonne luminosité",
-      "Prenez la photo dans un endroit bien éclairé.",
+      "Bonne luminositÃƒÆ’Ã‚Â©",
+      "Prenez la photo dans un endroit bien ÃƒÆ’Ã‚Â©clairÃƒÆ’Ã‚Â©.",
     ],
     [
       SquareDashed,
-      "Centrée et lisible",
+      "CentrÃƒÆ’Ã‚Â©e et lisible",
       "Assurez-vous que toute la liste d ingredients est visible et nette.",
     ],
     [
@@ -4074,7 +4588,7 @@ function TipsCard() {
   return (
     <Panel>
       <h2 className="flex items-center justify-between text-xl font-bold">
-        Conseils photo
+        {tr("Conseils photo")}
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
       <div className="mt-7 space-y-6">
@@ -4084,9 +4598,9 @@ function TipsCard() {
               <Icon className="h-8 w-8" />
             </span>
             <span>
-              <span className="block text-sm font-bold">{title}</span>
+              <span className="block text-sm font-bold">{tr(title)}</span>
               <span className="mt-2 block text-sm leading-6 text-[#66708f]">
-                {text}
+                {tr(text)}
               </span>
             </span>
           </div>
@@ -4097,6 +4611,9 @@ function TipsCard() {
 }
 
 function BeforeContinueCard() {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+
   const items = [
     [
       ClipboardCheck,
@@ -4118,7 +4635,7 @@ function BeforeContinueCard() {
   return (
     <Panel className="px-8 py-7">
       <h2 className="flex items-center justify-between text-2xl font-bold">
-        Avant de continuer
+        {tr("Avant de continuer")}
         <Sparkles className="h-8 w-8 text-[#b79dff]" />
       </h2>
       <div className="mt-8 divide-y divide-[#efeaf9]">
@@ -4129,23 +4646,14 @@ function BeforeContinueCard() {
             </span>
             <span>
               <span className="block text-base font-bold text-[#171b36]">
-                {title}
+                {tr(title)}
               </span>
               <span className="mt-2 block text-sm leading-6 text-[#66708f]">
-                {text}
+                {tr(text)}
               </span>
             </span>
           </div>
         ))}
-      </div>
-      <div className="mt-8 flex gap-4 rounded-[22px] border border-[#ece6f8] bg-[#fbfaff] p-5 text-[#66708f] shadow-[0_8px_18px_rgba(45,24,90,0.04)]">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-[#5f4f8c] shadow-sm">
-          <Lock className="h-5 w-5" />
-        </span>
-        <p className="text-xs leading-6">
-          Vos données restent privées et sécurisées. Elles ne sont utilisees que
-          pour l analyse.
-        </p>
       </div>
     </Panel>
   );
@@ -4157,50 +4665,28 @@ function PhotoPreview({
   small = false,
 }: {
   selectedImage: UploadedImage | null;
-  imageCount: number;
+  imageCount?: number;
   small?: boolean;
 }) {
   return (
-    <div className={small ? "mt-5" : ""}>
-      {!small && (
-        <h3 className="mb-5 text-center text-sm font-bold">
-          Apercu de votre photo
-        </h3>
-      )}
-      <div
-        className={`mx-auto overflow-hidden rounded-[24px] border border-[#eadfff] bg-[linear-gradient(180deg,_#c7ad90_0%,_#b89772_100%)] p-3 shadow-[0_18px_40px_rgba(117,72,232,0.12)] ${small ? "w-[146px]" : "w-[260px]"}`}
-      >
-        <div
-          className={`relative overflow-hidden rounded-[18px] bg-[#efe6ff] ${small ? "h-[132px]" : "h-[290px]"}`}
-        >
-          {selectedImage ? (
-            <Image
-              src={selectedImage.url}
-              alt={selectedImage.file.name}
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          ) : (
-            <div className="flex h-full flex-col items-center justify-center px-5 text-center text-[#7a6f99]">
-              <Camera className="h-10 w-10 text-[#a184f4]" />
-              <p className="mt-4 text-xs font-semibold">
-                {small
-                  ? "Ajoutez une image pour afficher l apercu."
-                  : "Votre apercu d image apparaitra ici."}
-              </p>
-              <p className="mt-2 text-xs leading-5 text-[#8a84a4]">
-                Vous pouvez importer une ou plusieurs photos de l etiquette.
-              </p>
-            </div>
-          )}
-        </div>
+    <div className={small ? "mt-5" : "mt-6"}>
+      <div className={`overflow-hidden rounded-[28px] border border-[#e8e0fb] bg-[#fbf9ff] ${small ? "h-44" : "h-56"}`}>
+        {selectedImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={selectedImage.url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center px-5 text-center text-[#7a6f99]">
+            <Camera className="h-10 w-10 text-[#a184f4]" />
+            <p className="mt-4 text-xs font-semibold">Ajoutez une image pour afficher l aperÃƒÂ§u.</p>
+            <p className="mt-2 text-xs leading-5 text-[#8a84a4]">
+              Vous pouvez importer une ou plusieurs photos de l ÃƒÂ©tiquette.
+            </p>
+          </div>
+        )}
       </div>
-      <p
-        className={`mx-auto mt-4 ${small ? "max-w-[180px]" : "max-w-[220px]"} text-center text-xs text-[#66708f]`}
-      >
+      <p className={`mx-auto mt-4 ${small ? "max-w-[180px]" : "max-w-[220px]"} text-center text-xs text-[#66708f]`}>
         {selectedImage
-          ? `Vous pouvez modifier la liste si necessaire.${imageCount > 1 ? ` ${imageCount} images importees.` : ""}`
+          ? `Vous pouvez modifier la liste si necessaire.${imageCount && imageCount > 1 ? ` ${imageCount} images importees.` : ""}`
           : "Importez une image ou collez vos ingredients manuellement."}
       </p>
     </div>
@@ -4221,28 +4707,21 @@ function ManualIngredientsDialog({
   const parsedCount = parseIngredientText(value).length;
 
   return (
-    <div className="dialog-overlay-fade fixed inset-0 z-[80] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="manual-ingredients-title"
-        className="dialog-panel-fade w-full max-w-2xl rounded-[32px] border border-white/60 bg-white p-7 shadow-[0_35px_90px_rgba(42,22,84,0.28)]"
+        className="w-full max-w-2xl rounded-[32px] border border-white/60 bg-white p-7 shadow-[0_35px_90px_rgba(42,22,84,0.28)]"
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">
-              Etape 2
-            </p>
-            <h2
-              id="manual-ingredients-title"
-              className="mt-2 text-2xl font-bold text-[#111631]"
-            >
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#8c6dff]">Etape 2</p>
+            <h2 id="manual-ingredients-title" className="mt-2 text-2xl font-bold text-[#111631]">
               Collez vos ingredients manuellement
             </h2>
             <p className="mt-3 max-w-xl text-[15px] leading-7 text-[#66708f]">
-              Collez la liste INCI telle qu elle apparait sur l emballage ou le
-              site du produit. Vous pouvez utiliser des virgules, des
-              points-virgules ou des retours a la ligne.
+              Collez la liste INCI telle qu elle apparait sur l emballage ou le site du produit.
             </p>
           </div>
           <button
@@ -4309,6 +4788,7 @@ function UpgradePlanDialog({
   onUpgrade: () => void;
 }) {
   const isScanLimit = reason === "scan-limit";
+  const isFaceScan = reason === "face-scan-pro-required";
 
   return (
     <div className="dialog-overlay-fade fixed inset-0 z-[100] flex items-center justify-center bg-[#120a24]/45 px-4 backdrop-blur-sm">
@@ -4336,33 +4816,44 @@ function UpgradePlanDialog({
           Plan Pro
         </p>
         <h2 id="upgrade-plan-title" className="mt-2 text-2xl font-bold">
-          {isScanLimit
-            ? "Vos 3 scans gratuits sont termines"
-            : "Votre question gratuite est utilisee"}
+          {isFaceScan
+            ? "Le scan du visage est rÃƒÆ’Ã‚Â©servÃƒÆ’Ã‚Â© au plan Pro"
+            : isScanLimit
+              ? "Vos 3 scans gratuits sont termines"
+              : "Votre question gratuite est utilisee"}
         </h2>
         <p className="mt-3 text-sm leading-6 text-[#66708f]">
-          {isScanLimit
-            ? "Passez au plan Pro pour continuer a analyser de nouveaux produits avec SkinorAI."
-            : "Le plan Pro debloque les questions illimitees apres chaque scan produit."}
+          {isFaceScan
+            ? "Passez au plan Pro pour analyser des caractÃƒÆ’Ã‚Â©ristiques cosmÃƒÆ’Ã‚Â©tiques visibles. Les photos brutes du visage ne sont pas stockÃƒÆ’Ã‚Â©es par dÃƒÆ’Ã‚Â©faut."
+            : isScanLimit
+              ? "Passez au plan Pro pour continuer a analyser de nouveaux produits avec SkinorAI."
+              : "Le plan Pro debloque davantage de questions aprÃƒÆ’Ã‚Â¨s chaque scan produit."}
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">
-              Scans gratuits
-            </p>
-            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">
-              {Math.min(scansUsed, FREE_SCAN_LIMIT)}/{FREE_SCAN_LIMIT}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">
-              Restants
-            </p>
-            <p className="mt-2 text-2xl font-bold text-[#7a55ea]">
-              {scansRemaining}
-            </p>
-          </div>
+          {isFaceScan ? (
+            <>
+              <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Moteur visuel</p>
+                <p className="mt-2 text-base font-bold text-[#7a55ea]">Gemini</p>
+              </div>
+              <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Photos brutes</p>
+                <p className="mt-2 text-base font-bold text-[#7a55ea]">Non stockÃƒÆ’Ã‚Â©es</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Scans gratuits</p>
+                <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{Math.min(scansUsed, FREE_SCAN_LIMIT)}/{FREE_SCAN_LIMIT}</p>
+              </div>
+              <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Restants</p>
+                <p className="mt-2 text-2xl font-bold text-[#7a55ea]">{scansRemaining}</p>
+              </div>
+            </>
+          )}
         </div>
 
         <button
@@ -4426,6 +4917,8 @@ function ResultSidebarShell({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const displayName = user?.name?.trim() || user?.email || "Compte";
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
 
   useEffect(() => {
     if (!isProfileMenuOpen) {
@@ -4479,25 +4972,25 @@ function ResultSidebarShell({
           className="mt-7 flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-[#8b5aef] to-[#6c35d8] px-5 py-3.5 text-[13px] font-semibold text-white shadow-[0_18px_35px_rgba(110,65,226,0.24)]"
         >
           <Plus className="h-5 w-5" />
-          Nouveau scan
+          {tr("Nouveau scan")}
         </button>
 
         <div className="mt-7 flex items-center gap-3 rounded-2xl border border-[#e8e0fb] bg-white px-4 py-3 text-[#8a90aa]">
           <Search className="h-5 w-5" />
-          <span className="text-[13px]">Rechercher un scan...</span>
+          <span className="text-[13px]">{tr("Rechercher un scan...")}</span>
         </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
         <h3 className="flex items-center gap-2 text-[13px] font-semibold text-[#171b36]">
           <Clock3 className="h-5 w-5 text-[#7260ad]" />
-          Historique
+          {tr("Historique")}
         </h3>
 
         <div className="mt-5 space-y-3">
           {isHistoryLoading ? (
             <div className="rounded-[22px] border border-[#ece5fb] bg-white/70 px-4 py-4 text-[13px] text-[#7b829e]">
-              Chargement de l historique...
+              {tr("Chargement de l historique...")}
             </div>
           ) : historyItems.length > 0 ? (
             historyItems.map((item) => (
@@ -4690,8 +5183,8 @@ function InsightCard({
           className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
         >
           {isGreen
-            ? "Aucun point fort spécifique détecté pour le moment."
-            : "Aucun ingrédient préoccupant détecté pour le moment."}
+            ? "Aucun point fort spÃƒÆ’Ã‚Â©cifique dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â© pour le moment."
+            : "Aucun ingrÃƒÆ’Ã‚Â©dient prÃƒÆ’Ã‚Â©occupant dÃƒÆ’Ã‚Â©tectÃƒÆ’Ã‚Â© pour le moment."}
         </p>
       )}
     </section>
@@ -4715,7 +5208,7 @@ function NextStepCard({
         className={`flex items-center gap-2.5 text-lg font-bold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
       >
         <Sparkles className="h-5 w-5 text-[#7a55ea]" />
-        Prochaine étape
+        Prochaine ÃƒÆ’Ã‚Â©tape
       </h3>
       <p
         className={`mt-3 text-xs leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
@@ -4748,139 +5241,6 @@ function NextStepCard({
         ))}
       </div>
     </section>
-  );
-}
-
-function FaceScanComingSoonDialog({
-  isDarkTheme,
-  onClose,
-}: {
-  isDarkTheme: boolean;
-  onClose: () => void;
-}) {
-  const { locale } = useI18n();
-  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
-
-  return (
-    <div className="dialog-overlay-fade fixed inset-0 z-[95] flex items-center justify-center bg-black/45 px-4 backdrop-blur-sm">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="face-scan-coming-soon-title"
-        className={`dialog-panel-fade w-full max-w-lg rounded-[34px] border p-6 shadow-[0_35px_90px_rgba(15,23,42,0.28)] ${isDarkTheme
-          ? "border-white/10 bg-[#11101a] text-white"
-          : "border-white/70 bg-white text-[#171b36]"
-          }`}
-      >
-        <div className="flex items-start justify-between gap-4">
-          <span
-            className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${isDarkTheme
-              ? "bg-white/[0.07] text-[#f0a6d6]"
-              : "bg-[#f5ecff] text-[#9a56bf]"
-              }`}
-          >
-            <ScanBarcode className="h-7 w-7" />
-          </span>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className={`flex h-10 w-10 items-center justify-center rounded-full transition ${isDarkTheme
-              ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
-              : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
-              }`}
-            aria-label={tr("Fermer la fenêtre")}
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div
-          className={`mt-6 overflow-hidden rounded-[28px] border ${isDarkTheme
-            ? "border-white/10 bg-white/[0.04]"
-            : "border-[#efe7fb] bg-[#fbf8ff]"
-            }`}
-        >
-          <div className="relative flex h-[210px] items-center justify-center p-6">
-            <div
-              className={`absolute inset-0 ${isDarkTheme
-                ? "bg-[radial-gradient(circle_at_center,rgba(232,160,216,0.18),transparent_58%)]"
-                : "bg-[radial-gradient(circle_at_center,rgba(213,160,221,0.24),transparent_58%)]"
-                }`}
-            />
-
-            <img
-              src="/icons/face.png"
-              alt={tr("Aperçu du scan du visage")}
-              className="relative z-10 max-h-[180px] w-auto object-contain drop-shadow-[0_18px_35px_rgba(122,63,92,0.16)]"
-            />
-          </div>
-        </div>
-
-        <p
-          className={`mt-6 text-xs font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
-            }`}
-        >
-          {tr("Bientôt disponible")}
-        </p>
-
-        <h2
-          id="face-scan-coming-soon-title"
-          className="mt-2 text-2xl font-bold tracking-[-0.03em]"
-        >
-          {tr("Le scan du visage arrive bientôt")}
-        </h2>
-
-        <p
-          className={`mt-3 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"
-            }`}
-        >
-          {tr("Bientôt, SkinorAI aidera les utilisateurs à scanner leur visage, comprendre les préoccupations visibles de la peau et recevoir des conseils plus personnalisés.")}
-        </p>
-
-        <div className="mt-6 space-y-3">
-          {[
-            "Analyser les préoccupations visibles grâce à un scan guidé du visage.",
-            "Améliorer les recommandations selon l’apparence de la peau et les objectifs.",
-            "Combiner les scans produits avec des insights peau personnalisés.",
-          ].map((point) => (
-            <div
-              key={point}
-              className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${isDarkTheme
-                ? "border-white/10 bg-white/[0.04]"
-                : "border-[#efe7fb] bg-[#fbf8ff]"
-                }`}
-            >
-              <span
-                className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${isDarkTheme
-                  ? "bg-white/[0.08] text-[#f0a6d6]"
-                  : "bg-[#f1eaff] text-[#7a55ea]"
-                  }`}
-              >
-                <Check className="h-3.5 w-3.5" />
-              </span>
-
-              <p
-                className={`text-sm leading-6 ${isDarkTheme ? "text-white/72" : "text-[#535a78]"
-                  }`}
-              >
-              {tr(point)}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-7 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 items-center justify-center rounded-full bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] px-6 text-sm font-bold text-white shadow-[0_14px_30px_rgba(202,105,179,0.22)] transition hover:-translate-y-0.5"
-          >
-            {tr("Compris")}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -4927,7 +5287,7 @@ function FeatureCardDialog({
                 className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
                   }`}
               >
-                {tr("Fonctionnalité SkinorAI")}
+                {tr("FonctionnalitÃƒÆ’Ã‚Â© SkinorAI")}
               </p>
 
               <h2
@@ -4946,7 +5306,7 @@ function FeatureCardDialog({
               ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
               : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
               }`}
-            aria-label={tr("Fermer la fenêtre")}
+            aria-label={tr("Fermer la fenÃƒÆ’Ã‚Âªtre")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -4959,7 +5319,7 @@ function FeatureCardDialog({
         />
 
         <div className="mt-6 space-y-3">
-          {card.points.map((point: any) => (
+          {card.points.map((point: string) => (
             <div
               key={point}
               className={`flex items-start gap-3 rounded-2xl border px-4 py-3 ${isDarkTheme
@@ -5001,3 +5361,4 @@ function FeatureCardDialog({
     </div>
   );
 }
+

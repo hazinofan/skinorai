@@ -33,10 +33,14 @@ export default function Navbar() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const mobileNavRef = useRef<HTMLDivElement | null>(null);
   const displayName = user?.name?.trim() || user?.email || "Compte";
+  const router = useRouter();
 
   useEffect(() => {
-    setIsMenuOpen(false);
-    setIsMobileNavOpen(false);
+    const timeoutId = window.setTimeout(() => {
+      setIsMenuOpen(false);
+      setIsMobileNavOpen(false);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, [pathname]);
 
   useEffect(() => {
@@ -108,8 +112,6 @@ export default function Navbar() {
   if (pathname === "/login" || isHiddenByPage) {
     return null;
   }
-
-  const router = useRouter()
 
   return (
     <header className="fixed left-0 top-0 z-50 w-full">

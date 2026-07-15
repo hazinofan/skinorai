@@ -108,7 +108,7 @@ export default function HowItWorksSection() {
             className="mt-6 text-[42px] font-medium leading-[1.05] text-[#142447] sm:text-[56px] lg:text-[72px]"
           >
             Comment ca{" "}
-            <span className="font-serif italic font-normal text-[#9a74ff]">
+            <span className="italic font-normal text-[#9a74ff]">
               marche
             </span>
           </h2>

@@ -126,8 +126,15 @@ const Masonry: React.FC<MasonryProps> = ({
   };
 
   useEffect(() => {
-    setImagesReady(false);
-    preloadImages(items.map(i => i.img)).then(() => setImagesReady(true));
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => setImagesReady(false), 0);
+    preloadImages(items.map(i => i.img)).then(() => {
+      if (!cancelled) setImagesReady(true);
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
   }, [items]);
 
   const grid = useMemo<GridItem[]>(() => {

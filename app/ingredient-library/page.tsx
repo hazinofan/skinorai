@@ -1319,8 +1319,11 @@ export default function IngredientLibraryPage() {
   useEffect(() => {
     document.body.dataset.navbarHidden = "true";
     const storedTheme = window.localStorage.getItem("skinorai_chat_theme");
-    if (storedTheme === "light" || storedTheme === "dark") setTheme(storedTheme);
+    const timeoutId = window.setTimeout(() => {
+      if (storedTheme === "light" || storedTheme === "dark") setTheme(storedTheme);
+    }, 0);
     return () => {
+      window.clearTimeout(timeoutId);
       delete document.body.dataset.navbarHidden;
     };
   }, []);
@@ -1328,6 +1331,27 @@ export default function IngredientLibraryPage() {
   useEffect(() => {
     window.localStorage.setItem("skinorai_chat_theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedIngredient = params.get("ingredient");
+    const requestedSearch = params.get("search");
+    const normalizedIngredient = requestedIngredient?.toLowerCase();
+    const normalizedSearch = requestedSearch?.toLowerCase();
+    const match = ingredients.find((ingredient) =>
+      ingredient.id.toLowerCase() === normalizedIngredient ||
+      ingredient.name.toLowerCase() === normalizedIngredient ||
+      ingredient.id.toLowerCase() === normalizedSearch ||
+      ingredient.name.toLowerCase() === normalizedSearch,
+    );
+
+    if (requestedSearch) setQuery(requestedSearch);
+    if (match) {
+      setSelectedCategory("all");
+      setSelectedId(match.id);
+      setDetailOpen(true);
+    }
+  }, []);
 
   useEffect(() => {
     let isCancelled = false;

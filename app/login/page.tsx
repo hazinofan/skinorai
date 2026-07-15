@@ -123,7 +123,7 @@ export default function LoginPage() {
             </Link>
 
             <div className="my-auto max-w-[620px] pt-2 lg:pb-16 lg:pt-10 xl:pb-24">
-              <h1 className="font-serif text-[30px] font-medium leading-[1.03] text-[#101a35] min-[380px]:text-[34px] sm:text-[42px] xl:text-[50px]">
+              <h1 className="text-[30px] font-medium leading-[1.03] text-[#101a35] min-[380px]:text-[34px] sm:text-[42px] xl:text-[50px]">
                 Comprenez vos produits.
                 <br />
                 <span className="text-[#8e54ff]">Prenez soin</span> de votre

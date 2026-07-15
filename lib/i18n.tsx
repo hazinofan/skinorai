@@ -26,99 +26,99 @@ const STORAGE_KEY = "skinorai-locale";
 
 const dictionaries: Record<Locale, Dictionary> = {
   fr: {
-    "language.french": "Français",
+    "language.french": "FranÃ§ais",
     "language.english": "English",
-    "language.arabic": "العربية",
+    "language.arabic": "Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©",
     "language.label": "Langue",
     "nav.home": "Accueil",
     "nav.products": "Produits",
-    "nav.ingredients": "Ingrédients",
+    "nav.ingredients": "IngrÃ©dients",
     "nav.pricing": "Tarifs",
     "nav.scanCta": "Commencer le scan",
     "nav.scanShort": "Scanner",
     "nav.openMenu": "Ouvrir le menu",
     "nav.closeMenu": "Fermer le menu",
     "nav.account": "Compte de {name}",
-    "nav.settings": "Paramètres",
-    "nav.logout": "Se déconnecter",
+    "nav.settings": "ParamÃ¨tres",
+    "nav.logout": "Se dÃ©connecter",
     "nav.login": "Se connecter",
-    "hero.title": "Révélez tout le potentiel de votre peau",
-    "hero.text": "Notre IA analyse votre visage et identifie les points à améliorer",
+    "hero.title": "RÃ©vÃ©lez tout le potentiel de votre peau",
+    "hero.text": "Notre IA analyse votre visage et identifie les points Ã  amÃ©liorer",
     "hero.cta": "Analyser ma peau",
     "hero.stat.accuracyValue": "95 %",
-    "hero.stat.accuracy": "d’analyse cutanée précise",
+    "hero.stat.accuracy": "dâ€™analyse cutanÃ©e prÃ©cise",
     "hero.stat.concernsValue": "30+",
-    "hero.stat.concerns": "problématiques de peau analysées",
+    "hero.stat.concerns": "problÃ©matiques de peau analysÃ©es",
     "hero.stat.routineValue": "7 jours",
-    "hero.stat.routine": "de routine personnalisée",
-    "how.imageAlt": "Analyse skincare personnalisée avec SkinorAI",
+    "hero.stat.routine": "de routine personnalisÃ©e",
+    "how.imageAlt": "Analyse skincare personnalisÃ©e avec SkinorAI",
     "how.label.analyze": "ANALYSER",
     "how.label.hydrate": "HYDRATER",
     "how.label.understand": "COMPRENDRE",
     "how.title": "AI Skincare",
-    "how.text": "SkinorAI ne promet pas la perfection. Il analyse, apprend et adapte ses recommandations à votre type de peau, vos objectifs et les produits que vous utilisez.",
-    "how.outroTitle": "Une beauté plus consciente",
-    "how.outroText": "Nous ne pouvons pas arrêter le temps, mais nous pouvons vous aider à mieux comprendre votre peau, choisir vos produits et construire une routine plus adaptée.",
-    "scan.badge": "Scanner d'ingrédients intelligent",
-    "scan.title": "Scannez l'étiquette.",
+    "how.text": "SkinorAI ne promet pas la perfection. Il analyse, apprend et adapte ses recommandations Ã  votre type de peau, vos objectifs et les produits que vous utilisez.",
+    "how.outroTitle": "Une beautÃ© plus consciente",
+    "how.outroText": "Nous ne pouvons pas arrÃªter le temps, mais nous pouvons vous aider Ã  mieux comprendre votre peau, choisir vos produits et construire une routine plus adaptÃ©e.",
+    "scan.badge": "Scanner d'ingrÃ©dients intelligent",
+    "scan.title": "Scannez l'Ã©tiquette.",
     "scan.titleAccent": "Comprenez la formule.",
-    "scan.text": "Importez l'étiquette d'un produit skincare et laissez SkinorAI identifier les ingrédients, expliquer leurs bienfaits et révéler les points auxquels votre peau doit faire attention.",
+    "scan.text": "Importez l'Ã©tiquette d'un produit skincare et laissez SkinorAI identifier les ingrÃ©dients, expliquer leurs bienfaits et rÃ©vÃ©ler les points auxquels votre peau doit faire attention.",
     "scan.cta": "Scanner un produit",
     "scan.imageAlt": "Produit skincare en cours d'analyse",
     "scan.reading": "Lecture de la formule",
-    "scan.compatibility": "Compatibilité cutanée",
+    "scan.compatibility": "CompatibilitÃ© cutanÃ©e",
     "scan.hyaluronic": "Acide hyaluronique",
     "scan.hydration": "Hydratation intense",
     "scan.niacinamide": "Niacinamide",
-    "scan.niacinamideDetail": "Soutien de la barrière cutanée",
-    "scan.panthenol": "Panthénol",
+    "scan.niacinamideDetail": "Soutien de la barriÃ¨re cutanÃ©e",
+    "scan.panthenol": "PanthÃ©nol",
     "scan.panthenolDetail": "Apaisant",
-    "scan.barrier": "Formule respectueuse de la barrière cutanée",
+    "scan.barrier": "Formule respectueuse de la barriÃ¨re cutanÃ©e",
     "scan.hydrationSupport": "Hydratation soutenue",
-    "scan.fragrance": "Parfum détecté",
-    "scan.recommendedFor": "Recommandé pour",
-    "scan.skinType": "Peau normale à sèche",
-    "scan.scroll": "Défilez pour scanner",
+    "scan.fragrance": "Parfum dÃ©tectÃ©",
+    "scan.recommendedFor": "RecommandÃ© pour",
+    "scan.skinType": "Peau normale Ã  sÃ¨che",
+    "scan.scroll": "DÃ©filez pour scanner",
     "library.productsEyebrow": "Page produits",
     "library.productsTitle": "Explorez les produits skincare en un coup d'oeil.",
-    "library.productsText": "La page produits permet de parcourir les nettoyants, sérums, crèmes et soins ciblés avant d'ouvrir une fiche détaillée. La galerie circulaire rend la comparaison plus fluide, visuelle et intuitive.",
+    "library.productsText": "La page produits permet de parcourir les nettoyants, sÃ©rums, crÃ¨mes et soins ciblÃ©s avant d'ouvrir une fiche dÃ©taillÃ©e. La galerie circulaire rend la comparaison plus fluide, visuelle et intuitive.",
     "library.productsCta": "Voir tous les produits",
-    "library.ingredientsEyebrow": "Bibliothèque d'ingrédients",
-    "library.ingredientsTitle": "Transformez les formules en bibliothèque visuelle claire.",
-    "library.ingredientsText": "La bibliothèque d'ingrédients aide les utilisateurs à relier chaque produit aux actifs qu'il contient. Le masonry garde une vue riche et dynamique, tout en restant simple à explorer par bénéfice, préoccupation ou étape de routine.",
-    "library.ingredientsCta": "Voir tous les ingrédients",
-    "testimonials.title": "Les réponses que vous cherchez avant de choisir un soin.",
-    "testimonials.intro": "Découvrez comment SkinorAI aide ses utilisateurs à mieux comprendre leurs produits et à construire une routine plus claire.",
+    "library.ingredientsEyebrow": "BibliothÃ¨que d'ingrÃ©dients",
+    "library.ingredientsTitle": "Transformez les formules en bibliothÃ¨que visuelle claire.",
+    "library.ingredientsText": "La bibliothÃ¨que d'ingrÃ©dients aide les utilisateurs Ã  relier chaque produit aux actifs qu'il contient. Le masonry garde une vue riche et dynamique, tout en restant simple Ã  explorer par bÃ©nÃ©fice, prÃ©occupation ou Ã©tape de routine.",
+    "library.ingredientsCta": "Voir tous les ingrÃ©dients",
+    "testimonials.title": "Les rÃ©ponses que vous cherchez avant de choisir un soin.",
+    "testimonials.intro": "DÃ©couvrez comment SkinorAI aide ses utilisateurs Ã  mieux comprendre leurs produits et Ã  construire une routine plus claire.",
     "testimonials.how": "Comment fonctionne SkinorAI",
-    "testimonials.note": "Les témoignages présentés peuvent être remplacés par les retours vérifiés de vos utilisateurs après le lancement.",
+    "testimonials.note": "Les tÃ©moignages prÃ©sentÃ©s peuvent Ãªtre remplacÃ©s par les retours vÃ©rifiÃ©s de vos utilisateurs aprÃ¨s le lancement.",
     "testimonials.cta": "Analyser mon produit",
-    "testimonials.01.question": "Est-ce que SkinorAI comprend vraiment les ingrédients ?",
-    "testimonials.01.answer": "SkinorAI transforme les listes INCI complexes en explications simples. Il identifie le rôle des ingrédients, leurs bénéfices potentiels et les points auxquels vous devez faire attention selon votre peau.",
-    "testimonials.01.quote": "Je regardais toujours les ingrédients sans rien comprendre. Maintenant, je sais enfin pourquoi un produit me convient ou non.",
+    "testimonials.01.question": "Est-ce que SkinorAI comprend vraiment les ingrÃ©dients ?",
+    "testimonials.01.answer": "SkinorAI transforme les listes INCI complexes en explications simples. Il identifie le rÃ´le des ingrÃ©dients, leurs bÃ©nÃ©fices potentiels et les points auxquels vous devez faire attention selon votre peau.",
+    "testimonials.01.quote": "Je regardais toujours les ingrÃ©dients sans rien comprendre. Maintenant, je sais enfin pourquoi un produit me convient ou non.",
     "testimonials.01.profile": "Peau mixte et sensible",
-    "testimonials.02.question": "Les recommandations sont-elles personnalisées ?",
-    "testimonials.02.answer": "Oui. L'analyse prend en compte votre type de peau, vos préoccupations, vos sensibilités et l'objectif que vous souhaitez atteindre, comme l'hydratation, les imperfections ou les rougeurs.",
-    "testimonials.02.quote": "L'analyse ne m'a pas donné une réponse générique. Elle a vraiment pris en compte ma peau sensible et mes rougeurs.",
-    "testimonials.02.profile": "Peau sèche avec rougeurs",
-    "testimonials.03.question": "Puis-je analyser les produits que je possède déjà ?",
-    "testimonials.03.answer": "Vous pouvez importer une photo claire de la liste d'ingrédients présente sur l'emballage. SkinorAI extrait les ingrédients et vous permet de les vérifier avant de lancer l'analyse.",
-    "testimonials.03.quote": "J'ai scanné plusieurs produits de ma routine et découvert que deux soins avaient presque la même fonction.",
+    "testimonials.02.question": "Les recommandations sont-elles personnalisÃ©es ?",
+    "testimonials.02.answer": "Oui. L'analyse prend en compte votre type de peau, vos prÃ©occupations, vos sensibilitÃ©s et l'objectif que vous souhaitez atteindre, comme l'hydratation, les imperfections ou les rougeurs.",
+    "testimonials.02.quote": "L'analyse ne m'a pas donnÃ© une rÃ©ponse gÃ©nÃ©rique. Elle a vraiment pris en compte ma peau sensible et mes rougeurs.",
+    "testimonials.02.profile": "Peau sÃ¨che avec rougeurs",
+    "testimonials.03.question": "Puis-je analyser les produits que je possÃ¨de dÃ©jÃ  ?",
+    "testimonials.03.answer": "Vous pouvez importer une photo claire de la liste d'ingrÃ©dients prÃ©sente sur l'emballage. SkinorAI extrait les ingrÃ©dients et vous permet de les vÃ©rifier avant de lancer l'analyse.",
+    "testimonials.03.quote": "J'ai scannÃ© plusieurs produits de ma routine et dÃ©couvert que deux soins avaient presque la mÃªme fonction.",
     "testimonials.03.profile": "Routine anti-imperfections",
-    "testimonials.04.question": "SkinorAI peut-il m'aider à éviter les mauvais achats ?",
-    "testimonials.04.answer": "SkinorAI vous aide à évaluer un produit avant de l'acheter. Vous pouvez comprendre s'il correspond à vos objectifs, s'il contient des ingrédients potentiellement irritants et s'il apporte réellement quelque chose à votre routine.",
-    "testimonials.04.quote": "Avant, j'achetais selon les vidéos sur les réseaux sociaux. Maintenant, je vérifie le produit avant de dépenser.",
-    "testimonials.04.profile": "Peau grasse à tendance acnéique",
+    "testimonials.04.question": "SkinorAI peut-il m'aider Ã  Ã©viter les mauvais achats ?",
+    "testimonials.04.answer": "SkinorAI vous aide Ã  Ã©valuer un produit avant de l'acheter. Vous pouvez comprendre s'il correspond Ã  vos objectifs, s'il contient des ingrÃ©dients potentiellement irritants et s'il apporte rÃ©ellement quelque chose Ã  votre routine.",
+    "testimonials.04.quote": "Avant, j'achetais selon les vidÃ©os sur les rÃ©seaux sociaux. Maintenant, je vÃ©rifie le produit avant de dÃ©penser.",
+    "testimonials.04.profile": "Peau grasse Ã  tendance acnÃ©ique",
     "testimonials.05.question": "Est-ce que SkinorAI remplace un dermatologue ?",
-    "testimonials.05.answer": "Non. SkinorAI fournit des informations éducatives et des recommandations générales sur les produits cosmétiques. Il ne pose aucun diagnostic et ne remplace pas l'avis d'un professionnel de santé.",
-    "testimonials.05.quote": "J'aime que les réponses restent claires et prudentes, sans prétendre remplacer un professionnel.",
-    "testimonials.05.profile": "Peau réactive",
-    "footer.description": "Comprenez les ingrédients de vos soins et trouvez les produits les plus adaptés à votre peau.",
+    "testimonials.05.answer": "Non. SkinorAI fournit des informations Ã©ducatives et des recommandations gÃ©nÃ©rales sur les produits cosmÃ©tiques. Il ne pose aucun diagnostic et ne remplace pas l'avis d'un professionnel de santÃ©.",
+    "testimonials.05.quote": "J'aime que les rÃ©ponses restent claires et prudentes, sans prÃ©tendre remplacer un professionnel.",
+    "testimonials.05.profile": "Peau rÃ©active",
+    "footer.description": "Comprenez les ingrÃ©dients de vos soins et trouvez les produits les plus adaptÃ©s Ã  votre peau.",
     "footer.scan": "Analyser un produit",
     "footer.navigation": "Navigation",
-    "footer.productsLibrary": "Bibliothèque de produits",
-    "footer.ingredientsLibrary": "Bibliothèque d’ingrédients",
-    "footer.ai": "Analyse assistée par IA",
-    "footer.rights": "© {year} SkinorAI. Tous droits réservés.",
+    "footer.productsLibrary": "BibliothÃ¨que de produits",
+    "footer.ingredientsLibrary": "BibliothÃ¨que dâ€™ingrÃ©dients",
+    "footer.ai": "Analyse assistÃ©e par IA",
+    "footer.rights": "Â© {year} SkinorAI. Tous droits rÃ©servÃ©s.",
     "footer.disclaimer": "Les analyses sont informatives et ne remplacent pas un avis dermatologique.",
   },
   en: {
@@ -214,104 +214,104 @@ const dictionaries: Record<Locale, Dictionary> = {
     "footer.productsLibrary": "Product library",
     "footer.ingredientsLibrary": "Ingredient library",
     "footer.ai": "AI-assisted analysis",
-    "footer.rights": "© {year} SkinorAI. All rights reserved.",
+    "footer.rights": "Â© {year} SkinorAI. All rights reserved.",
     "footer.disclaimer": "Analyses are informational and do not replace dermatological advice.",
   },
   ar: {
-    "language.french": "الفرنسية",
-    "language.english": "الإنجليزية",
-    "language.arabic": "العربية",
-    "language.label": "اللغة",
-    "nav.home": "الرئيسية",
-    "nav.products": "المنتجات",
-    "nav.ingredients": "المكونات",
-    "nav.pricing": "الأسعار",
-    "nav.scanCta": "ابدأ الفحص",
-    "nav.scanShort": "فحص",
-    "nav.openMenu": "فتح القائمة",
-    "nav.closeMenu": "إغلاق القائمة",
-    "nav.account": "حساب {name}",
-    "nav.settings": "الإعدادات",
-    "nav.logout": "تسجيل الخروج",
-    "nav.login": "تسجيل الدخول",
-    "hero.title": "اكشفي الإمكانات الكاملة لبشرتك",
-    "hero.text": "يقوم الذكاء الاصطناعي بتحليل وجهك وتحديد النقاط التي يمكن تحسينها",
-    "hero.cta": "حللي بشرتي",
+    "language.french": "Ø§Ù„ÙØ±Ù†Ø³ÙŠØ©",
+    "language.english": "Ø§Ù„Ø¥Ù†Ø¬Ù„ÙŠØ²ÙŠØ©",
+    "language.arabic": "Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©",
+    "language.label": "Ø§Ù„Ù„ØºØ©",
+    "nav.home": "Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©",
+    "nav.products": "Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
+    "nav.ingredients": "Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
+    "nav.pricing": "Ø§Ù„Ø£Ø³Ø¹Ø§Ø±",
+    "nav.scanCta": "Ø§Ø¨Ø¯Ø£ Ø§Ù„ÙØ­Øµ",
+    "nav.scanShort": "ÙØ­Øµ",
+    "nav.openMenu": "ÙØªØ­ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©",
+    "nav.closeMenu": "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©",
+    "nav.account": "Ø­Ø³Ø§Ø¨ {name}",
+    "nav.settings": "Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª",
+    "nav.logout": "ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø®Ø±ÙˆØ¬",
+    "nav.login": "ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„",
+    "hero.title": "Ø§ÙƒØ´ÙÙŠ Ø§Ù„Ø¥Ù…ÙƒØ§Ù†Ø§Øª Ø§Ù„ÙƒØ§Ù…Ù„Ø© Ù„Ø¨Ø´Ø±ØªÙƒ",
+    "hero.text": "ÙŠÙ‚ÙˆÙ… Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ Ø¨ØªØ­Ù„ÙŠÙ„ ÙˆØ¬Ù‡Ùƒ ÙˆØªØ­Ø¯ÙŠØ¯ Ø§Ù„Ù†Ù‚Ø§Ø· Ø§Ù„ØªÙŠ ÙŠÙ…ÙƒÙ† ØªØ­Ø³ÙŠÙ†Ù‡Ø§",
+    "hero.cta": "Ø­Ù„Ù„ÙŠ Ø¨Ø´Ø±ØªÙŠ",
     "hero.stat.accuracyValue": "95%",
-    "hero.stat.accuracy": "تحليل دقيق للبشرة",
+    "hero.stat.accuracy": "ØªØ­Ù„ÙŠÙ„ Ø¯Ù‚ÙŠÙ‚ Ù„Ù„Ø¨Ø´Ø±Ø©",
     "hero.stat.concernsValue": "+30",
-    "hero.stat.concerns": "مشكلة جلدية تم تحليلها",
-    "hero.stat.routineValue": "7 أيام",
-    "hero.stat.routine": "روتين مخصص",
-    "how.imageAlt": "تحليل عناية بالبشرة مخصص مع SkinorAI",
-    "how.label.analyze": "تحليل",
-    "how.label.hydrate": "ترطيب",
-    "how.label.understand": "فهم",
-    "how.title": "العناية بالبشرة بالذكاء الاصطناعي",
-    "how.text": "لا يعد SkinorAI بالكمال. إنه يحلل ويتعلم ويكيف توصياته حسب نوع بشرتك وأهدافك والمنتجات التي تستخدمينها.",
-    "how.outroTitle": "جمال بوعي أكبر",
-    "how.outroText": "لا يمكننا إيقاف الزمن، لكن يمكننا مساعدتك على فهم بشرتك بشكل أفضل، واختيار منتجاتك، وبناء روتين أنسب لك.",
-    "scan.badge": "ماسح ذكي للمكونات",
-    "scan.title": "امسحي الملصق.",
-    "scan.titleAccent": "وافهمي التركيبة.",
-    "scan.text": "ارفعي ملصق منتج العناية بالبشرة ودعي SkinorAI يحدد المكونات، يشرح فوائدها، ويوضح ما يجب أن تنتبه له بشرتك.",
-    "scan.cta": "فحص منتج",
-    "scan.imageAlt": "منتج عناية بالبشرة قيد التحليل",
-    "scan.reading": "قراءة التركيبة",
-    "scan.compatibility": "توافق البشرة",
-    "scan.hyaluronic": "حمض الهيالورونيك",
-    "scan.hydration": "ترطيب عميق",
-    "scan.niacinamide": "نياسيناميد",
-    "scan.niacinamideDetail": "دعم حاجز البشرة",
-    "scan.panthenol": "بانثينول",
-    "scan.panthenolDetail": "مهدئ",
-    "scan.barrier": "تركيبة لطيفة على حاجز البشرة",
-    "scan.hydrationSupport": "دعم قوي للترطيب",
-    "scan.fragrance": "تم اكتشاف عطر",
-    "scan.recommendedFor": "مناسب لـ",
-    "scan.skinType": "البشرة العادية إلى الجافة",
-    "scan.scroll": "مرري للفحص",
-    "library.productsEyebrow": "صفحة المنتجات",
-    "library.productsTitle": "استكشفي منتجات العناية بالبشرة بلمحة واحدة.",
-    "library.productsText": "تتيح صفحة المنتجات تصفح الغسولات والسيرومات والكريمات والعلاجات المستهدفة قبل فتح تفاصيل المنتج. تجعل المعرض الدائري المقارنة أكثر سلاسة ووضوحا.",
-    "library.productsCta": "عرض كل المنتجات",
-    "library.ingredientsEyebrow": "مكتبة المكونات",
-    "library.ingredientsTitle": "حوّلي التركيبات إلى مكتبة بصرية واضحة.",
-    "library.ingredientsText": "تساعد مكتبة المكونات المستخدمين على ربط كل منتج بالمكونات الفعالة التي يحتويها. يحافظ عرض الماسونري على تجربة غنية وسهلة حسب الفائدة أو المشكلة أو خطوة الروتين.",
-    "library.ingredientsCta": "عرض كل المكونات",
-    "testimonials.title": "الإجابات التي تحتاجينها قبل اختيار منتج عناية.",
-    "testimonials.intro": "اكتشفي كيف يساعد SkinorAI المستخدمين على فهم منتجاتهم وبناء روتين أوضح.",
-    "testimonials.how": "كيف يعمل SkinorAI",
-    "testimonials.note": "يمكن استبدال هذه الشهادات بتعليقات مستخدمين موثقة بعد الإطلاق.",
-    "testimonials.cta": "حللي منتجي",
-    "testimonials.01.question": "هل يفهم SkinorAI المكونات حقا؟",
-    "testimonials.01.answer": "يحوّل SkinorAI قوائم INCI المعقدة إلى شروحات بسيطة. يحدد دور كل مكون وفوائده المحتملة والنقاط التي يجب الانتباه لها حسب بشرتك.",
-    "testimonials.01.quote": "كنت أنظر إلى المكونات دون أن أفهم شيئا. الآن أعرف أخيرا لماذا يناسبني منتج ما أو لا.",
-    "testimonials.01.profile": "بشرة مختلطة وحساسة",
-    "testimonials.02.question": "هل التوصيات مخصصة؟",
-    "testimonials.02.answer": "نعم. يأخذ التحليل نوع بشرتك ومشاكلك وحساسياتك والهدف الذي تريدين تحقيقه بعين الاعتبار، مثل الترطيب أو الحبوب أو الاحمرار.",
-    "testimonials.02.quote": "لم يعطني التحليل إجابة عامة. لقد أخذ بشرتي الحساسة والاحمرار بعين الاعتبار فعلا.",
-    "testimonials.02.profile": "بشرة جافة مع احمرار",
-    "testimonials.03.question": "هل يمكنني تحليل المنتجات التي أملكها بالفعل؟",
-    "testimonials.03.answer": "يمكنك رفع صورة واضحة لقائمة المكونات على العبوة. يستخرج SkinorAI المكونات ويتيح لك مراجعتها قبل بدء التحليل.",
-    "testimonials.03.quote": "فحصت عدة منتجات من روتيني واكتشفت أن منتجين لهما تقريبا نفس الوظيفة.",
-    "testimonials.03.profile": "روتين مضاد للشوائب",
-    "testimonials.04.question": "هل يمكن أن يساعدني SkinorAI على تجنب المشتريات غير المناسبة؟",
-    "testimonials.04.answer": "يساعدك SkinorAI على تقييم المنتج قبل شرائه. يمكنك فهم ما إذا كان يناسب أهدافك، أو يحتوي على مكونات قد تهيج البشرة، أو يضيف شيئا حقيقيا إلى روتينك.",
-    "testimonials.04.quote": "سابقا كنت أشتري حسب فيديوهات الشبكات الاجتماعية. الآن أتحقق من المنتج قبل أن أدفع.",
-    "testimonials.04.profile": "بشرة دهنية معرضة للحبوب",
-    "testimonials.05.question": "هل يعوض SkinorAI طبيب الجلدية؟",
-    "testimonials.05.answer": "لا. يقدم SkinorAI معلومات تعليمية وتوصيات عامة حول منتجات التجميل. لا يقدم تشخيصا ولا يعوض نصيحة الطبيب.",
-    "testimonials.05.quote": "أحب أن تبقى الإجابات واضحة وحذرة دون أن تدعي أنها تعوض المختص.",
-    "testimonials.05.profile": "بشرة تفاعلية",
-    "footer.description": "افهمي مكونات منتجات العناية الخاصة بك واعثري على المنتجات الأنسب لبشرتك.",
-    "footer.scan": "تحليل منتج",
-    "footer.navigation": "التنقل",
-    "footer.productsLibrary": "مكتبة المنتجات",
-    "footer.ingredientsLibrary": "مكتبة المكونات",
-    "footer.ai": "تحليل بمساعدة الذكاء الاصطناعي",
-    "footer.rights": "© {year} SkinorAI. جميع الحقوق محفوظة.",
-    "footer.disclaimer": "التحليلات معلوماتية ولا تغني عن استشارة طبيب الجلدية.",
+    "hero.stat.concerns": "Ù…Ø´ÙƒÙ„Ø© Ø¬Ù„Ø¯ÙŠØ© ØªÙ… ØªØ­Ù„ÙŠÙ„Ù‡Ø§",
+    "hero.stat.routineValue": "7 Ø£ÙŠØ§Ù…",
+    "hero.stat.routine": "Ø±ÙˆØªÙŠÙ† Ù…Ø®ØµØµ",
+    "how.imageAlt": "ØªØ­Ù„ÙŠÙ„ Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø© Ù…Ø®ØµØµ Ù…Ø¹ SkinorAI",
+    "how.label.analyze": "ØªØ­Ù„ÙŠÙ„",
+    "how.label.hydrate": "ØªØ±Ø·ÙŠØ¨",
+    "how.label.understand": "ÙÙ‡Ù…",
+    "how.title": "Ø§Ù„Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø© Ø¨Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ",
+    "how.text": "Ù„Ø§ ÙŠØ¹Ø¯ SkinorAI Ø¨Ø§Ù„ÙƒÙ…Ø§Ù„. Ø¥Ù†Ù‡ ÙŠØ­Ù„Ù„ ÙˆÙŠØªØ¹Ù„Ù… ÙˆÙŠÙƒÙŠÙ ØªÙˆØµÙŠØ§ØªÙ‡ Ø­Ø³Ø¨ Ù†ÙˆØ¹ Ø¨Ø´Ø±ØªÙƒ ÙˆØ£Ù‡Ø¯Ø§ÙÙƒ ÙˆØ§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ ØªØ³ØªØ®Ø¯Ù…ÙŠÙ†Ù‡Ø§.",
+    "how.outroTitle": "Ø¬Ù…Ø§Ù„ Ø¨ÙˆØ¹ÙŠ Ø£ÙƒØ¨Ø±",
+    "how.outroText": "Ù„Ø§ ÙŠÙ…ÙƒÙ†Ù†Ø§ Ø¥ÙŠÙ‚Ø§Ù Ø§Ù„Ø²Ù…Ù†ØŒ Ù„ÙƒÙ† ÙŠÙ…ÙƒÙ†Ù†Ø§ Ù…Ø³Ø§Ø¹Ø¯ØªÙƒ Ø¹Ù„Ù‰ ÙÙ‡Ù… Ø¨Ø´Ø±ØªÙƒ Ø¨Ø´ÙƒÙ„ Ø£ÙØ¶Ù„ØŒ ÙˆØ§Ø®ØªÙŠØ§Ø± Ù…Ù†ØªØ¬Ø§ØªÙƒØŒ ÙˆØ¨Ù†Ø§Ø¡ Ø±ÙˆØªÙŠÙ† Ø£Ù†Ø³Ø¨ Ù„Ùƒ.",
+    "scan.badge": "Ù…Ø§Ø³Ø­ Ø°ÙƒÙŠ Ù„Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
+    "scan.title": "Ø§Ù…Ø³Ø­ÙŠ Ø§Ù„Ù…Ù„ØµÙ‚.",
+    "scan.titleAccent": "ÙˆØ§ÙÙ‡Ù…ÙŠ Ø§Ù„ØªØ±ÙƒÙŠØ¨Ø©.",
+    "scan.text": "Ø§Ø±ÙØ¹ÙŠ Ù…Ù„ØµÙ‚ Ù…Ù†ØªØ¬ Ø§Ù„Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø© ÙˆØ¯Ø¹ÙŠ SkinorAI ÙŠØ­Ø¯Ø¯ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§ØªØŒ ÙŠØ´Ø±Ø­ ÙÙˆØ§Ø¦Ø¯Ù‡Ø§ØŒ ÙˆÙŠÙˆØ¶Ø­ Ù…Ø§ ÙŠØ¬Ø¨ Ø£Ù† ØªÙ†ØªØ¨Ù‡ Ù„Ù‡ Ø¨Ø´Ø±ØªÙƒ.",
+    "scan.cta": "ÙØ­Øµ Ù…Ù†ØªØ¬",
+    "scan.imageAlt": "Ù…Ù†ØªØ¬ Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø© Ù‚ÙŠØ¯ Ø§Ù„ØªØ­Ù„ÙŠÙ„",
+    "scan.reading": "Ù‚Ø±Ø§Ø¡Ø© Ø§Ù„ØªØ±ÙƒÙŠØ¨Ø©",
+    "scan.compatibility": "ØªÙˆØ§ÙÙ‚ Ø§Ù„Ø¨Ø´Ø±Ø©",
+    "scan.hyaluronic": "Ø­Ù…Ø¶ Ø§Ù„Ù‡ÙŠØ§Ù„ÙˆØ±ÙˆÙ†ÙŠÙƒ",
+    "scan.hydration": "ØªØ±Ø·ÙŠØ¨ Ø¹Ù…ÙŠÙ‚",
+    "scan.niacinamide": "Ù†ÙŠØ§Ø³ÙŠÙ†Ø§Ù…ÙŠØ¯",
+    "scan.niacinamideDetail": "Ø¯Ø¹Ù… Ø­Ø§Ø¬Ø² Ø§Ù„Ø¨Ø´Ø±Ø©",
+    "scan.panthenol": "Ø¨Ø§Ù†Ø«ÙŠÙ†ÙˆÙ„",
+    "scan.panthenolDetail": "Ù…Ù‡Ø¯Ø¦",
+    "scan.barrier": "ØªØ±ÙƒÙŠØ¨Ø© Ù„Ø·ÙŠÙØ© Ø¹Ù„Ù‰ Ø­Ø§Ø¬Ø² Ø§Ù„Ø¨Ø´Ø±Ø©",
+    "scan.hydrationSupport": "Ø¯Ø¹Ù… Ù‚ÙˆÙŠ Ù„Ù„ØªØ±Ø·ÙŠØ¨",
+    "scan.fragrance": "ØªÙ… Ø§ÙƒØªØ´Ø§Ù Ø¹Ø·Ø±",
+    "scan.recommendedFor": "Ù…Ù†Ø§Ø³Ø¨ Ù„Ù€",
+    "scan.skinType": "Ø§Ù„Ø¨Ø´Ø±Ø© Ø§Ù„Ø¹Ø§Ø¯ÙŠØ© Ø¥Ù„Ù‰ Ø§Ù„Ø¬Ø§ÙØ©",
+    "scan.scroll": "Ù…Ø±Ø±ÙŠ Ù„Ù„ÙØ­Øµ",
+    "library.productsEyebrow": "ØµÙØ­Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
+    "library.productsTitle": "Ø§Ø³ØªÙƒØ´ÙÙŠ Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø© Ø¨Ù„Ù…Ø­Ø© ÙˆØ§Ø­Ø¯Ø©.",
+    "library.productsText": "ØªØªÙŠØ­ ØµÙØ­Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª ØªØµÙØ­ Ø§Ù„ØºØ³ÙˆÙ„Ø§Øª ÙˆØ§Ù„Ø³ÙŠØ±ÙˆÙ…Ø§Øª ÙˆØ§Ù„ÙƒØ±ÙŠÙ…Ø§Øª ÙˆØ§Ù„Ø¹Ù„Ø§Ø¬Ø§Øª Ø§Ù„Ù…Ø³ØªÙ‡Ø¯ÙØ© Ù‚Ø¨Ù„ ÙØªØ­ ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬. ØªØ¬Ø¹Ù„ Ø§Ù„Ù…Ø¹Ø±Ø¶ Ø§Ù„Ø¯Ø§Ø¦Ø±ÙŠ Ø§Ù„Ù…Ù‚Ø§Ø±Ù†Ø© Ø£ÙƒØ«Ø± Ø³Ù„Ø§Ø³Ø© ÙˆÙˆØ¶ÙˆØ­Ø§.",
+    "library.productsCta": "Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
+    "library.ingredientsEyebrow": "Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
+    "library.ingredientsTitle": "Ø­ÙˆÙ‘Ù„ÙŠ Ø§Ù„ØªØ±ÙƒÙŠØ¨Ø§Øª Ø¥Ù„Ù‰ Ù…ÙƒØªØ¨Ø© Ø¨ØµØ±ÙŠØ© ÙˆØ§Ø¶Ø­Ø©.",
+    "library.ingredientsText": "ØªØ³Ø§Ø¹Ø¯ Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø¹Ù„Ù‰ Ø±Ø¨Ø· ÙƒÙ„ Ù…Ù†ØªØ¬ Ø¨Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„ÙØ¹Ø§Ù„Ø© Ø§Ù„ØªÙŠ ÙŠØ­ØªÙˆÙŠÙ‡Ø§. ÙŠØ­Ø§ÙØ¸ Ø¹Ø±Ø¶ Ø§Ù„Ù…Ø§Ø³ÙˆÙ†Ø±ÙŠ Ø¹Ù„Ù‰ ØªØ¬Ø±Ø¨Ø© ØºÙ†ÙŠØ© ÙˆØ³Ù‡Ù„Ø© Ø­Ø³Ø¨ Ø§Ù„ÙØ§Ø¦Ø¯Ø© Ø£Ùˆ Ø§Ù„Ù…Ø´ÙƒÙ„Ø© Ø£Ùˆ Ø®Ø·ÙˆØ© Ø§Ù„Ø±ÙˆØªÙŠÙ†.",
+    "library.ingredientsCta": "Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
+    "testimonials.title": "Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø§Øª Ø§Ù„ØªÙŠ ØªØ­ØªØ§Ø¬ÙŠÙ†Ù‡Ø§ Ù‚Ø¨Ù„ Ø§Ø®ØªÙŠØ§Ø± Ù…Ù†ØªØ¬ Ø¹Ù†Ø§ÙŠØ©.",
+    "testimonials.intro": "Ø§ÙƒØªØ´ÙÙŠ ÙƒÙŠÙ ÙŠØ³Ø§Ø¹Ø¯ SkinorAI Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø¹Ù„Ù‰ ÙÙ‡Ù… Ù…Ù†ØªØ¬Ø§ØªÙ‡Ù… ÙˆØ¨Ù†Ø§Ø¡ Ø±ÙˆØªÙŠÙ† Ø£ÙˆØ¶Ø­.",
+    "testimonials.how": "ÙƒÙŠÙ ÙŠØ¹Ù…Ù„ SkinorAI",
+    "testimonials.note": "ÙŠÙ…ÙƒÙ† Ø§Ø³ØªØ¨Ø¯Ø§Ù„ Ù‡Ø°Ù‡ Ø§Ù„Ø´Ù‡Ø§Ø¯Ø§Øª Ø¨ØªØ¹Ù„ÙŠÙ‚Ø§Øª Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ù…ÙˆØ«Ù‚Ø© Ø¨Ø¹Ø¯ Ø§Ù„Ø¥Ø·Ù„Ø§Ù‚.",
+    "testimonials.cta": "Ø­Ù„Ù„ÙŠ Ù…Ù†ØªØ¬ÙŠ",
+    "testimonials.01.question": "Ù‡Ù„ ÙŠÙÙ‡Ù… SkinorAI Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø­Ù‚Ø§ØŸ",
+    "testimonials.01.answer": "ÙŠØ­ÙˆÙ‘Ù„ SkinorAI Ù‚ÙˆØ§Ø¦Ù… INCI Ø§Ù„Ù…Ø¹Ù‚Ø¯Ø© Ø¥Ù„Ù‰ Ø´Ø±ÙˆØ­Ø§Øª Ø¨Ø³ÙŠØ·Ø©. ÙŠØ­Ø¯Ø¯ Ø¯ÙˆØ± ÙƒÙ„ Ù…ÙƒÙˆÙ† ÙˆÙÙˆØ§Ø¦Ø¯Ù‡ Ø§Ù„Ù…Ø­ØªÙ…Ù„Ø© ÙˆØ§Ù„Ù†Ù‚Ø§Ø· Ø§Ù„ØªÙŠ ÙŠØ¬Ø¨ Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡ Ù„Ù‡Ø§ Ø­Ø³Ø¨ Ø¨Ø´Ø±ØªÙƒ.",
+    "testimonials.01.quote": "ÙƒÙ†Øª Ø£Ù†Ø¸Ø± Ø¥Ù„Ù‰ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø¯ÙˆÙ† Ø£Ù† Ø£ÙÙ‡Ù… Ø´ÙŠØ¦Ø§. Ø§Ù„Ø¢Ù† Ø£Ø¹Ø±Ù Ø£Ø®ÙŠØ±Ø§ Ù„Ù…Ø§Ø°Ø§ ÙŠÙ†Ø§Ø³Ø¨Ù†ÙŠ Ù…Ù†ØªØ¬ Ù…Ø§ Ø£Ùˆ Ù„Ø§.",
+    "testimonials.01.profile": "Ø¨Ø´Ø±Ø© Ù…Ø®ØªÙ„Ø·Ø© ÙˆØ­Ø³Ø§Ø³Ø©",
+    "testimonials.02.question": "Ù‡Ù„ Ø§Ù„ØªÙˆØµÙŠØ§Øª Ù…Ø®ØµØµØ©ØŸ",
+    "testimonials.02.answer": "Ù†Ø¹Ù…. ÙŠØ£Ø®Ø° Ø§Ù„ØªØ­Ù„ÙŠÙ„ Ù†ÙˆØ¹ Ø¨Ø´Ø±ØªÙƒ ÙˆÙ…Ø´Ø§ÙƒÙ„Ùƒ ÙˆØ­Ø³Ø§Ø³ÙŠØ§ØªÙƒ ÙˆØ§Ù„Ù‡Ø¯Ù Ø§Ù„Ø°ÙŠ ØªØ±ÙŠØ¯ÙŠÙ† ØªØ­Ù‚ÙŠÙ‚Ù‡ Ø¨Ø¹ÙŠÙ† Ø§Ù„Ø§Ø¹ØªØ¨Ø§Ø±ØŒ Ù…Ø«Ù„ Ø§Ù„ØªØ±Ø·ÙŠØ¨ Ø£Ùˆ Ø§Ù„Ø­Ø¨ÙˆØ¨ Ø£Ùˆ Ø§Ù„Ø§Ø­Ù…Ø±Ø§Ø±.",
+    "testimonials.02.quote": "Ù„Ù… ÙŠØ¹Ø·Ù†ÙŠ Ø§Ù„ØªØ­Ù„ÙŠÙ„ Ø¥Ø¬Ø§Ø¨Ø© Ø¹Ø§Ù…Ø©. Ù„Ù‚Ø¯ Ø£Ø®Ø° Ø¨Ø´Ø±ØªÙŠ Ø§Ù„Ø­Ø³Ø§Ø³Ø© ÙˆØ§Ù„Ø§Ø­Ù…Ø±Ø§Ø± Ø¨Ø¹ÙŠÙ† Ø§Ù„Ø§Ø¹ØªØ¨Ø§Ø± ÙØ¹Ù„Ø§.",
+    "testimonials.02.profile": "Ø¨Ø´Ø±Ø© Ø¬Ø§ÙØ© Ù…Ø¹ Ø§Ø­Ù…Ø±Ø§Ø±",
+    "testimonials.03.question": "Ù‡Ù„ ÙŠÙ…ÙƒÙ†Ù†ÙŠ ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ Ø£Ù…Ù„ÙƒÙ‡Ø§ Ø¨Ø§Ù„ÙØ¹Ù„ØŸ",
+    "testimonials.03.answer": "ÙŠÙ…ÙƒÙ†Ùƒ Ø±ÙØ¹ ØµÙˆØ±Ø© ÙˆØ§Ø¶Ø­Ø© Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø¹Ù„Ù‰ Ø§Ù„Ø¹Ø¨ÙˆØ©. ÙŠØ³ØªØ®Ø±Ø¬ SkinorAI Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª ÙˆÙŠØªÙŠØ­ Ù„Ùƒ Ù…Ø±Ø§Ø¬Ø¹ØªÙ‡Ø§ Ù‚Ø¨Ù„ Ø¨Ø¯Ø¡ Ø§Ù„ØªØ­Ù„ÙŠÙ„.",
+    "testimonials.03.quote": "ÙØ­ØµØª Ø¹Ø¯Ø© Ù…Ù†ØªØ¬Ø§Øª Ù…Ù† Ø±ÙˆØªÙŠÙ†ÙŠ ÙˆØ§ÙƒØªØ´ÙØª Ø£Ù† Ù…Ù†ØªØ¬ÙŠÙ† Ù„Ù‡Ù…Ø§ ØªÙ‚Ø±ÙŠØ¨Ø§ Ù†ÙØ³ Ø§Ù„ÙˆØ¸ÙŠÙØ©.",
+    "testimonials.03.profile": "Ø±ÙˆØªÙŠÙ† Ù…Ø¶Ø§Ø¯ Ù„Ù„Ø´ÙˆØ§Ø¦Ø¨",
+    "testimonials.04.question": "Ù‡Ù„ ÙŠÙ…ÙƒÙ† Ø£Ù† ÙŠØ³Ø§Ø¹Ø¯Ù†ÙŠ SkinorAI Ø¹Ù„Ù‰ ØªØ¬Ù†Ø¨ Ø§Ù„Ù…Ø´ØªØ±ÙŠØ§Øª ØºÙŠØ± Ø§Ù„Ù…Ù†Ø§Ø³Ø¨Ø©ØŸ",
+    "testimonials.04.answer": "ÙŠØ³Ø§Ø¹Ø¯Ùƒ SkinorAI Ø¹Ù„Ù‰ ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ù…Ù†ØªØ¬ Ù‚Ø¨Ù„ Ø´Ø±Ø§Ø¦Ù‡. ÙŠÙ…ÙƒÙ†Ùƒ ÙÙ‡Ù… Ù…Ø§ Ø¥Ø°Ø§ ÙƒØ§Ù† ÙŠÙ†Ø§Ø³Ø¨ Ø£Ù‡Ø¯Ø§ÙÙƒØŒ Ø£Ùˆ ÙŠØ­ØªÙˆÙŠ Ø¹Ù„Ù‰ Ù…ÙƒÙˆÙ†Ø§Øª Ù‚Ø¯ ØªÙ‡ÙŠØ¬ Ø§Ù„Ø¨Ø´Ø±Ø©ØŒ Ø£Ùˆ ÙŠØ¶ÙŠÙ Ø´ÙŠØ¦Ø§ Ø­Ù‚ÙŠÙ‚ÙŠØ§ Ø¥Ù„Ù‰ Ø±ÙˆØªÙŠÙ†Ùƒ.",
+    "testimonials.04.quote": "Ø³Ø§Ø¨Ù‚Ø§ ÙƒÙ†Øª Ø£Ø´ØªØ±ÙŠ Ø­Ø³Ø¨ ÙÙŠØ¯ÙŠÙˆÙ‡Ø§Øª Ø§Ù„Ø´Ø¨ÙƒØ§Øª Ø§Ù„Ø§Ø¬ØªÙ…Ø§Ø¹ÙŠØ©. Ø§Ù„Ø¢Ù† Ø£ØªØ­Ù‚Ù‚ Ù…Ù† Ø§Ù„Ù…Ù†ØªØ¬ Ù‚Ø¨Ù„ Ø£Ù† Ø£Ø¯ÙØ¹.",
+    "testimonials.04.profile": "Ø¨Ø´Ø±Ø© Ø¯Ù‡Ù†ÙŠØ© Ù…Ø¹Ø±Ø¶Ø© Ù„Ù„Ø­Ø¨ÙˆØ¨",
+    "testimonials.05.question": "Ù‡Ù„ ÙŠØ¹ÙˆØ¶ SkinorAI Ø·Ø¨ÙŠØ¨ Ø§Ù„Ø¬Ù„Ø¯ÙŠØ©ØŸ",
+    "testimonials.05.answer": "Ù„Ø§. ÙŠÙ‚Ø¯Ù… SkinorAI Ù…Ø¹Ù„ÙˆÙ…Ø§Øª ØªØ¹Ù„ÙŠÙ…ÙŠØ© ÙˆØªÙˆØµÙŠØ§Øª Ø¹Ø§Ù…Ø© Ø­ÙˆÙ„ Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªØ¬Ù…ÙŠÙ„. Ù„Ø§ ÙŠÙ‚Ø¯Ù… ØªØ´Ø®ÙŠØµØ§ ÙˆÙ„Ø§ ÙŠØ¹ÙˆØ¶ Ù†ØµÙŠØ­Ø© Ø§Ù„Ø·Ø¨ÙŠØ¨.",
+    "testimonials.05.quote": "Ø£Ø­Ø¨ Ø£Ù† ØªØ¨Ù‚Ù‰ Ø§Ù„Ø¥Ø¬Ø§Ø¨Ø§Øª ÙˆØ§Ø¶Ø­Ø© ÙˆØ­Ø°Ø±Ø© Ø¯ÙˆÙ† Ø£Ù† ØªØ¯Ø¹ÙŠ Ø£Ù†Ù‡Ø§ ØªØ¹ÙˆØ¶ Ø§Ù„Ù…Ø®ØªØµ.",
+    "testimonials.05.profile": "Ø¨Ø´Ø±Ø© ØªÙØ§Ø¹Ù„ÙŠØ©",
+    "footer.description": "Ø§ÙÙ‡Ù…ÙŠ Ù…ÙƒÙˆÙ†Ø§Øª Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø¹Ù†Ø§ÙŠØ© Ø§Ù„Ø®Ø§ØµØ© Ø¨Ùƒ ÙˆØ§Ø¹Ø«Ø±ÙŠ Ø¹Ù„Ù‰ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ø£Ù†Ø³Ø¨ Ù„Ø¨Ø´Ø±ØªÙƒ.",
+    "footer.scan": "ØªØ­Ù„ÙŠÙ„ Ù…Ù†ØªØ¬",
+    "footer.navigation": "Ø§Ù„ØªÙ†Ù‚Ù„",
+    "footer.productsLibrary": "Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
+    "footer.ingredientsLibrary": "Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
+    "footer.ai": "ØªØ­Ù„ÙŠÙ„ Ø¨Ù…Ø³Ø§Ø¹Ø¯Ø© Ø§Ù„Ø°ÙƒØ§Ø¡ Ø§Ù„Ø§ØµØ·Ù†Ø§Ø¹ÙŠ",
+    "footer.rights": "Â© {year} SkinorAI. Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø­Ù‚ÙˆÙ‚ Ù…Ø­ÙÙˆØ¸Ø©.",
+    "footer.disclaimer": "Ø§Ù„ØªØ­Ù„ÙŠÙ„Ø§Øª Ù…Ø¹Ù„ÙˆÙ…Ø§ØªÙŠØ© ÙˆÙ„Ø§ ØªØºÙ†ÙŠ Ø¹Ù† Ø§Ø³ØªØ´Ø§Ø±Ø© Ø·Ø¨ÙŠØ¨ Ø§Ù„Ø¬Ù„Ø¯ÙŠØ©.",
   },
 };
 
@@ -328,7 +328,7 @@ const aliasKeys: Record<string, string> = {
   Scanner: "nav.scanShort",
   Produits: "nav.products",
   Ingredients: "nav.ingredients",
-  "Ingrédients": "nav.ingredients",
+  "IngrÃ©dients": "nav.ingredients",
   Tarifs: "nav.pricing",
   Accueil: "nav.home",
   Navigation: "footer.navigation",
@@ -336,781 +336,957 @@ const aliasKeys: Record<string, string> = {
 };
 
 const phraseTranslations: Record<string, Partial<Record<Locale, string>>> = {
-  "Produits recommandés": {
-    en: "Recommended products",
-    ar: "منتجات موصى بها",
+  "Suggestions de la bibliotheque": {
+    en: "Library suggestions",
+    ar: "???????? ???????",
   },
-  "Découvrez des soins classés par type de peau, objectif et ingrédients clés.": {
+  "Image jointe": {
+    en: "Attached image",
+    ar: "???? ?????",
+  },
+  "SkinorAI reflechit...": {
+    en: "SkinorAI is thinking...",
+    ar: "SkinorAI ????...",
+  },
+  "Posez une question sur ce produit...": {
+    en: "Ask a question about this product...",
+    ar: "???? ????? ??? ??? ??????...",
+  },
+  "Retirer l image": {
+    en: "Remove image",
+    ar: "????? ??????",
+  },
+  "Envoyer": {
+    en: "Send",
+    ar: "?????",
+  },
+  "Aucune question enregistree pour ce scan pour le moment. Vous pouvez reprendre la conversation ci-dessous.": {
+    en: "No question has been saved for this scan yet. You can continue the conversation below.",
+    ar: "?? ??? ??? ?? ???? ???? ????? ???. ????? ?????? ???????? ?????.",
+  },
+  "Nouveau scan": {
+    en: "New scan",
+    ar: "ÙØ­Øµ Ø¬Ø¯ÙŠØ¯",
+  },
+  "Rechercher un scan...": {
+    en: "Search a scan...",
+    ar: "Ø§Ø¨Ø­Ø«ÙŠ Ø¹Ù† ÙØ­Øµ...",
+  },
+  "Historique": {
+    en: "History",
+    ar: "Ø§Ù„Ø³Ø¬Ù„",
+  },
+  "Chargement de l historique...": {
+    en: "Loading history...",
+    ar: "Ø¬Ø§Ø±Ù ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ø³Ø¬Ù„...",
+  },
+  "Choisissez votre objectif peau": {
+    en: "Choose your skin goal",
+    ar: "Ø§Ø®ØªØ§Ø±ÙŠ Ù‡Ø¯Ù Ø¨Ø´Ø±ØªÙƒ",
+  },
+  "Selectionnez votre priorite du moment pour personnaliser l analyse.": {
+    en: "Select your current priority to personalize the analysis.",
+    ar: "Ø­Ø¯Ø¯ÙŠ Ø£ÙˆÙ„ÙˆÙŠØªÙƒ Ø§Ù„Ø­Ø§Ù„ÙŠØ© Ù„ØªØ®ØµÙŠØµ Ø§Ù„ØªØ­Ù„ÙŠÙ„.",
+  },
+  "Objectif peau": {
+    en: "Skin goal",
+    ar: "Ù‡Ø¯Ù Ø§Ù„Ø¨Ø´Ø±Ø©",
+  },
+  "Acne & imperfections": {
+    en: "Acne & blemishes",
+    ar: "Ø­Ø¨ÙˆØ¨ ÙˆØ¹ÙŠÙˆØ¨",
+  },
+  "Reparation de la barriere": {
+    en: "Barrier repair",
+    ar: "Ø¥ØµÙ„Ø§Ø­ Ø§Ù„Ø­Ø§Ø¬Ø²",
+  },
+  "Routine du matin": {
+    en: "Morning routine",
+    ar: "Ø±ÙˆØªÙŠÙ† Ø§Ù„ØµØ¨Ø§Ø­",
+  },
+  "Routine du soir": {
+    en: "Evening routine",
+    ar: "Ø±ÙˆØªÙŠÙ† Ø§Ù„Ù…Ø³Ø§Ø¡",
+  },
+  "hydrater et repulper": {
+    en: "hydrate and plump",
+    ar: "Ø§Ù„ØªØ±Ø·ÙŠØ¨ ÙˆØ§Ù„Ø§Ù…ØªÙ„Ø§Ø¡",
+  },
+  "cibler les imperfections": {
+    en: "target blemishes",
+    ar: "Ø§Ø³ØªÙ‡Ø¯Ø§Ù Ø§Ù„Ø¹ÙŠÙˆØ¨",
+  },
+  "renforcer la barriere cutanee": {
+    en: "strengthen the skin barrier",
+    ar: "ØªÙ‚ÙˆÙŠØ© Ø­Ø§Ø¬Ø² Ø§Ù„Ø¨Ø´Ø±Ø©",
+  },
+  "apaiser les rougeurs": {
+    en: "soothe redness",
+    ar: "ØªÙ‡Ø¯Ø¦Ø© Ø§Ù„Ø§Ø­Ù…Ø±Ø§Ø±",
+  },
+  "equilibrer l exces de sebum": {
+    en: "balance excess sebum",
+    ar: "Ù…ÙˆØ§Ø²Ù†Ø© Ø§Ù„Ø¥ÙØ±Ø§Ø²Ø§Øª Ø§Ù„Ø¯Ù‡Ù†ÙŠØ© Ø§Ù„Ø²Ø§Ø¦Ø¯Ø©",
+  },
+  "optimiser la routine du matin": {
+    en: "optimize the morning routine",
+    ar: "ØªØ­Ø³ÙŠÙ† Ø±ÙˆØªÙŠÙ† Ø§Ù„ØµØ¨Ø§Ø­",
+  },
+  "optimiser la routine du soir": {
+    en: "optimize the evening routine",
+    ar: "ØªØ­Ø³ÙŠÙ† Ø±ÙˆØªÙŠÙ† Ø§Ù„Ù…Ø³Ø§Ø¡",
+  },
+  "cibler les peaux sensibles": {
+    en: "target sensitive skin",
+    ar: "Ù…Ø±Ø§Ø¹Ø§Ø© Ø§Ù„Ø¨Ø´Ø±Ø© Ø§Ù„Ø­Ø³Ø§Ø³Ø©",
+  },
+  "Scannez un produit dans la conversation": {
+    en: "Scan a product in the conversation",
+    ar: "Ø§ÙØ­ØµÙŠ Ù…Ù†ØªØ¬Ù‹Ø§ Ø¯Ø§Ø®Ù„ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø©",
+  },
+  "Ajoutez une photo ou collez les ingrÃ©dients, confirmez votre objectif peau, puis l'analyse sera enregistrÃ©e comme discussion.": {
+    en: "Add a photo or paste the ingredients, confirm your skin goal, then the analysis will be saved as a conversation.",
+    ar: "Ø£Ø¶ÙŠÙÙŠ ØµÙˆØ±Ø© Ø£Ùˆ Ø§Ù„ØµÙ‚ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§ØªØŒ Ø£ÙƒØ¯ÙŠ Ù‡Ø¯Ù Ø¨Ø´Ø±ØªÙƒØŒ Ø«Ù… Ø³ÙŠÙØ­ÙØ¸ Ø§Ù„ØªØ­Ù„ÙŠÙ„ ÙƒÙ…Ø­Ø§Ø¯Ø«Ø©.",
+  },
+  "Annuler": {
+    en: "Cancel",
+    ar: "Ø¥Ù„ØºØ§Ø¡",
+  },
+  "Produit sÃ©lectionnÃ©": {
+    en: "Selected product",
+    ar: "Ø§Ù„Ù…Ù†ØªØ¬ Ø§Ù„Ù…Ø­Ø¯Ø¯",
+  },
+  "Importer une photo de l'Ã©tiquette": {
+    en: "Upload a label photo",
+    ar: "Ø­Ù…Ù‘Ù„ÙŠ ØµÙˆØ±Ø© Ø§Ù„Ù…Ù„ØµÙ‚",
+  },
+  "Extraction des informations visibles...": {
+    en: "Extracting visible information...",
+    ar: "Ø¬Ø§Ø±Ù Ø§Ø³ØªØ®Ø±Ø§Ø¬ Ø§Ù„Ù…Ø¹Ù„ÙˆÙ…Ø§Øª Ø§Ù„Ø¸Ø§Ù‡Ø±Ø©...",
+  },
+  "VÃ©rifiez les ingrÃ©dients dÃ©tectÃ©s avant de lancer l'analyse.": {
+    en: "Check the detected ingredients before starting the analysis.",
+    ar: "Ø±Ø§Ø¬Ø¹ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ù…ÙƒØªØ´ÙØ© Ù‚Ø¨Ù„ Ø¨Ø¯Ø¡ Ø§Ù„ØªØ­Ù„ÙŠÙ„.",
+  },
+  "Vous pouvez aussi coller directement la liste INCI ci-dessous.": {
+    en: "You can also paste the INCI list directly below.",
+    ar: "ÙŠÙ…ÙƒÙ†Ùƒ Ø£ÙŠØ¶Ù‹Ø§ Ù„ØµÙ‚ Ù‚Ø§Ø¦Ù…Ø© INCI Ù…Ø¨Ø§Ø´Ø±Ø© Ø£Ø¯Ù†Ø§Ù‡.",
+  },
+  "Liste complÃ¨te": {
+    en: "Full list",
+    ar: "Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„ÙƒØ§Ù…Ù„Ø©",
+  },
+  "Liste partielle": {
+    en: "Partial list",
+    ar: "Ù‚Ø§Ø¦Ù…Ø© Ø¬Ø²Ø¦ÙŠØ©",
+  },
+  "IngrÃ©dients confirmÃ©s": {
+    en: "Confirmed ingredients",
+    ar: "Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ù…Ø¤ÙƒØ¯Ø©",
+  },
+  "Collez les ingrÃ©dients ici, sÃ©parÃ©s par des virgules.": {
+    en: "Paste the ingredients here, separated by commas.",
+    ar: "Ø§Ù„ØµÙ‚ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ù‡Ù†Ø§ØŒ Ù…ÙØµÙˆÙ„Ø© Ø¨ÙÙˆØ§ØµÙ„.",
+  },
+  "PrÃ©fÃ©rence chargÃ©e depuis vos paramÃ¨tres.": {
+    en: "Preference loaded from your settings.",
+    ar: "ØªÙ… ØªØ­Ù…ÙŠÙ„ Ø§Ù„ØªÙØ¶ÙŠÙ„ Ù…Ù† Ø¥Ø¹Ø¯Ø§Ø¯Ø§ØªÙƒ.",
+  },
+  "Choisissez une fois, vous pourrez la changer dans ParamÃ¨tres.": {
+    en: "Choose once, you can change it later in Settings.",
+    ar: "Ø§Ø®ØªØ§Ø±ÙŠ Ù…Ø±Ø© ÙˆØ§Ø­Ø¯Ø©ØŒ ÙˆÙŠÙ…ÙƒÙ†Ùƒ ØªØºÙŠÙŠØ±Ù‡Ø§ Ù„Ø§Ø­Ù‚Ù‹Ø§ Ù…Ù† Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª.",
+  },
+  "Analyse en cours...": {
+    en: "Analysis in progress...",
+    ar: "Ø¬Ø§Ø±Ù Ø§Ù„ØªØ­Ù„ÙŠÙ„...",
+  },
+  "Analyser dans la conversation": {
+    en: "Analyze in the conversation",
+    ar: "Ø­Ù„Ù„ÙŠ Ø¯Ø§Ø®Ù„ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø©",
+  },
+  "Le rÃ©sultat sera enregistrÃ© et ouvert comme une discussion.": {
+    en: "The result will be saved and opened as a conversation.",
+    ar: "Ø³ÙŠÙØ­ÙØ¸ Ø§Ù„Ù†Ø§ØªØ¬ ÙˆÙŠÙÙØªØ­ ÙƒÙ…Ø­Ø§Ø¯Ø«Ø©.",
+  },
+  "Nouveau produit": {
+    en: "New product",
+    ar: "Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯",
+  },
+  "Produits recommandÃ©s": {
+    en: "Recommended products",
+    ar: "Ù…Ù†ØªØ¬Ø§Øª Ù…ÙˆØµÙ‰ Ø¨Ù‡Ø§",
+  },
+  "DÃ©couvrez des soins classÃ©s par type de peau, objectif et ingrÃ©dients clÃ©s.": {
     en: "Discover skincare sorted by skin type, goal, and key ingredients.",
-    ar: "اكتشفي منتجات عناية مصنفة حسب نوع البشرة والهدف والمكونات الرئيسية.",
+    ar: "Ø§ÙƒØªØ´ÙÙŠ Ù…Ù†ØªØ¬Ø§Øª Ø¹Ù†Ø§ÙŠØ© Ù…ØµÙ†ÙØ© Ø­Ø³Ø¨ Ù†ÙˆØ¹ Ø§Ù„Ø¨Ø´Ø±Ø© ÙˆØ§Ù„Ù‡Ø¯Ù ÙˆØ§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©.",
   },
   "Votre profil peau": {
     en: "Your skin profile",
-    ar: "ملف بشرتك",
+    ar: "Ù…Ù„Ù Ø¨Ø´Ø±ØªÙƒ",
   },
   "Optionnel. Personnalisez vos recommandations ou affichez tout le catalogue.": {
     en: "Optional. Personalize your recommendations or view the full catalog.",
-    ar: "اختياري. خصصي توصياتك أو اعرضي الكتالوج الكامل.",
+    ar: "Ø§Ø®ØªÙŠØ§Ø±ÙŠ. Ø®ØµØµÙŠ ØªÙˆØµÙŠØ§ØªÙƒ Ø£Ùˆ Ø§Ø¹Ø±Ø¶ÙŠ Ø§Ù„ÙƒØªØ§Ù„ÙˆØ¬ Ø§Ù„ÙƒØ§Ù…Ù„.",
   },
   "Voir tous les produits": {
     en: "View all products",
-    ar: "عرض كل المنتجات",
+    ar: "Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
   },
   "Personnaliser": {
     en: "Personalize",
-    ar: "تخصيص",
+    ar: "ØªØ®ØµÙŠØµ",
   },
-  "Réinitialiser": {
+  "RÃ©initialiser": {
     en: "Reset",
-    ar: "إعادة ضبط",
+    ar: "Ø¥Ø¹Ø§Ø¯Ø© Ø¶Ø¨Ø·",
   },
   "Type de peau": {
     en: "Skin type",
-    ar: "نوع البشرة",
+    ar: "Ù†ÙˆØ¹ Ø§Ù„Ø¨Ø´Ø±Ø©",
   },
   "Objectif": {
     en: "Goal",
-    ar: "الهدف",
+    ar: "Ø§Ù„Ù‡Ø¯Ù",
   },
-  "Sensibilité": {
+  "SensibilitÃ©": {
     en: "Sensitivity",
-    ar: "الحساسية",
+    ar: "Ø§Ù„Ø­Ø³Ø§Ø³ÙŠØ©",
   },
   "Produit": {
     en: "Product",
-    ar: "المنتج",
+    ar: "Ø§Ù„Ù…Ù†ØªØ¬",
   },
-  "À éviter": {
+  "Ã€ Ã©viter": {
     en: "Avoid",
-    ar: "يجب تجنبه",
+    ar: "ÙŠØ¬Ø¨ ØªØ¬Ù†Ø¨Ù‡",
   },
   "Tous": {
     en: "All",
-    ar: "الكل",
+    ar: "Ø§Ù„ÙƒÙ„",
   },
   "Tous les objectifs": {
     en: "All goals",
-    ar: "كل الأهداف",
+    ar: "ÙƒÙ„ Ø§Ù„Ø£Ù‡Ø¯Ø§Ù",
   },
   "Je ne sais pas": {
     en: "I don't know",
-    ar: "لا أعرف",
+    ar: "Ù„Ø§ Ø£Ø¹Ø±Ù",
   },
   "Tous les produits": {
     en: "All products",
-    ar: "كل المنتجات",
+    ar: "ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
   },
   "Aucun": {
     en: "None",
-    ar: "لا شيء",
+    ar: "Ù„Ø§ Ø´ÙŠØ¡",
   },
-  "Peau sèche": {
+  "Peau sÃ¨che": {
     en: "Dry skin",
-    ar: "بشرة جافة",
+    ar: "Ø¨Ø´Ø±Ø© Ø¬Ø§ÙØ©",
   },
   "Peau grasse": {
     en: "Oily skin",
-    ar: "بشرة دهنية",
+    ar: "Ø¨Ø´Ø±Ø© Ø¯Ù‡Ù†ÙŠØ©",
   },
   "Peau sensible": {
     en: "Sensitive skin",
-    ar: "بشرة حساسة",
+    ar: "Ø¨Ø´Ø±Ø© Ø­Ø³Ø§Ø³Ø©",
   },
-  "Acné & imperfections": {
+  "AcnÃ© & imperfections": {
     en: "Acne & blemishes",
-    ar: "حبوب وشوائب",
+    ar: "Ø­Ø¨ÙˆØ¨ ÙˆØ´ÙˆØ§Ø¦Ø¨",
   },
   "Rougeurs": {
     en: "Redness",
-    ar: "احمرار",
+    ar: "Ø§Ø­Ù…Ø±Ø§Ø±",
   },
-  "Barrière abîmée": {
+  "BarriÃ¨re abÃ®mÃ©e": {
     en: "Damaged barrier",
-    ar: "حاجز البشرة متضرر",
+    ar: "Ø­Ø§Ø¬Ø² Ø§Ù„Ø¨Ø´Ø±Ø© Ù…ØªØ¶Ø±Ø±",
   },
-  "Éclat & taches": {
+  "Ã‰clat & taches": {
     en: "Glow & spots",
-    ar: "إشراقة وبقع",
+    ar: "Ø¥Ø´Ø±Ø§Ù‚Ø© ÙˆØ¨Ù‚Ø¹",
   },
-  "produits trouvés": {
+  "produits trouvÃ©s": {
     en: "products found",
-    ar: "منتجا تم العثور عليها",
+    ar: "Ù…Ù†ØªØ¬Ø§ ØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„ÙŠÙ‡Ø§",
   },
   "Chargement des produits...": {
     en: "Loading products...",
-    ar: "جاري تحميل المنتجات...",
+    ar: "Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª...",
   },
-  "Profil ignoré. Tous les produits actifs sont affichés.": {
+  "Profil ignorÃ©. Tous les produits actifs sont affichÃ©s.": {
     en: "Profile ignored. All active products are shown.",
-    ar: "تم تجاهل الملف. يتم عرض كل المنتجات النشطة.",
+    ar: "ØªÙ… ØªØ¬Ø§Ù‡Ù„ Ø§Ù„Ù…Ù„Ù. ÙŠØªÙ… Ø¹Ø±Ø¶ ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ù†Ø´Ø·Ø©.",
   },
-  "Classés selon votre profil peau.": {
+  "ClassÃ©s selon votre profil peau.": {
     en: "Sorted according to your skin profile.",
-    ar: "مرتبة حسب ملف بشرتك.",
+    ar: "Ù…Ø±ØªØ¨Ø© Ø­Ø³Ø¨ Ù…Ù„Ù Ø¨Ø´Ø±ØªÙƒ.",
   },
-  "Ajoutez votre profil pour obtenir un classement plus précis.": {
+  "Ajoutez votre profil pour obtenir un classement plus prÃ©cis.": {
     en: "Add your profile to get a more precise ranking.",
-    ar: "أضيفي ملفك للحصول على ترتيب أدق.",
+    ar: "Ø£Ø¶ÙŠÙÙŠ Ù…Ù„ÙÙƒ Ù„Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ ØªØ±ØªÙŠØ¨ Ø£Ø¯Ù‚.",
   },
   "Rechercher une marque...": {
     en: "Search for a brand...",
-    ar: "ابحثي عن علامة تجارية...",
+    ar: "Ø§Ø¨Ø­Ø«ÙŠ Ø¹Ù† Ø¹Ù„Ø§Ù…Ø© ØªØ¬Ø§Ø±ÙŠØ©...",
   },
-  "Aucun produit trouvé": {
+  "Aucun produit trouvÃ©": {
     en: "No products found",
-    ar: "لم يتم العثور على منتجات",
+    ar: "Ù„Ù… ÙŠØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„Ù‰ Ù…Ù†ØªØ¬Ø§Øª",
   },
   "Personnaliser vos recommandations": {
     en: "Personalize your recommendations",
-    ar: "خصّصي توصياتك",
+    ar: "Ø®ØµÙ‘ØµÙŠ ØªÙˆØµÙŠØ§ØªÙƒ",
   },
-  "Aucun ingrédient à surveiller renseigné.": {
+  "Aucun ingrÃ©dient Ã  surveiller renseignÃ©.": {
     en: "No watchout ingredient provided.",
-    ar: "لا توجد مكونات يجب مراقبتها.",
+    ar: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…ÙƒÙˆÙ†Ø§Øª ÙŠØ¬Ø¨ Ù…Ø±Ø§Ù‚Ø¨ØªÙ‡Ø§.",
   },
-  "Bibliothèque d'ingrédients": {
+  "BibliothÃ¨que d'ingrÃ©dients": {
     en: "Ingredient library",
-    ar: "مكتبة المكونات",
+    ar: "Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
-  "Découvrez, apprenez et créez des routines plus intelligentes avec des ingrédients adaptés à votre peau.": {
+  "DÃ©couvrez, apprenez et crÃ©ez des routines plus intelligentes avec des ingrÃ©dients adaptÃ©s Ã  votre peau.": {
     en: "Discover, learn, and create smarter routines with ingredients adapted to your skin.",
-    ar: "اكتشفي وتعلمي وابني روتينات أذكى بمكونات مناسبة لبشرتك.",
+    ar: "Ø§ÙƒØªØ´ÙÙŠ ÙˆØªØ¹Ù„Ù…ÙŠ ÙˆØ§Ø¨Ù†ÙŠ Ø±ÙˆØªÙŠÙ†Ø§Øª Ø£Ø°ÙƒÙ‰ Ø¨Ù…ÙƒÙˆÙ†Ø§Øª Ù…Ù†Ø§Ø³Ø¨Ø© Ù„Ø¨Ø´Ø±ØªÙƒ.",
   },
   "Trier par": {
     en: "Sort by",
-    ar: "ترتيب حسب",
+    ar: "ØªØ±ØªÙŠØ¨ Ø­Ø³Ø¨",
   },
   "Pertinence": {
     en: "Relevance",
-    ar: "الملاءمة",
+    ar: "Ø§Ù„Ù…Ù„Ø§Ø¡Ù…Ø©",
   },
-  "Tous les ingrédients": {
+  "Tous les ingrÃ©dients": {
     en: "All ingredients",
-    ar: "كل المكونات",
+    ar: "ÙƒÙ„ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
   "Hydratation": {
     en: "Hydration",
-    ar: "ترطيب",
+    ar: "ØªØ±Ø·ÙŠØ¨",
   },
-  "Acné": {
+  "AcnÃ©": {
     en: "Acne",
-    ar: "حبوب",
+    ar: "Ø­Ø¨ÙˆØ¨",
   },
-  "Éclat": {
+  "Ã‰clat": {
     en: "Glow",
-    ar: "إشراقة",
+    ar: "Ø¥Ø´Ø±Ø§Ù‚Ø©",
   },
-  "Réparation de la barrière": {
+  "RÃ©paration de la barriÃ¨re": {
     en: "Barrier repair",
-    ar: "إصلاح الحاجز",
+    ar: "Ø¥ØµÙ„Ø§Ø­ Ø§Ù„Ø­Ø§Ø¬Ø²",
   },
-  "ingrédients trouvés": {
+  "ingrÃ©dients trouvÃ©s": {
     en: "ingredients found",
-    ar: "مكونا تم العثور عليها",
+    ar: "Ù…ÙƒÙˆÙ†Ø§ ØªÙ… Ø§Ù„Ø¹Ø«ÙˆØ± Ø¹Ù„ÙŠÙ‡Ø§",
   },
-  "Bienfaits clés": {
+  "Bienfaits clÃ©s": {
     en: "Key benefits",
-    ar: "الفوائد الرئيسية",
+    ar: "Ø§Ù„ÙÙˆØ§Ø¦Ø¯ Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©",
   },
-  "Idéal pour": {
+  "IdÃ©al pour": {
     en: "Ideal for",
-    ar: "مثالي لـ",
+    ar: "Ù…Ø«Ø§Ù„ÙŠ Ù„Ù€",
   },
   "Conseils d'utilisation": {
     en: "Usage tips",
-    ar: "نصائح الاستخدام",
+    ar: "Ù†ØµØ§Ø¦Ø­ Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù…",
   },
-  "Compatibilité": {
+  "CompatibilitÃ©": {
     en: "Compatibility",
-    ar: "التوافق",
+    ar: "Ø§Ù„ØªÙˆØ§ÙÙ‚",
   },
   "Excellent": {
     en: "Excellent",
-    ar: "ممتاز",
+    ar: "Ù…Ù…ØªØ§Ø²",
   },
-  "Éviter": {
+  "Ã‰viter": {
     en: "Avoid",
-    ar: "تجنبي",
+    ar: "ØªØ¬Ù†Ø¨ÙŠ",
   },
   "Azelaic Acid": {
     en: "Azelaic Acid",
-    ar: "حمض الأزيليك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ø£Ø²ÙŠÙ„ÙŠÙƒ",
   },
   "Lactic Acid": {
     en: "Lactic Acid",
-    ar: "حمض اللاكتيك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ù„Ø§ÙƒØªÙŠÙƒ",
   },
   "Glycolic Acid": {
     en: "Glycolic Acid",
-    ar: "حمض الجليكوليك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ø¬Ù„ÙŠÙƒÙˆÙ„ÙŠÙƒ",
   },
   "Benzoyl Peroxide": {
     en: "Benzoyl Peroxide",
-    ar: "بنزويل بيروكسيد",
+    ar: "Ø¨Ù†Ø²ÙˆÙŠÙ„ Ø¨ÙŠØ±ÙˆÙƒØ³ÙŠØ¯",
   },
   "Gluconolactone": {
     en: "Gluconolactone",
-    ar: "غلوكونولاكتون",
+    ar: "ØºÙ„ÙˆÙƒÙˆÙ†ÙˆÙ„Ø§ÙƒØªÙˆÙ†",
   },
   "Mandelic Acid": {
     en: "Mandelic Acid",
-    ar: "حمض الماندليك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ù…Ø§Ù†Ø¯Ù„ÙŠÙƒ",
   },
-  "Actif multi-action pour l’éclat": {
+  "Actif multi-action pour lâ€™Ã©clat": {
     en: "Multi-action active for glow",
-    ar: "مكون متعدد التأثير للإشراقة",
+    ar: "Ù…ÙƒÙˆÙ† Ù…ØªØ¹Ø¯Ø¯ Ø§Ù„ØªØ£Ø«ÙŠØ± Ù„Ù„Ø¥Ø´Ø±Ø§Ù‚Ø©",
   },
-  "Aide à améliorer le teint irrégulier, les imperfections et les rougeurs visibles.": {
+  "Aide Ã  amÃ©liorer le teint irrÃ©gulier, les imperfections et les rougeurs visibles.": {
     en: "Helps improve uneven tone, blemishes, and visible redness.",
-    ar: "يساعد على تحسين تفاوت اللون والشوائب والاحمرار الظاهر.",
+    ar: "ÙŠØ³Ø§Ø¹Ø¯ Ø¹Ù„Ù‰ ØªØ­Ø³ÙŠÙ† ØªÙØ§ÙˆØª Ø§Ù„Ù„ÙˆÙ† ÙˆØ§Ù„Ø´ÙˆØ§Ø¦Ø¨ ÙˆØ§Ù„Ø§Ø­Ù…Ø±Ø§Ø± Ø§Ù„Ø¸Ø§Ù‡Ø±.",
   },
-  "Exfolie la surface de la peau et aide à raviver le teint terne.": {
+  "Exfolie la surface de la peau et aide Ã  raviver le teint terne.": {
     en: "Exfoliates the skin surface and helps revive dull tone.",
-    ar: "يقشر سطح البشرة ويساعد على إنعاش اللون الباهت.",
+    ar: "ÙŠÙ‚Ø´Ø± Ø³Ø·Ø­ Ø§Ù„Ø¨Ø´Ø±Ø© ÙˆÙŠØ³Ø§Ø¹Ø¯ Ø¹Ù„Ù‰ Ø¥Ù†Ø¹Ø§Ø´ Ø§Ù„Ù„ÙˆÙ† Ø§Ù„Ø¨Ø§Ù‡Øª.",
   },
-  "Un exfoliant doux qui aide la peau à paraître plus lisse et plus hydratée.": {
+  "Un exfoliant doux qui aide la peau Ã  paraÃ®tre plus lisse et plus hydratÃ©e.": {
     en: "A gentle exfoliant that helps skin look smoother and more hydrated.",
-    ar: "مقشر لطيف يساعد البشرة على أن تبدو أنعم وأكثر ترطيبا.",
+    ar: "Ù…Ù‚Ø´Ø± Ù„Ø·ÙŠÙ ÙŠØ³Ø§Ø¹Ø¯ Ø§Ù„Ø¨Ø´Ø±Ø© Ø¹Ù„Ù‰ Ø£Ù† ØªØ¨Ø¯Ùˆ Ø£Ù†Ø¹Ù… ÙˆØ£ÙƒØ«Ø± ØªØ±Ø·ÙŠØ¨Ø§.",
   },
-  "Exfolie tout en aidant la peau à paraître plus lisse et plus hydratée": {
+  "Exfolie tout en aidant la peau Ã  paraÃ®tre plus lisse et plus hydratÃ©e": {
     en: "Exfoliates while helping skin look smoother and more hydrated",
-    ar: "يقشر البشرة ويساعدها على أن تبدو أنعم وأكثر ترطيبا",
+    ar: "ÙŠÙ‚Ø´Ø± Ø§Ù„Ø¨Ø´Ø±Ø© ÙˆÙŠØ³Ø§Ø¹Ø¯Ù‡Ø§ Ø¹Ù„Ù‰ Ø£Ù† ØªØ¨Ø¯Ùˆ Ø£Ù†Ø¹Ù… ÙˆØ£ÙƒØ«Ø± ØªØ±Ø·ÙŠØ¨Ø§",
   },
-  "Un exfoliant doux souvent utilisé pour la texture, le teint et les peaux sujettes aux imperfections.": {
+  "Un exfoliant doux souvent utilisÃ© pour la texture, le teint et les peaux sujettes aux imperfections.": {
     en: "A gentle exfoliant often used for texture, tone, and blemish-prone skin.",
-    ar: "مقشر لطيف يستخدم غالبا للملمس واللون والبشرة المعرضة للشوائب.",
+    ar: "Ù…Ù‚Ø´Ø± Ù„Ø·ÙŠÙ ÙŠØ³ØªØ®Ø¯Ù… ØºØ§Ù„Ø¨Ø§ Ù„Ù„Ù…Ù„Ù…Ø³ ÙˆØ§Ù„Ù„ÙˆÙ† ÙˆØ§Ù„Ø¨Ø´Ø±Ø© Ø§Ù„Ù…Ø¹Ø±Ø¶Ø© Ù„Ù„Ø´ÙˆØ§Ø¦Ø¨.",
   },
-  "Aide à lutter contre les bactéries liées à l’acné et à réduire les imperfections.": {
+  "Aide Ã  lutter contre les bactÃ©ries liÃ©es Ã  lâ€™acnÃ© et Ã  rÃ©duire les imperfections.": {
     en: "Helps fight acne-related bacteria and reduce blemishes.",
-    ar: "يساعد على محاربة البكتيريا المرتبطة بالحبوب وتقليل الشوائب.",
+    ar: "ÙŠØ³Ø§Ø¹Ø¯ Ø¹Ù„Ù‰ Ù…Ø­Ø§Ø±Ø¨Ø© Ø§Ù„Ø¨ÙƒØªÙŠØ±ÙŠØ§ Ø§Ù„Ù…Ø±ØªØ¨Ø·Ø© Ø¨Ø§Ù„Ø­Ø¨ÙˆØ¨ ÙˆØªÙ‚Ù„ÙŠÙ„ Ø§Ù„Ø´ÙˆØ§Ø¦Ø¨.",
   },
   "Texture": {
     en: "Texture",
-    ar: "الملمس",
+    ar: "Ø§Ù„Ù…Ù„Ù…Ø³",
   },
   "Exfoliation": {
     en: "Exfoliation",
-    ar: "تقشير",
+    ar: "ØªÙ‚Ø´ÙŠØ±",
   },
   "Doux": {
     en: "Gentle",
-    ar: "لطيف",
+    ar: "Ù„Ø·ÙŠÙ",
   },
   "Taches": {
     en: "Spots",
-    ar: "بقع",
+    ar: "Ø¨Ù‚Ø¹",
   },
   "Taches pigmentaires": {
     en: "Dark spots",
-    ar: "تصبغات",
+    ar: "ØªØµØ¨ØºØ§Øª",
   },
   "Anti-imperfections": {
     en: "Anti-blemish",
-    ar: "مضاد للشوائب",
+    ar: "Ù…Ø¶Ø§Ø¯ Ù„Ù„Ø´ÙˆØ§Ø¦Ø¨",
   },
-  "Contrôle du sébum": {
+  "ContrÃ´le du sÃ©bum": {
     en: "Sebum control",
-    ar: "تنظيم الإفرازات الدهنية",
+    ar: "ØªÙ†Ø¸ÙŠÙ… Ø§Ù„Ø¥ÙØ±Ø§Ø²Ø§Øª Ø§Ù„Ø¯Ù‡Ù†ÙŠØ©",
   },
   "Imperfections": {
     en: "Blemishes",
-    ar: "شوائب",
+    ar: "Ø´ÙˆØ§Ø¦Ø¨",
   },
   "Teint": {
     en: "Tone",
-    ar: "لون البشرة",
+    ar: "Ù„ÙˆÙ† Ø§Ù„Ø¨Ø´Ø±Ø©",
   },
-  "Aide à utiliser avec prudence": {
+  "Aide Ã  utiliser avec prudence": {
     en: "Use with caution",
-    ar: "يستخدم بحذر",
+    ar: "ÙŠØ³ØªØ®Ø¯Ù… Ø¨Ø­Ø°Ø±",
   },
-  "À utiliser avec prudence": {
+  "Ã€ utiliser avec prudence": {
     en: "Use with caution",
-    ar: "يستخدم بحذر",
+    ar: "ÙŠØ³ØªØ®Ø¯Ù… Ø¨Ø­Ø°Ø±",
   },
   "Nouvelle discussion": {
     en: "New discussion",
-    ar: "محادثة جديدة",
+    ar: "Ù…Ø­Ø§Ø¯Ø«Ø© Ø¬Ø¯ÙŠØ¯Ø©",
   },
   "Menu": {
     en: "Menu",
-    ar: "القائمة",
+    ar: "Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©",
   },
   "Discussions": {
     en: "Discussions",
-    ar: "المحادثات",
+    ar: "Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø§Øª",
   },
-  "Récent": {
+  "RÃ©cent": {
     en: "Recent",
-    ar: "الأحدث",
+    ar: "Ø§Ù„Ø£Ø­Ø¯Ø«",
   },
   "Chargement des discussions...": {
     en: "Loading discussions...",
-    ar: "جاري تحميل المحادثات...",
+    ar: "Ø¬Ø§Ø±ÙŠ ØªØ­Ù…ÙŠÙ„ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø§Øª...",
   },
-  "Discussion enregistrée": {
+  "Discussion enregistrÃ©e": {
     en: "Saved discussion",
-    ar: "محادثة محفوظة",
+    ar: "Ù…Ø­Ø§Ø¯Ø«Ø© Ù…Ø­ÙÙˆØ¸Ø©",
   },
-  "Discussion enregistrée dans votre historique SkinorAI.": {
+  "Discussion enregistrÃ©e dans votre historique SkinorAI.": {
     en: "Discussion saved in your SkinorAI history.",
-    ar: "تم حفظ المحادثة في سجل SkinorAI الخاص بك.",
+    ar: "ØªÙ… Ø­ÙØ¸ Ø§Ù„Ù…Ø­Ø§Ø¯Ø«Ø© ÙÙŠ Ø³Ø¬Ù„ SkinorAI Ø§Ù„Ø®Ø§Øµ Ø¨Ùƒ.",
   },
   "Aucune discussion pour le moment. Lancez un scan pour alimenter cette liste.": {
     en: "No discussions yet. Start a scan to fill this list.",
-    ar: "لا توجد محادثات بعد. ابدئي فحصًا لإضافة عناصر إلى هذه القائمة.",
+    ar: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø­Ø§Ø¯Ø«Ø§Øª Ø¨Ø¹Ø¯. Ø§Ø¨Ø¯Ø¦ÙŠ ÙØ­ØµÙ‹Ø§ Ù„Ø¥Ø¶Ø§ÙØ© Ø¹Ù†Ø§ØµØ± Ø¥Ù„Ù‰ Ù‡Ø°Ù‡ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø©.",
   },
-  "Débloquer Premium": {
+  "DÃ©bloquer Premium": {
     en: "Unlock Premium",
-    ar: "فتح بريميوم",
+    ar: "ÙØªØ­ Ø¨Ø±ÙŠÙ…ÙŠÙˆÙ…",
   },
-  "Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.": {
+  "Obtenez des analyses plus poussÃ©es, des scans illimitÃ©s et des routines personnalisÃ©es.": {
     en: "Get deeper analyses, unlimited scans, and personalized routines.",
-    ar: "احصلي على تحليلات أعمق، وفحوصات غير محدودة، وروتينات مخصصة.",
+    ar: "Ø§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ ØªØ­Ù„ÙŠÙ„Ø§Øª Ø£Ø¹Ù…Ù‚ØŒ ÙˆÙØ­ÙˆØµØ§Øª ØºÙŠØ± Ù…Ø­Ø¯ÙˆØ¯Ø©ØŒ ÙˆØ±ÙˆØªÙŠÙ†Ø§Øª Ù…Ø®ØµØµØ©.",
   },
-  "Passer à Premium": {
+  "Passer Ã  Premium": {
     en: "Go Premium",
-    ar: "الترقية إلى بريميوم",
+    ar: "Ø§Ù„ØªØ±Ù‚ÙŠØ© Ø¥Ù„Ù‰ Ø¨Ø±ÙŠÙ…ÙŠÙˆÙ…",
   },
   "Clair": {
     en: "Light",
-    ar: "فاتح",
+    ar: "ÙØ§ØªØ­",
   },
   "Sombre": {
     en: "Dark",
-    ar: "داكن",
+    ar: "Ø¯Ø§ÙƒÙ†",
   },
-  "Paramètres": {
+  "ParamÃ¨tres": {
     en: "Settings",
-    ar: "الإعدادات",
+    ar: "Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª",
   },
-  "Rechercher niacinamide, rétinol, acide salicylique...": {
+  "Rechercher niacinamide, rÃ©tinol, acide salicylique...": {
     en: "Search niacinamide, retinol, salicylic acid...",
-    ar: "ابحثي عن النياسيناميد، الريتينول، حمض الساليسيليك...",
+    ar: "Ø§Ø¨Ø­Ø«ÙŠ Ø¹Ù† Ø§Ù„Ù†ÙŠØ§Ø³ÙŠÙ†Ø§Ù…ÙŠØ¯ØŒ Ø§Ù„Ø±ÙŠØªÙŠÙ†ÙˆÙ„ØŒ Ø­Ù…Ø¶ Ø§Ù„Ø³Ø§Ù„ÙŠØ³ÙŠÙ„ÙŠÙƒ...",
   },
-  "Voir l'analyse détaillée de l'ingrédient": {
+  "Voir l'analyse dÃ©taillÃ©e de l'ingrÃ©dient": {
     en: "View the detailed ingredient analysis",
-    ar: "عرض التحليل المفصل للمكوّن",
+    ar: "Ø¹Ø±Ø¶ Ø§Ù„ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…ÙØµÙ„ Ù„Ù„Ù…ÙƒÙˆÙ‘Ù†",
   },
-  "Adapté aux débutants": {
+  "AdaptÃ© aux dÃ©butants": {
     en: "Beginner-friendly",
-    ar: "مناسب للمبتدئين",
+    ar: "Ù…Ù†Ø§Ø³Ø¨ Ù„Ù„Ù…Ø¨ØªØ¯Ø¦ÙŠÙ†",
   },
-  "Peau à tendance acnéique": {
+  "Peau Ã  tendance acnÃ©ique": {
     en: "Acne-prone skin",
-    ar: "بشرة معرّضة لحب الشباب",
+    ar: "Ø¨Ø´Ø±Ø© Ù…Ø¹Ø±Ù‘Ø¶Ø© Ù„Ø­Ø¨ Ø§Ù„Ø´Ø¨Ø§Ø¨",
   },
-  "Teint irrégulier": {
+  "Teint irrÃ©gulier": {
     en: "Uneven tone",
-    ar: "لون بشرة غير موحد",
+    ar: "Ù„ÙˆÙ† Ø¨Ø´Ø±Ø© ØºÙŠØ± Ù…ÙˆØ­Ø¯",
   },
   "Peau sujette aux rougeurs": {
     en: "Redness-prone skin",
-    ar: "بشرة معرّضة للاحمرار",
+    ar: "Ø¨Ø´Ø±Ø© Ù…Ø¹Ø±Ù‘Ø¶Ø© Ù„Ù„Ø§Ø­Ù…Ø±Ø§Ø±",
   },
   "Teint terne": {
     en: "Dull tone",
-    ar: "لون باهت",
+    ar: "Ù„ÙˆÙ† Ø¨Ø§Ù‡Øª",
   },
-  "Peau texturée": {
+  "Peau texturÃ©e": {
     en: "Textured skin",
-    ar: "بشرة ذات ملمس غير متجانس",
+    ar: "Ø¨Ø´Ø±Ø© Ø°Ø§Øª Ù…Ù„Ù…Ø³ ØºÙŠØ± Ù…ØªØ¬Ø§Ù†Ø³",
   },
-  "Exfoliation débutant": {
+  "Exfoliation dÃ©butant": {
     en: "Beginner exfoliation",
-    ar: "تقشير للمبتدئين",
+    ar: "ØªÙ‚Ø´ÙŠØ± Ù„Ù„Ù…Ø¨ØªØ¯Ø¦ÙŠÙ†",
   },
   "Niacinamide": {
     en: "Niacinamide",
-    ar: "نياسيناميد",
+    ar: "Ù†ÙŠØ§Ø³ÙŠÙ†Ø§Ù…ÙŠØ¯",
   },
   "Acide hyaluronique": {
     en: "Hyaluronic acid",
-    ar: "حمض الهيالورونيك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ù‡ÙŠØ§Ù„ÙˆØ±ÙˆÙ†ÙŠÙƒ",
   },
-  "Céramides": {
+  "CÃ©ramides": {
     en: "Ceramides",
-    ar: "سيراميدات",
+    ar: "Ø³ÙŠØ±Ø§Ù…ÙŠØ¯Ø§Øª",
   },
-  "Rétinol": {
+  "RÃ©tinol": {
     en: "Retinol",
-    ar: "ريتينول",
+    ar: "Ø±ÙŠØªÙŠÙ†ÙˆÙ„",
   },
   "Acides AHA/BHA": {
     en: "AHA/BHA acids",
-    ar: "أحماض AHA/BHA",
+    ar: "Ø£Ø­Ù…Ø§Ø¶ AHA/BHA",
   },
   "Acide salicylique": {
     en: "Salicylic acid",
-    ar: "حمض الساليسيليك",
+    ar: "Ø­Ù…Ø¶ Ø§Ù„Ø³Ø§Ù„ÙŠØ³ÙŠÙ„ÙŠÙƒ",
   },
   "Vitamine C": {
     en: "Vitamin C",
-    ar: "فيتامين C",
+    ar: "ÙÙŠØªØ§Ù…ÙŠÙ† C",
   },
   "Acides BHA": {
     en: "BHA acids",
-    ar: "أحماض BHA",
+    ar: "Ø£Ø­Ù…Ø§Ø¶ BHA",
   },
-  "Barrière": {
+  "BarriÃ¨re": {
     en: "Barrier",
-    ar: "حاجز البشرة",
+    ar: "Ø­Ø§Ø¬Ø² Ø§Ù„Ø¨Ø´Ø±Ø©",
   },
   "Apaisant": {
     en: "Soothing",
-    ar: "مهدئ",
+    ar: "Ù…Ù‡Ø¯Ø¦",
   },
   "Confort": {
     en: "Comfort",
-    ar: "راحة",
+    ar: "Ø±Ø§Ø­Ø©",
   },
-  "Réparation": {
+  "RÃ©paration": {
     en: "Repair",
-    ar: "إصلاح",
+    ar: "Ø¥ØµÙ„Ø§Ø­",
   },
   "Pores": {
     en: "Pores",
-    ar: "مسام",
+    ar: "Ù…Ø³Ø§Ù…",
   },
   "Adoucissant": {
     en: "Softening",
-    ar: "ملطف",
+    ar: "Ù…Ù„Ø·Ù",
   },
   "Page": {
     en: "Page",
-    ar: "صفحة",
+    ar: "ØµÙØ­Ø©",
   },
-  "Précédent": {
+  "PrÃ©cÃ©dent": {
     en: "Previous",
-    ar: "السابق",
+    ar: "Ø§Ù„Ø³Ø§Ø¨Ù‚",
   },
   "Suivant": {
     en: "Next",
-    ar: "التالي",
+    ar: "Ø§Ù„ØªØ§Ù„ÙŠ",
   },
   "Essayez un autre objectif ou affichez tous les produits.": {
     en: "Try another goal or view all products.",
-    ar: "جرّبي هدفًا آخر أو اعرضي كل المنتجات.",
+    ar: "Ø¬Ø±Ù‘Ø¨ÙŠ Ù‡Ø¯ÙÙ‹Ø§ Ø¢Ø®Ø± Ø£Ùˆ Ø§Ø¹Ø±Ø¶ÙŠ ÙƒÙ„ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª.",
   },
-  "Répondez à quelques questions pour classer les produits selon votre peau. Vous pouvez ignorer cette étape et voir tout le catalogue.": {
+  "RÃ©pondez Ã  quelques questions pour classer les produits selon votre peau. Vous pouvez ignorer cette Ã©tape et voir tout le catalogue.": {
     en: "Answer a few questions to rank products for your skin. You can skip this step and view the full catalog.",
-    ar: "أجيبي عن بعض الأسئلة لترتيب المنتجات حسب بشرتك. يمكنك تخطي هذه الخطوة ورؤية الكتالوج كاملًا.",
+    ar: "Ø£Ø¬ÙŠØ¨ÙŠ Ø¹Ù† Ø¨Ø¹Ø¶ Ø§Ù„Ø£Ø³Ø¦Ù„Ø© Ù„ØªØ±ØªÙŠØ¨ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø­Ø³Ø¨ Ø¨Ø´Ø±ØªÙƒ. ÙŠÙ…ÙƒÙ†Ùƒ ØªØ®Ø·ÙŠ Ù‡Ø°Ù‡ Ø§Ù„Ø®Ø·ÙˆØ© ÙˆØ±Ø¤ÙŠØ© Ø§Ù„ÙƒØªØ§Ù„ÙˆØ¬ ÙƒØ§Ù…Ù„Ù‹Ø§.",
   },
   "Objectif principal": {
     en: "Main goal",
-    ar: "الهدف الرئيسي",
+    ar: "Ø§Ù„Ù‡Ø¯Ù Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠ",
   },
-  "Produit recherché": {
+  "Produit recherchÃ©": {
     en: "Product you need",
-    ar: "المنتج المطلوب",
+    ar: "Ø§Ù„Ù…Ù†ØªØ¬ Ø§Ù„Ù…Ø·Ù„ÙˆØ¨",
   },
-  "Ingrédients à éviter": {
+  "IngrÃ©dients Ã  Ã©viter": {
     en: "Ingredients to avoid",
-    ar: "مكونات يجب تجنبها",
+    ar: "Ù…ÙƒÙˆÙ†Ø§Øª ÙŠØ¬Ø¨ ØªØ¬Ù†Ø¨Ù‡Ø§",
   },
   "Parfum, alcohol denat, huiles essentielles...": {
     en: "Fragrance, alcohol denat, essential oils...",
-    ar: "عطر، كحول دينات، زيوت عطرية...",
+    ar: "Ø¹Ø·Ø±ØŒ ÙƒØ­ÙˆÙ„ Ø¯ÙŠÙ†Ø§ØªØŒ Ø²ÙŠÙˆØª Ø¹Ø·Ø±ÙŠØ©...",
   },
-  "Ignorer pour l’instant": {
+  "Ignorer pour lâ€™instant": {
     en: "Skip for now",
-    ar: "تخطي الآن",
+    ar: "ØªØ®Ø·ÙŠ Ø§Ù„Ø¢Ù†",
   },
   "Voir mes recommandations": {
     en: "View my recommendations",
-    ar: "عرض توصياتي",
+    ar: "Ø¹Ø±Ø¶ ØªÙˆØµÙŠØ§ØªÙŠ",
   },
-  "À surveiller": {
+  "Ã€ surveiller": {
     en: "Watch out",
-    ar: "يجب الانتباه",
+    ar: "ÙŠØ¬Ø¨ Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡",
   },
-  "Sans parfum irritant détecté": {
+  "Sans parfum irritant dÃ©tectÃ©": {
     en: "No irritating fragrance detected",
-    ar: "لم يتم اكتشاف عطر مهيّج",
+    ar: "Ù„Ù… ÙŠØªÙ… Ø§ÙƒØªØ´Ø§Ù Ø¹Ø·Ø± Ù…Ù‡ÙŠÙ‘Ø¬",
   },
   "Score SkinorAI": {
     en: "SkinorAI score",
-    ar: "تقييم SkinorAI",
+    ar: "ØªÙ‚ÙŠÙŠÙ… SkinorAI",
   },
   "Score global": {
     en: "Overall score",
-    ar: "التقييم العام",
+    ar: "Ø§Ù„ØªÙ‚ÙŠÙŠÙ… Ø§Ù„Ø¹Ø§Ù…",
   },
   "Global": {
     en: "Overall",
-    ar: "عام",
+    ar: "Ø¹Ø§Ù…",
   },
   "Voir": {
     en: "View",
-    ar: "عرض",
+    ar: "Ø¹Ø±Ø¶",
   },
-  "Produit skincare classé selon ses ingrédients, objectifs et types de peau.": {
+  "Produit skincare classÃ© selon ses ingrÃ©dients, objectifs et types de peau.": {
     en: "Skincare product classified by ingredients, goals, and skin types.",
-    ar: "منتج عناية مصنّف حسب المكونات والأهداف وأنواع البشرة.",
+    ar: "Ù…Ù†ØªØ¬ Ø¹Ù†Ø§ÙŠØ© Ù…ØµÙ†Ù‘Ù Ø­Ø³Ø¨ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª ÙˆØ§Ù„Ø£Ù‡Ø¯Ø§Ù ÙˆØ£Ù†ÙˆØ§Ø¹ Ø§Ù„Ø¨Ø´Ø±Ø©.",
   },
   "Type": {
     en: "Type",
-    ar: "النوع",
+    ar: "Ø§Ù„Ù†ÙˆØ¹",
   },
-  "Adapté pour": {
+  "AdaptÃ© pour": {
     en: "Suitable for",
-    ar: "مناسب لـ",
+    ar: "Ù…Ù†Ø§Ø³Ø¨ Ù„Ù€",
   },
-  "Ingrédients clés": {
+  "IngrÃ©dients clÃ©s": {
     en: "Key ingredients",
-    ar: "المكونات الرئيسية",
+    ar: "Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ø±Ø¦ÙŠØ³ÙŠØ©",
   },
   "Pourquoi ce produit": {
     en: "Why this product",
-    ar: "لماذا هذا المنتج",
+    ar: "Ù„Ù…Ø§Ø°Ø§ Ù‡Ø°Ø§ Ø§Ù„Ù…Ù†ØªØ¬",
   },
-  "Non renseigné": {
+  "Non renseignÃ©": {
     en: "Not specified",
-    ar: "غير مذكور",
+    ar: "ØºÙŠØ± Ù…Ø°ÙƒÙˆØ±",
   },
-  "Très bon": {
+  "TrÃ¨s bon": {
     en: "Very good",
-    ar: "جيد جدًا",
+    ar: "Ø¬ÙŠØ¯ Ø¬Ø¯Ù‹Ø§",
   },
   "Bon match": {
     en: "Good match",
-    ar: "توافق جيد",
+    ar: "ØªÙˆØ§ÙÙ‚ Ø¬ÙŠØ¯",
   },
-  "À vérifier": {
+  "Ã€ vÃ©rifier": {
     en: "Check",
-    ar: "يحتاج مراجعة",
+    ar: "ÙŠØ­ØªØ§Ø¬ Ù…Ø±Ø§Ø¬Ø¹Ø©",
   },
   "Peau mixte": {
     en: "Combination skin",
-    ar: "بشرة مختلطة",
+    ar: "Ø¨Ø´Ø±Ø© Ù…Ø®ØªÙ„Ø·Ø©",
   },
   "Peau normale": {
     en: "Normal skin",
-    ar: "بشرة عادية",
+    ar: "Ø¨Ø´Ø±Ø© Ø¹Ø§Ø¯ÙŠØ©",
   },
-  "Anti-âge": {
+  "Anti-Ã¢ge": {
     en: "Anti-aging",
-    ar: "مقاومة علامات التقدم",
+    ar: "Ù…Ù‚Ø§ÙˆÙ…Ø© Ø¹Ù„Ø§Ù…Ø§Øª Ø§Ù„ØªÙ‚Ø¯Ù…",
   },
-  "Excès de sébum": {
+  "ExcÃ¨s de sÃ©bum": {
     en: "Excess sebum",
-    ar: "إفرازات دهنية زائدة",
+    ar: "Ø¥ÙØ±Ø§Ø²Ø§Øª Ø¯Ù‡Ù†ÙŠØ© Ø²Ø§Ø¦Ø¯Ø©",
   },
   "Faible": {
     en: "Low",
-    ar: "منخفضة",
+    ar: "Ù…Ù†Ø®ÙØ¶Ø©",
   },
   "Moyenne": {
     en: "Medium",
-    ar: "متوسطة",
+    ar: "Ù…ØªÙˆØ³Ø·Ø©",
   },
-  "Élevée": {
+  "Ã‰levÃ©e": {
     en: "High",
-    ar: "مرتفعة",
+    ar: "Ù…Ø±ØªÙØ¹Ø©",
   },
   "Nettoyants": {
     en: "Cleansers",
-    ar: "غسولات",
+    ar: "ØºØ³ÙˆÙ„Ø§Øª",
   },
-  "Sérums": {
+  "SÃ©rums": {
     en: "Serums",
-    ar: "سيرومات",
+    ar: "Ø³ÙŠØ±ÙˆÙ…Ø§Øª",
   },
-  "Crèmes": {
+  "CrÃ¨mes": {
     en: "Creams",
-    ar: "كريمات",
+    ar: "ÙƒØ±ÙŠÙ…Ø§Øª",
   },
   "Exfoliants": {
     en: "Exfoliants",
-    ar: "مقشرات",
+    ar: "Ù…Ù‚Ø´Ø±Ø§Øª",
   },
   "Traitements": {
     en: "Treatments",
-    ar: "علاجات",
+    ar: "Ø¹Ù„Ø§Ø¬Ø§Øª",
   },
-  "Bibliothèque d’ingrédients": {
+  "BibliothÃ¨que dâ€™ingrÃ©dients": {
     en: "Ingredient library",
-    ar: "مكتبة المكونات",
+    ar: "Ù…ÙƒØªØ¨Ø© Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
-  "Prête à mieux comprendre votre peau ?": {
+  "PrÃªte Ã  mieux comprendre votre peau ?": {
     en: "Ready to understand your skin better?",
-    ar: "هل أنتِ مستعدة لفهم بشرتك بشكل أفضل؟",
+    ar: "Ù‡Ù„ Ø£Ù†ØªÙ Ù…Ø³ØªØ¹Ø¯Ø© Ù„ÙÙ‡Ù… Ø¨Ø´Ø±ØªÙƒ Ø¨Ø´ÙƒÙ„ Ø£ÙØ¶Ù„ØŸ",
   },
   "Scanner un produit": {
     en: "Scan a product",
-    ar: "فحص منتج",
+    ar: "ÙØ­Øµ Ù…Ù†ØªØ¬",
   },
-  "Scannez un produit pour analyser ses ingrédients et sa formule.": {
+  "Scannez un produit pour analyser ses ingrÃ©dients et sa formule.": {
     en: "Scan a product to analyze its ingredients and formula.",
-    ar: "افحصي منتجًا لتحليل مكوناته وتركيبته.",
+    ar: "Ø§ÙØ­ØµÙŠ Ù…Ù†ØªØ¬Ù‹Ø§ Ù„ØªØ­Ù„ÙŠÙ„ Ù…ÙƒÙˆÙ†Ø§ØªÙ‡ ÙˆØªØ±ÙƒÙŠØ¨ØªÙ‡.",
   },
   "Scan du visage": {
     en: "Face scan",
-    ar: "فحص الوجه",
+    ar: "ÙØ­Øµ Ø§Ù„ÙˆØ¬Ù‡",
   },
   "PREMIUM": {
     en: "PREMIUM",
-    ar: "بريميوم",
+    ar: "Ø¨Ø±ÙŠÙ…ÙŠÙˆÙ…",
   },
-  "Décodez les ingrédients et comprenez ce qui convient à votre peau.": {
+  "DÃ©codez les ingrÃ©dients et comprenez ce qui convient Ã  votre peau.": {
     en: "Decode ingredients and understand what suits your skin.",
-    ar: "افهمي المكونات وما يناسب بشرتك.",
+    ar: "Ø§ÙÙ‡Ù…ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª ÙˆÙ…Ø§ ÙŠÙ†Ø§Ø³Ø¨ Ø¨Ø´Ø±ØªÙƒ.",
   },
-  "Analyseur d’ingrédients": {
+  "Analyseur dâ€™ingrÃ©dients": {
     en: "Ingredient analyzer",
-    ar: "محلل المكونات",
+    ar: "Ù…Ø­Ù„Ù„ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
-  "Décodez les ingrédients, vérifiez les points à surveiller et comprenez ce qui convient à votre peau.": {
+  "DÃ©codez les ingrÃ©dients, vÃ©rifiez les points Ã  surveiller et comprenez ce qui convient Ã  votre peau.": {
     en: "Decode ingredients, check watchouts, and understand what suits your skin.",
-    ar: "حللي المكونات، وتحققي مما يجب الانتباه له، وافهمي ما يناسب بشرتك.",
+    ar: "Ø­Ù„Ù„ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§ØªØŒ ÙˆØªØ­Ù‚Ù‚ÙŠ Ù…Ù…Ø§ ÙŠØ¬Ø¨ Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡ Ù„Ù‡ØŒ ÙˆØ§ÙÙ‡Ù…ÙŠ Ù…Ø§ ÙŠÙ†Ø§Ø³Ø¨ Ø¨Ø´Ø±ØªÙƒ.",
   },
   "Coach routine": {
     en: "Routine coach",
-    ar: "مدرب الروتين",
+    ar: "Ù…Ø¯Ø±Ø¨ Ø§Ù„Ø±ÙˆØªÙŠÙ†",
   },
-  "Recevez des routines personnalisées selon vos objectifs peau.": {
+  "Recevez des routines personnalisÃ©es selon vos objectifs peau.": {
     en: "Get personalized routines based on your skin goals.",
-    ar: "احصلي على روتينات مخصصة حسب أهداف بشرتك.",
+    ar: "Ø§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ Ø±ÙˆØªÙŠÙ†Ø§Øª Ù…Ø®ØµØµØ© Ø­Ø³Ø¨ Ø£Ù‡Ø¯Ø§Ù Ø¨Ø´Ø±ØªÙƒ.",
   },
   "Scanner produit": {
     en: "Product scanner",
-    ar: "ماسح المنتجات",
+    ar: "Ù…Ø§Ø³Ø­ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
   },
   "Scannez un produit et analysez sa formule.": {
     en: "Scan a product and analyze its formula.",
-    ar: "افحصي منتجًا وحللي تركيبته.",
+    ar: "Ø§ÙØ­ØµÙŠ Ù…Ù†ØªØ¬Ù‹Ø§ ÙˆØ­Ù„Ù„ÙŠ ØªØ±ÙƒÙŠØ¨ØªÙ‡.",
   },
   "Insights peau": {
     en: "Skin insights",
-    ar: "رؤى البشرة",
+    ar: "Ø±Ø¤Ù‰ Ø§Ù„Ø¨Ø´Ø±Ø©",
   },
-  "Suivez vos analyses et obtenez des insights plus précis sur votre peau.": {
+  "Suivez vos analyses et obtenez des insights plus prÃ©cis sur votre peau.": {
     en: "Track your analyses and get more precise insights about your skin.",
-    ar: "تابعي تحليلاتك واحصلي على رؤى أدق حول بشرتك.",
+    ar: "ØªØ§Ø¨Ø¹ÙŠ ØªØ­Ù„ÙŠÙ„Ø§ØªÙƒ ÙˆØ§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ Ø±Ø¤Ù‰ Ø£Ø¯Ù‚ Ø­ÙˆÙ„ Ø¨Ø´Ø±ØªÙƒ.",
   },
-  "Fonctionnalité SkinorAI": {
+  "FonctionnalitÃ© SkinorAI": {
     en: "SkinorAI feature",
-    ar: "ميزة SkinorAI",
+    ar: "Ù…ÙŠØ²Ø© SkinorAI",
   },
-  "Fermer la fenêtre": {
+  "Fermer la fenÃªtre": {
     en: "Close window",
-    ar: "إغلاق النافذة",
+    ar: "Ø¥ØºÙ„Ø§Ù‚ Ø§Ù„Ù†Ø§ÙØ°Ø©",
   },
-  "Illustration de l’analyse des ingrédients": {
+  "Illustration de lâ€™analyse des ingrÃ©dients": {
     en: "Ingredient analysis illustration",
-    ar: "رسم توضيحي لتحليل المكونات",
+    ar: "Ø±Ø³Ù… ØªÙˆØ¶ÙŠØ­ÙŠ Ù„ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
   "Illustration du coach routine": {
     en: "Routine coach illustration",
-    ar: "رسم توضيحي لمدرب الروتين",
+    ar: "Ø±Ø³Ù… ØªÙˆØ¶ÙŠØ­ÙŠ Ù„Ù…Ø¯Ø±Ø¨ Ø§Ù„Ø±ÙˆØªÙŠÙ†",
   },
   "Illustration du scanner produit": {
     en: "Product scanner illustration",
-    ar: "رسم توضيحي لماسح المنتجات",
+    ar: "Ø±Ø³Ù… ØªÙˆØ¶ÙŠØ­ÙŠ Ù„Ù…Ø§Ø³Ø­ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª",
   },
   "Illustration des insights peau": {
     en: "Skin insights illustration",
-    ar: "رسم توضيحي لرؤى البشرة",
+    ar: "Ø±Ø³Ù… ØªÙˆØ¶ÙŠØ­ÙŠ Ù„Ø±Ø¤Ù‰ Ø§Ù„Ø¨Ø´Ø±Ø©",
   },
-  "Collez ou scannez la liste d’ingrédients d’un produit de soin.": {
+  "Collez ou scannez la liste dâ€™ingrÃ©dients dâ€™un produit de soin.": {
     en: "Paste or scan a skincare product ingredient list.",
-    ar: "الصقي أو امسحي قائمة مكونات منتج العناية.",
+    ar: "Ø§Ù„ØµÙ‚ÙŠ Ø£Ùˆ Ø§Ù…Ø³Ø­ÙŠ Ù‚Ø§Ø¦Ù…Ø© Ù…ÙƒÙˆÙ†Ø§Øª Ù…Ù†ØªØ¬ Ø§Ù„Ø¹Ù†Ø§ÙŠØ©.",
   },
-  "Comprenez le rôle de chaque ingrédient.": {
+  "Comprenez le rÃ´le de chaque ingrÃ©dient.": {
     en: "Understand the role of each ingredient.",
-    ar: "افهمي دور كل مكوّن.",
+    ar: "Ø§ÙÙ‡Ù…ÙŠ Ø¯ÙˆØ± ÙƒÙ„ Ù…ÙƒÙˆÙ‘Ù†.",
   },
-  "Repérez les ingrédients pouvant irriter les peaux sensibles.": {
+  "RepÃ©rez les ingrÃ©dients pouvant irriter les peaux sensibles.": {
     en: "Spot ingredients that may irritate sensitive skin.",
-    ar: "اكتشفي المكونات التي قد تهيّج البشرة الحساسة.",
+    ar: "Ø§ÙƒØªØ´ÙÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„ØªÙŠ Ù‚Ø¯ ØªÙ‡ÙŠÙ‘Ø¬ Ø§Ù„Ø¨Ø´Ø±Ø© Ø§Ù„Ø­Ø³Ø§Ø³Ø©.",
   },
-  "Obtenez une explication claire, sans jargon INCI compliqué.": {
+  "Obtenez une explication claire, sans jargon INCI compliquÃ©.": {
     en: "Get a clear explanation without complicated INCI jargon.",
-    ar: "احصلي على شرح واضح بدون مصطلحات INCI معقدة.",
+    ar: "Ø§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ Ø´Ø±Ø­ ÙˆØ§Ø¶Ø­ Ø¨Ø¯ÙˆÙ† Ù…ØµØ·Ù„Ø­Ø§Øª INCI Ù…Ø¹Ù‚Ø¯Ø©.",
   },
-  "Analyser les ingrédients": {
+  "Analyser les ingrÃ©dients": {
     en: "Analyze ingredients",
-    ar: "تحليل المكونات",
+    ar: "ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª",
   },
   "Construisez une routine simple pour le matin ou le soir.": {
     en: "Build a simple morning or evening routine.",
-    ar: "ابني روتينًا بسيطًا للصباح أو المساء.",
+    ar: "Ø§Ø¨Ù†ÙŠ Ø±ÙˆØªÙŠÙ†Ù‹Ø§ Ø¨Ø³ÙŠØ·Ù‹Ø§ Ù„Ù„ØµØ¨Ø§Ø­ Ø£Ùˆ Ø§Ù„Ù…Ø³Ø§Ø¡.",
   },
   "Sachez quel produit appliquer en premier, ensuite et en dernier.": {
     en: "Know which product to apply first, next, and last.",
-    ar: "اعرفي أي منتج يُطبق أولًا ثم بعده ثم أخيرًا.",
+    ar: "Ø§Ø¹Ø±ÙÙŠ Ø£ÙŠ Ù…Ù†ØªØ¬ ÙŠÙØ·Ø¨Ù‚ Ø£ÙˆÙ„Ù‹Ø§ Ø«Ù… Ø¨Ø¹Ø¯Ù‡ Ø«Ù… Ø£Ø®ÙŠØ±Ù‹Ø§.",
   },
-  "Évitez de mélanger trop d’actifs puissants.": {
+  "Ã‰vitez de mÃ©langer trop dâ€™actifs puissants.": {
     en: "Avoid mixing too many strong actives.",
-    ar: "تجنبي خلط الكثير من المكونات النشطة القوية.",
+    ar: "ØªØ¬Ù†Ø¨ÙŠ Ø®Ù„Ø· Ø§Ù„ÙƒØ«ÙŠØ± Ù…Ù† Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„Ù†Ø´Ø·Ø© Ø§Ù„Ù‚ÙˆÙŠØ©.",
   },
-  "Recevez des rappels sur le SPF et la fréquence d’utilisation.": {
+  "Recevez des rappels sur le SPF et la frÃ©quence dâ€™utilisation.": {
     en: "Get reminders about SPF and usage frequency.",
-    ar: "احصلي على تذكيرات حول واقي الشمس وتكرار الاستخدام.",
+    ar: "Ø§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ ØªØ°ÙƒÙŠØ±Ø§Øª Ø­ÙˆÙ„ ÙˆØ§Ù‚ÙŠ Ø§Ù„Ø´Ù…Ø³ ÙˆØªÙƒØ±Ø§Ø± Ø§Ù„Ø§Ø³ØªØ®Ø¯Ø§Ù….",
   },
-  "Importez une photo claire de l’étiquette du produit.": {
+  "Importez une photo claire de lâ€™Ã©tiquette du produit.": {
     en: "Upload a clear photo of the product label.",
-    ar: "ارفعي صورة واضحة لملصق المنتج.",
+    ar: "Ø§Ø±ÙØ¹ÙŠ ØµÙˆØ±Ø© ÙˆØ§Ø¶Ø­Ø© Ù„Ù…Ù„ØµÙ‚ Ø§Ù„Ù…Ù†ØªØ¬.",
   },
-  "Extrayez automatiquement les ingrédients grâce à l’OCR.": {
+  "Extrayez automatiquement les ingrÃ©dients grÃ¢ce Ã  lâ€™OCR.": {
     en: "Automatically extract ingredients with OCR.",
-    ar: "استخرجي المكونات تلقائيًا عبر OCR.",
+    ar: "Ø§Ø³ØªØ®Ø±Ø¬ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§ Ø¹Ø¨Ø± OCR.",
   },
-  "Corrigez la liste détectée avant l’analyse.": {
+  "Corrigez la liste dÃ©tectÃ©e avant lâ€™analyse.": {
     en: "Correct the detected list before analysis.",
-    ar: "صححي القائمة المكتشفة قبل التحليل.",
+    ar: "ØµØ­Ø­ÙŠ Ø§Ù„Ù‚Ø§Ø¦Ù…Ø© Ø§Ù„Ù…ÙƒØªØ´ÙØ© Ù‚Ø¨Ù„ Ø§Ù„ØªØ­Ù„ÙŠÙ„.",
   },
-  "Recevez un score, un verdict, des points forts et des ingrédients à surveiller.": {
+  "Recevez un score, un verdict, des points forts et des ingrÃ©dients Ã  surveiller.": {
     en: "Get a score, verdict, strengths, and ingredients to watch.",
-    ar: "احصلي على تقييم وحكم ونقاط قوة ومكونات يجب الانتباه لها.",
+    ar: "Ø§Ø­ØµÙ„ÙŠ Ø¹Ù„Ù‰ ØªÙ‚ÙŠÙŠÙ… ÙˆØ­ÙƒÙ… ÙˆÙ†Ù‚Ø§Ø· Ù‚ÙˆØ© ÙˆÙ…ÙƒÙˆÙ†Ø§Øª ÙŠØ¬Ø¨ Ø§Ù„Ø§Ù†ØªØ¨Ø§Ù‡ Ù„Ù‡Ø§.",
   },
-  "Comprenez les tendances dans vos produits scannés.": {
+  "Comprenez les tendances dans vos produits scannÃ©s.": {
     en: "Understand trends in your scanned products.",
-    ar: "افهمي الاتجاهات في المنتجات التي فحصتها.",
+    ar: "Ø§ÙÙ‡Ù…ÙŠ Ø§Ù„Ø§ØªØ¬Ø§Ù‡Ø§Øª ÙÙŠ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„ØªÙŠ ÙØ­ØµØªÙ‡Ø§.",
   },
-  "Identifiez les ingrédients qui correspondent le plus souvent à vos objectifs peau.": {
+  "Identifiez les ingrÃ©dients qui correspondent le plus souvent Ã  vos objectifs peau.": {
     en: "Identify ingredients that most often match your skin goals.",
-    ar: "حددي المكونات التي تناسب أهداف بشرتك غالبًا.",
+    ar: "Ø­Ø¯Ø¯ÙŠ Ø§Ù„Ù…ÙƒÙˆÙ†Ø§Øª Ø§Ù„ØªÙŠ ØªÙ†Ø§Ø³Ø¨ Ø£Ù‡Ø¯Ø§Ù Ø¨Ø´Ø±ØªÙƒ ØºØ§Ù„Ø¨Ù‹Ø§.",
   },
-  "Repérez ce que votre peau semble mieux tolérer.": {
+  "RepÃ©rez ce que votre peau semble mieux tolÃ©rer.": {
     en: "Spot what your skin seems to tolerate best.",
-    ar: "اكتشفي ما يبدو أن بشرتك تتحمله بشكل أفضل.",
+    ar: "Ø§ÙƒØªØ´ÙÙŠ Ù…Ø§ ÙŠØ¨Ø¯Ùˆ Ø£Ù† Ø¨Ø´Ø±ØªÙƒ ØªØªØ­Ù…Ù„Ù‡ Ø¨Ø´ÙƒÙ„ Ø£ÙØ¶Ù„.",
   },
-  "Préparez des recommandations plus intelligentes avec le temps.": {
+  "PrÃ©parez des recommandations plus intelligentes avec le temps.": {
     en: "Build smarter recommendations over time.",
-    ar: "حضّري توصيات أذكى مع الوقت.",
+    ar: "Ø­Ø¶Ù‘Ø±ÙŠ ØªÙˆØµÙŠØ§Øª Ø£Ø°ÙƒÙ‰ Ù…Ø¹ Ø§Ù„ÙˆÙ‚Øª.",
   },
-  "Aperçu du scan du visage": {
+  "AperÃ§u du scan du visage": {
     en: "Face scan preview",
-    ar: "معاينة فحص الوجه",
+    ar: "Ù…Ø¹Ø§ÙŠÙ†Ø© ÙØ­Øµ Ø§Ù„ÙˆØ¬Ù‡",
   },
-  "Bientôt disponible": {
+  "BientÃ´t disponible": {
     en: "Coming soon",
-    ar: "قريبًا",
+    ar: "Ù‚Ø±ÙŠØ¨Ù‹Ø§",
   },
-  "Le scan du visage arrive bientôt": {
+  "Le scan du visage arrive bientÃ´t": {
     en: "Face scan is coming soon",
-    ar: "فحص الوجه قادم قريبًا",
+    ar: "ÙØ­Øµ Ø§Ù„ÙˆØ¬Ù‡ Ù‚Ø§Ø¯Ù… Ù‚Ø±ÙŠØ¨Ù‹Ø§",
   },
-  "Bientôt, SkinorAI aidera les utilisateurs à scanner leur visage, comprendre les préoccupations visibles de la peau et recevoir des conseils plus personnalisés.": {
+  "BientÃ´t, SkinorAI aidera les utilisateurs Ã  scanner leur visage, comprendre les prÃ©occupations visibles de la peau et recevoir des conseils plus personnalisÃ©s.": {
     en: "Soon, SkinorAI will help users scan their face, understand visible skin concerns, and receive more personalized advice.",
-    ar: "قريبًا، سيساعد SkinorAI المستخدمين على فحص الوجه وفهم مشاكل البشرة الظاهرة والحصول على نصائح أكثر تخصيصًا.",
+    ar: "Ù‚Ø±ÙŠØ¨Ù‹Ø§ØŒ Ø³ÙŠØ³Ø§Ø¹Ø¯ SkinorAI Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø¹Ù„Ù‰ ÙØ­Øµ Ø§Ù„ÙˆØ¬Ù‡ ÙˆÙÙ‡Ù… Ù…Ø´Ø§ÙƒÙ„ Ø§Ù„Ø¨Ø´Ø±Ø© Ø§Ù„Ø¸Ø§Ù‡Ø±Ø© ÙˆØ§Ù„Ø­ØµÙˆÙ„ Ø¹Ù„Ù‰ Ù†ØµØ§Ø¦Ø­ Ø£ÙƒØ«Ø± ØªØ®ØµÙŠØµÙ‹Ø§.",
   },
-  "Analyser les préoccupations visibles grâce à un scan guidé du visage.": {
+  "Analyser les prÃ©occupations visibles grÃ¢ce Ã  un scan guidÃ© du visage.": {
     en: "Analyze visible concerns with a guided face scan.",
-    ar: "تحليل المشاكل الظاهرة عبر فحص موجه للوجه.",
+    ar: "ØªØ­Ù„ÙŠÙ„ Ø§Ù„Ù…Ø´Ø§ÙƒÙ„ Ø§Ù„Ø¸Ø§Ù‡Ø±Ø© Ø¹Ø¨Ø± ÙØ­Øµ Ù…ÙˆØ¬Ù‡ Ù„Ù„ÙˆØ¬Ù‡.",
   },
-  "Améliorer les recommandations selon l’apparence de la peau et les objectifs.": {
+  "AmÃ©liorer les recommandations selon lâ€™apparence de la peau et les objectifs.": {
     en: "Improve recommendations based on skin appearance and goals.",
-    ar: "تحسين التوصيات حسب مظهر البشرة والأهداف.",
+    ar: "ØªØ­Ø³ÙŠÙ† Ø§Ù„ØªÙˆØµÙŠØ§Øª Ø­Ø³Ø¨ Ù…Ø¸Ù‡Ø± Ø§Ù„Ø¨Ø´Ø±Ø© ÙˆØ§Ù„Ø£Ù‡Ø¯Ø§Ù.",
   },
-  "Combiner les scans produits avec des insights peau personnalisés.": {
+  "Combiner les scans produits avec des insights peau personnalisÃ©s.": {
     en: "Combine product scans with personalized skin insights.",
-    ar: "دمج فحوصات المنتجات مع رؤى مخصصة للبشرة.",
+    ar: "Ø¯Ù…Ø¬ ÙØ­ÙˆØµØ§Øª Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª Ù…Ø¹ Ø±Ø¤Ù‰ Ù…Ø®ØµØµØ© Ù„Ù„Ø¨Ø´Ø±Ø©.",
   },
   "Compris": {
     en: "Got it",
-    ar: "فهمت",
+    ar: "ÙÙ‡Ù…Øª",
   },
 };
 
@@ -1125,6 +1301,77 @@ const ignoredTags = new Set([
   "PRE",
 ]);
 
+const WINDOWS_1252_BYTE_OVERRIDES = new Map<number, number>([
+  [0x20ac, 0x80], [0x201a, 0x82], [0x0192, 0x83], [0x201e, 0x84], [0x2026, 0x85], [0x2020, 0x86], [0x2021, 0x87],
+  [0x02c6, 0x88], [0x2030, 0x89], [0x0160, 0x8a], [0x2039, 0x8b], [0x0152, 0x8c], [0x017d, 0x8e],
+  [0x2018, 0x91], [0x2019, 0x92], [0x201c, 0x93], [0x201d, 0x94], [0x2022, 0x95], [0x2013, 0x96], [0x2014, 0x97],
+  [0x02dc, 0x98], [0x2122, 0x99], [0x0161, 0x9a], [0x203a, 0x9b], [0x0153, 0x9c], [0x017e, 0x9e], [0x0178, 0x9f],
+]);
+
+function countEncodingArtifacts(value: string) {
+  return (value.match(/[\u00c3\u00c2\u00e2\u00d8\u00d9\u00c5\u00d0\ufffd]/g) ?? []).length + (value.match(/\u00ef\u00bf\u00bd/g) ?? []).length * 3;
+}
+
+function countReplacementCharacters(value: string) {
+  return (value.match(/[\ufffd]/g) ?? []).length + (value.match(/\u00ef\u00bf\u00bd/g) ?? []).length;
+}
+
+function encodeWindows1252(value: string) {
+  const bytes: number[] = [];
+
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0;
+    if (code <= 0xff) {
+      bytes.push(code);
+    } else if (WINDOWS_1252_BYTE_OVERRIDES.has(code)) {
+      bytes.push(WINDOWS_1252_BYTE_OVERRIDES.get(code)!);
+    } else {
+      return null;
+    }
+  }
+
+  return Uint8Array.from(bytes);
+}
+
+function normalizeEncodedText(value: string) {
+  const knownRepairs: Record<string, string> = {
+    "Pr\u00ef\u00bf\u00bdte \u00ef\u00bf\u00bd mieux comprendre votre peau ?": "Pr\u00eate \u00e0 mieux comprendre votre peau ?",
+  };
+
+  let normalized = knownRepairs[value] ?? value;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (countEncodingArtifacts(normalized) === 0) {
+      break;
+    }
+
+    const bytes = encodeWindows1252(normalized);
+    if (!bytes) {
+      break;
+    }
+
+    const decoded = new TextDecoder("utf-8").decode(bytes);
+    if (
+      countEncodingArtifacts(decoded) < countEncodingArtifacts(normalized) &&
+      countReplacementCharacters(decoded) <= countReplacementCharacters(normalized)
+    ) {
+      normalized = decoded;
+    } else {
+      break;
+    }
+  }
+
+  return normalized;
+}
+
+function addPhraseTranslation(map: Map<string, string>, source: string, target: string) {
+  const normalizedSource = normalizeEncodedText(source.trim());
+  const normalizedTarget = normalizeEncodedText(target);
+
+  map.set(source.trim(), normalizedTarget);
+  map.set(normalizedSource, normalizedTarget);
+}
+
 function buildPhraseMap(locale: Locale) {
   const map = new Map<string, string>();
 
@@ -1134,30 +1381,31 @@ function buildPhraseMap(locale: Locale) {
       const target = dictionaries[locale][key];
 
       if (source && target) {
-        map.set(source.trim(), target);
+        addPhraseTranslation(map, source, target);
       }
     });
   });
 
   Object.entries(aliasKeys).forEach(([source, key]) => {
     const target = dictionaries[locale][key] ?? source;
-    map.set(source, target);
+    addPhraseTranslation(map, source, target);
   });
 
   Object.entries(phraseTranslations).forEach(([source, translations]) => {
-    map.set(source, translations[locale] ?? source);
+    addPhraseTranslation(map, source, translations[locale] ?? source);
   });
 
   return map;
 }
 
 function translateTextValue(value: string, phraseMap: Map<string, string>) {
-  const trimmed = value.trim();
-  if (!trimmed) return value;
+  const normalizedValue = normalizeEncodedText(value);
+  const trimmed = normalizedValue.trim();
+  if (!trimmed) return normalizedValue;
 
   const translated = phraseMap.get(trimmed);
   if (translated && translated !== trimmed) {
-    return value.replace(trimmed, translated);
+    return normalizedValue.replace(trimmed, translated);
   }
 
   const translatedValue = Array.from(phraseMap.entries())
@@ -1168,9 +1416,9 @@ function translateTextValue(value: string, phraseMap: Map<string, string>) {
       }
 
       return message.replaceAll(source, target);
-    }, value);
+    }, normalizedValue);
 
-  return translatedValue;
+  return normalizeEncodedText(translatedValue);
 }
 
 export function translateStaticText(value: string, locale: Locale) {
@@ -1219,9 +1467,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const savedLocale = window.localStorage.getItem(STORAGE_KEY);
-    if (isLocale(savedLocale)) {
-      setLocaleState(savedLocale);
-    }
+    const timeoutId = window.setTimeout(() => {
+      if (isLocale(savedLocale)) setLocaleState(savedLocale);
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useEffect(() => {

@@ -8,9 +8,9 @@ import { I18nProvider } from "@/lib/i18n";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const manrope = Manrope({
-  variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
+  display: "swap",
 });
 
 export const metadata: Metadata = {

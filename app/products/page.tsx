@@ -242,6 +242,7 @@ export default function ProductsPage() {
   const [hasSkippedProfile, setHasSkippedProfile] = useState(false);
   const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [highlightedProductKey, setHighlightedProductKey] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryFilterId>("all");
 
   const pageRef = useRef<HTMLDivElement | null>(null);
@@ -253,23 +254,40 @@ export default function ProductsPage() {
   const paginationRef = useRef<HTMLDivElement | null>(null);
 
   const isPersonalized = useMemo(() => !isDefaultProfile(appliedForm), [appliedForm]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const requestedSearch = params.get("search");
+    const requestedProduct = params.get("product");
+
+    if (requestedSearch) setSearch(requestedSearch);
+    if (requestedProduct) setHighlightedProductKey(requestedProduct);
+  }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const isProductDeepLink = params.has("product");
     const storedProfile = readStoredProfile();
     const skippedProfile = window.localStorage.getItem(SKIN_PROFILE_SKIPPED_KEY) === "true";
 
-    if (storedProfile) {
-      setForm(storedProfile);
-      setAppliedForm(storedProfile);
-      setHasSkippedProfile(false);
-      return;
-    }
+    const timeoutId = window.setTimeout(() => {
+      if (isProductDeepLink) {
+        setHasSkippedProfile(true);
+        setIsProfileDialogOpen(false);
+        return;
+      }
 
-    setHasSkippedProfile(skippedProfile);
+      if (storedProfile) {
+        setForm(storedProfile);
+        setAppliedForm(storedProfile);
+        setHasSkippedProfile(false);
+        return;
+      }
 
-    if (!skippedProfile) {
-      setIsProfileDialogOpen(true);
-    }
+      setHasSkippedProfile(skippedProfile);
+      if (!skippedProfile) setIsProfileDialogOpen(true);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   useLayoutEffect(() => {
@@ -398,6 +416,18 @@ export default function ProductsPage() {
 
     return () => controller.abort();
   }, [activeCategory, appliedForm, isPersonalized, page, search]);
+  useEffect(() => {
+    if (!highlightedProductKey || !response?.items.length) return;
+
+    const normalizedKey = highlightedProductKey.toLowerCase();
+    const match = response.items.find((product) =>
+      product.slug.toLowerCase() === normalizedKey ||
+      product.id.toLowerCase() === normalizedKey ||
+      product.name.toLowerCase() === normalizedKey,
+    );
+
+    if (match) setSelectedProduct(match);
+  }, [highlightedProductKey, response]);
 
   useEffect(() => {
     if (isLoading || !gridRef.current) return;

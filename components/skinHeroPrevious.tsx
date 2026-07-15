@@ -190,7 +190,7 @@ export default function SkinHero() {
               </span>
               <span
                 data-animate="title-line"
-                className="block font-serif italic font-normal text-[#9a74ff]"
+                className="block italic font-normal text-[#9a74ff]"
               >
                 Vos Produits.
               </span>
@@ -199,7 +199,7 @@ export default function SkinHero() {
               </span>
               <span data-animate="title-line" className="block">
                 avec{" "}
-                <span className="font-serif italic font-normal text-[#9a74ff]">
+                <span className="italic font-normal text-[#9a74ff]">
                   l IA.
                 </span>
               </span>

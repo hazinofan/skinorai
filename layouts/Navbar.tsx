@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { formatMessage, useI18n } from "@/lib/i18n";
 
 const navItems = [
@@ -146,6 +147,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="hidden lg:block">
+            <LanguageSwitcher compact />
+          </div>
+
           <button
             type="button"
             onClick={() => setIsMobileNavOpen((current) => !current)}
@@ -243,6 +248,10 @@ export default function Navbar() {
                 <ArrowRight className="h-4 w-4 text-[#8b5cf6]" />
               </Link>
             ))}
+          </div>
+
+          <div className="mt-3 flex justify-center rounded-[22px] border border-[#efebe7] bg-white px-3 py-3">
+            <LanguageSwitcher />
           </div>
         </div>
       </nav>

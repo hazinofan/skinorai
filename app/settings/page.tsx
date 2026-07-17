@@ -6,9 +6,9 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Check, CircleHelp, FlaskConical, LoaderCircle, LogOut, Moon, PanelLeft, Plus, ShieldCheck, Sparkles, Sun, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { API_BASE_URL, getStoredAuthToken, useAuth, type AuthUser } from "@/components/AuthProvider";
+import { useTheme } from "@/lib/theme";
 import { getSkinGoalOption, normalizeSkinGoalId, SKIN_GOAL_STORAGE_KEY, skinGoalOptions, type SkinGoalId } from "@/lib/skinGoals";
 
-type ThemeMode = 'light' | 'dark';
 type PlanStatus = 'free' | 'pro';
 
 type ScanHistoryItem = {
@@ -54,7 +54,6 @@ type Palette = {
   input: string;
 };
 
-const THEME_STORAGE_KEY = 'skinorai_chat_theme';
 const CHAT_TITLE_STORAGE_KEY = 'skinorai_chat_titles';
 const PROFILE_READ_ENDPOINT = '/api/auth/me';
 const PROFILE_UPDATE_ENDPOINT = '/api/auth/me';
@@ -179,11 +178,7 @@ function buildUserFromProfile(profile: ProfileResponse, currentUser: AuthUser | 
 export default function SettingsPage() {
   const router = useRouter();
   const { isReady, token, user, updateUser, logout } = useAuth();
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    if (typeof window === 'undefined') return 'light';
-    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-    return storedTheme === 'dark' ? 'dark' : 'light';
-  });
+  const { theme, setTheme, isDarkTheme } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
@@ -213,7 +208,6 @@ export default function SettingsPage() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isSavingPassword, setIsSavingPassword] = useState(false);
   const [isSavingGoal, setIsSavingGoal] = useState(false);
-  const isDarkTheme = theme === 'dark';
   const palette = useMemo(() => buildPalette(isDarkTheme), [isDarkTheme]);
   const planStatus: PlanStatus = user?.planStatus === 'pro' ? 'pro' : 'free';
   const freeScanLimit = user?.freeScanLimit ?? 3;
@@ -229,8 +223,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (isReady && !token) router.replace('/login');
   }, [isReady, router, token]);
-
-  useEffect(() => { window.localStorage.setItem(THEME_STORAGE_KEY, theme); }, [theme]);
 
 
   useEffect(() => {

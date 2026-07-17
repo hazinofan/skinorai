@@ -29,6 +29,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useRouter } from "next/navigation";
 import { translateStaticText, useI18n } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme";
 
 type Category = "all" | "hydration" | "acne" | "brightening" | "barrier" | "sensitive" | "oily";
 type CompatibiliteState = "great" | "caution" | "avoid";
@@ -1298,7 +1299,7 @@ function compatTeint(state: CompatibiliteState) {
 
 export default function IngredientLibraryPage() {
   const { locale } = useI18n();
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { theme, setTheme } = useTheme();
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [selectedId, setSelectedId] = useState(ingredients[0].id);
@@ -1318,19 +1319,11 @@ export default function IngredientLibraryPage() {
 
   useEffect(() => {
     document.body.dataset.navbarHidden = "true";
-    const storedTheme = window.localStorage.getItem("skinorai_chat_theme");
-    const timeoutId = window.setTimeout(() => {
-      if (storedTheme === "light" || storedTheme === "dark") setTheme(storedTheme);
-    }, 0);
+
     return () => {
-      window.clearTimeout(timeoutId);
       delete document.body.dataset.navbarHidden;
     };
   }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("skinorai_chat_theme", theme);
-  }, [theme]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);

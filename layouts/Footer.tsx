@@ -104,13 +104,6 @@ export default function Footer() {
                 </Link>
               ))}
             </nav>
-
-            <div className="mt-5">
-              <span className="inline-flex items-center gap-2 rounded-full border border-[#dfd0e7] bg-white/80 px-3 py-1.5 text-[11px] font-medium text-[#786680] shadow-sm">
-                <Sparkles className="h-3.5 w-3.5 text-[#a06ed1]" />
-                {t("footer.ai")}
-              </span>
-            </div>
           </div>
         </div>
 

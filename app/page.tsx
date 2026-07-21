@@ -3,6 +3,7 @@ import ProductScanningSection from "@/components/ProductScanningSection";
 import ProductLibrarySection from "@/components/ProductLibrarySection"; 
 import { SkinorAITestimonialsSection } from "@/components/Testimonials";
 import SkinHero from "@/components/skinHero";
+import VideoSection from "@/components/VideoSection";
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <SkinHero />
       <HowItWorks />
       <ProductScanningSection />
+      <VideoSection />
       <ProductLibrarySection />
       <SkinorAITestimonialsSection />
     </main>

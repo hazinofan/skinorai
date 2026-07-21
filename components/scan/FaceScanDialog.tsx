@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   AlertTriangle,
@@ -98,13 +98,13 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 
 const concernLabels: Record<FaceObservation["observations"][number]["concern"], string> = {
   visible_shine: "Brillance visible",
-  apparent_dryness: "SÃ©cheresse apparente",
+  apparent_dryness: "Sécheresse apparente",
   visible_flaking: "Desquamation visible",
   visible_redness: "Rougeurs visibles",
   visible_blemishes: "Imperfections visibles",
-  uneven_looking_texture: "Texture visuellement irrÃ©guliÃ¨re",
+  uneven_looking_texture: "Texture visuellement irrégulière",
   visible_pores: "Pores visibles",
-  dark_looking_spots: "Taches d'apparence foncÃ©e",
+  dark_looking_spots: "Taches d'apparence foncée",
   under_eye_darkness: "Cernes visibles",
 };
 
@@ -114,7 +114,7 @@ const areaLabels: Record<FaceObservation["observations"][number]["area"], string
   cheeks: "Joues",
   chin: "Menton",
   under_eyes: "Contour des yeux",
-  general: "Vue gÃ©nÃ©rale",
+  general: "Vue générale",
 };
 
 
@@ -124,7 +124,7 @@ function shortText(value?: string, maxLength = 150) {
   return `${cleaned.slice(0, maxLength).trim()}...`;
 }
 async function readApiError(response: Response) {
-  let message = `La requÃªte a Ã©chouÃ© (${response.status}).`;
+  let message = `La requête a échoué (${response.status}).`;
   let reason = "";
   try {
     const body = (await response.json()) as {
@@ -257,6 +257,9 @@ export default function FaceScanDialog({
       }
       const data = (await response.json()) as FaceScanResponse;
       setResult(data);
+      if (data.usable && data.guidance && data.faceScanId) {
+        onContinueDiscussion(data.faceScanId);
+      }
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : tr("Analyse indisponible pour le moment."));
     } finally {
@@ -328,7 +331,7 @@ export default function FaceScanDialog({
         },
       ]);
     } catch (sendError) {
-      setError(sendError instanceof Error ? sendError.message : tr("Message impossible Ã  envoyer."));
+      setError(sendError instanceof Error ? sendError.message : tr("Message impossible à envoyer."));
     } finally {
       setIsChatSending(false);
     }
@@ -365,7 +368,7 @@ export default function FaceScanDialog({
                 <h2 className="truncate text-lg font-black sm:text-xl">{tr("Analyse visage")}</h2>
                 <span className="rounded-full bg-[#ce98fb]/20 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-[#b975ef]">Pro</span>
               </div>
-              <p className={`mt-0.5 text-xs sm:text-sm ${muted}`}>{tr("Observations cosmÃ©tiques prudentes, sans diagnostic")}</p>
+              <p className={`mt-0.5 text-xs sm:text-sm ${muted}`}>{tr("Observations cosmétiques prudentes, sans diagnostic")}</p>
             </div>
           </div>
           <button type="button" onClick={onClose} className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border transition hover:scale-[1.03] ${softPanel}`} aria-label={tr("Fermer")}>
@@ -378,9 +381,9 @@ export default function FaceScanDialog({
             <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
               <section>
                 <div className="mb-5">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#a764dc]">{tr("Photos guidÃ©es")}</p>
-                  <h3 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{tr("Montrez votre peau dans une lumiÃ¨re naturelle")}</h3>
-                  <p className={`mt-2 max-w-2xl text-sm leading-6 ${muted}`}>{tr("Une photo de face est obligatoire. Les profils gauche et droit sont facultatifs, mais peuvent amÃ©liorer la couverture visuelle.")}</p>
+                  <p className="text-xs font-black uppercase tracking-[0.2em] text-[#a764dc]">{tr("Photos guidées")}</p>
+                  <h3 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">{tr("Montrez votre peau dans une lumière naturelle")}</h3>
+                  <p className={`mt-2 max-w-2xl text-sm leading-6 ${muted}`}>{tr("Une photo de face est obligatoire. Les profils gauche et droit sont facultatifs, mais peuvent améliorer la couverture visuelle.")}</p>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -436,18 +439,18 @@ export default function FaceScanDialog({
                 <div className={`rounded-[24px] border p-5 ${softPanel}`}>
                   <div className="flex items-center gap-2 text-sm font-black"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> {tr("Pour une photo exploitable")}</div>
                   <ul className={`mt-4 space-y-3 text-sm leading-5 ${muted}`}>
-                    {["LumiÃ¨re naturelle face Ã  vous, sans contre-jour.", "Visage net, entiÃ¨rement visible et centrÃ©.", "Retirez les filtres et, si possible, le maquillage couvrant.", "Expression neutre, camÃ©ra Ã  hauteur des yeux.", "JPEG, PNG ou WebP, maximum 8 Mo par photo."].map((instruction) => (
+                    {["Lumière naturelle face à vous, sans contre-jour.", "Visage net, entièrement visible et centré.", "Retirez les filtres et, si possible, le maquillage couvrant.", "Expression neutre, caméra à hauteur des yeux.", "JPEG, PNG ou WebP, maximum 8 Mo par photo."].map((instruction) => (
                       <li key={instruction} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#ad6ee0]" /> <span>{tr(instruction)}</span></li>
                     ))}
                   </ul>
                 </div>
 
                 <div className={`rounded-[24px] border p-5 ${softPanel}`}>
-                  <div className="flex items-center gap-2 text-sm font-black"><ShieldCheck className="h-4 w-4 text-[#ad6ee0]" /> {tr("ConfidentialitÃ© et limites")}</div>
-                  <p className={`mt-3 text-sm leading-6 ${muted}`}>{tr("Vos photos sont traitÃ©es pour l'analyse et les images brutes du visage ne sont pas stockÃ©es par dÃ©faut. Les rÃ©sultats dÃ©crivent uniquement des caractÃ©ristiques cosmÃ©tiques visibles. Ils ne constituent pas un diagnostic mÃ©dical et peuvent Ãªtre influencÃ©s par la lumiÃ¨re ou le traitement de la camÃ©ra.")}</p>
+                  <div className="flex items-center gap-2 text-sm font-black"><ShieldCheck className="h-4 w-4 text-[#ad6ee0]" /> {tr("Confidentialité et limites")}</div>
+                  <p className={`mt-3 text-sm leading-6 ${muted}`}>{tr("Vos photos sont traitées pour l'analyse et les images brutes du visage ne sont pas stockées par défaut. Les résultats décrivent uniquement des caractéristiques cosmétiques visibles. Ils ne constituent pas un diagnostic médical et peuvent être influencés par la lumière ou le traitement de la caméra.")}</p>
                   <label className={`mt-4 flex cursor-pointer gap-3 rounded-2xl border p-3 ${isDarkTheme ? "border-white/10 bg-black/15" : "border-slate-200 bg-white"}`}>
                     <input type="checkbox" checked={consentAccepted} onChange={(event) => setConsentAccepted(event.target.checked)} className="mt-0.5 h-4 w-4 accent-[#ad6ee0]" />
-                    <span className="text-xs font-semibold leading-5">{tr("J'accepte que mes photos soient traitÃ©es pour produire ces observations cosmÃ©tiques.")}</span>
+                    <span className="text-xs font-semibold leading-5">{tr("J'accepte que mes photos soient traitées pour produire ces observations cosmétiques.")}</span>
                   </label>
                 </div>
 
@@ -461,12 +464,12 @@ export default function FaceScanDialog({
           ) : !result.usable || !result.guidance ? (
             <div className="mx-auto max-w-2xl py-8 text-center">
               <div className="mx-auto grid h-16 w-16 place-items-center rounded-3xl bg-amber-500/12 text-amber-500"><Camera className="h-7 w-7" /></div>
-              <h3 className="mt-5 text-2xl font-black">{tr("Une nouvelle photo est nÃ©cessaire")}</h3>
-              <p className={`mx-auto mt-2 max-w-xl text-sm leading-6 ${muted}`}>{tr("Gemini n'a pas pu produire des observations suffisamment fiables Ã  partir des images envoyÃ©es.")}</p>
+              <h3 className="mt-5 text-2xl font-black">{tr("Une nouvelle photo est nécessaire")}</h3>
+              <p className={`mx-auto mt-2 max-w-xl text-sm leading-6 ${muted}`}>{tr("Gemini n'a pas pu produire des observations suffisamment fiables à partir des images envoyées.")}</p>
               <div className={`mt-6 rounded-[22px] border p-5 text-left ${softPanel}`}>
                 <p className="text-sm font-black">{tr("Conseils pour reprendre la photo")}</p>
                 <ul className={`mt-3 space-y-2 text-sm ${muted}`}>
-                  {(result.observations.retakeInstructions.length ? result.observations.retakeInstructions : ["Utilisez une lumiÃ¨re naturelle, gardez le visage net et entiÃ¨rement visible."]).map((instruction) => (
+                  {(result.observations.retakeInstructions.length ? result.observations.retakeInstructions : ["Utilisez une lumière naturelle, gardez le visage net et entièrement visible."]).map((instruction) => (
                     <li key={instruction} className="flex gap-2"><ArrowLeft className="mt-0.5 h-4 w-4 rotate-180 shrink-0 text-[#ad6ee0]" />{instruction}</li>
                   ))}
                 </ul>
@@ -480,12 +483,12 @@ export default function FaceScanDialog({
                 <div className={`rounded-[24px] border p-5 sm:p-6 ${softPanel}`}>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.2em] text-[#a764dc]">{tr("RÃ©sultat cosmÃ©tique")}</p>
-                      <h3 className="mt-2 text-2xl font-black">{tr("Ce qui paraÃ®t visible")}</h3>
+                      <p className="text-xs font-black uppercase tracking-[0.2em] text-[#a764dc]">{tr("Résultat cosmétique")}</p>
+                      <h3 className="mt-2 text-2xl font-black">{tr("Ce qui paraît visible")}</h3>
                     </div>
                     <div className="flex gap-2 text-[11px] font-bold">
-                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-500">{tr(`LumiÃ¨re: ${result.observations.quality.lighting}`)}</span>
-                      <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sky-500">{tr(`NettetÃ©: ${result.observations.quality.focus}`)}</span>
+                      <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-500">{tr(`Lumière: ${result.observations.quality.lighting}`)}</span>
+                      <span className="rounded-full border border-sky-400/30 bg-sky-500/10 px-3 py-1.5 text-sky-500">{tr(`Netteté: ${result.observations.quality.focus}`)}</span>
                     </div>
                   </div>
                   <p className={`mt-4 text-sm leading-6 ${muted}`}>{shortText(result.guidance.explanation, 190)}</p>
@@ -505,18 +508,18 @@ export default function FaceScanDialog({
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className={`rounded-[22px] border p-5 ${softPanel}`}>
-                    <p className="text-sm font-black">{tr("PrioritÃ©s douces")}</p>
+                    <p className="text-sm font-black">{tr("Priorités douces")}</p>
                     <ul className={`mt-3 space-y-2 text-sm leading-5 ${muted}`}>{result.guidance.priorities.map((item) => <li key={item} className="flex gap-2"><Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />{item}</li>)}</ul>
                   </div>
                   <div className={`rounded-[22px] border p-5 ${softPanel}`}>
-                    <p className="text-sm font-black">{tr("IngrÃ©dients potentiellement utiles")}</p>
+                    <p className="text-sm font-black">{tr("Ingrédients potentiellement utiles")}</p>
                     <div className="mt-3 flex flex-wrap gap-2">{result.guidance.potentiallyUsefulIngredients.map((item) => <span key={item} className="rounded-full bg-[#ce98fb]/16 px-3 py-1.5 text-xs font-bold text-[#a764dc]">{item}</span>)}</div>
-                    {result.guidance.introduceCautiously.length > 0 && <><p className="mt-4 text-xs font-black uppercase tracking-[0.14em] text-amber-500">{tr("Ã€ introduire prudemment")}</p><p className={`mt-2 text-xs leading-5 ${muted}`}>{result.guidance.introduceCautiously.join(" Â· ")}</p></>}
+                    {result.guidance.introduceCautiously.length > 0 && <><p className="mt-4 text-xs font-black uppercase tracking-[0.14em] text-amber-500">{tr("À introduire prudemment")}</p><p className={`mt-2 text-xs leading-5 ${muted}`}>{result.guidance.introduceCautiously.join(" · ")}</p></>}
                   </div>
                 </div>
 
                 <div className={`rounded-[22px] border p-5 ${softPanel}`}>
-                  <p className="text-sm font-black">{tr("CatÃ©gories de routine recommandÃ©es")}</p>
+                  <p className="text-sm font-black">{tr("Catégories de routine recommandées")}</p>
                   <div className="mt-3 space-y-3">{result.guidance.routineCategories.map((item) => <div key={`${item.step}-${item.guidance}`}><p className="text-xs font-black text-[#a764dc]">{item.step}</p><p className={`mt-1 text-sm leading-5 ${muted}`}>{item.guidance}</p></div>)}</div>
                 </div>
                 <p className={`text-xs leading-5 ${muted}`}>{result.guidance.disclaimer}</p>

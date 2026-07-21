@@ -14,6 +14,7 @@ type PlanStatus = 'free' | 'pro';
 type ScanHistoryItem = {
   id: string;
   productName: string;
+  customTitle?: string | null;
   createdAt: string;
   updatedAt: string;
   analysisSummary?: string;
@@ -262,10 +263,10 @@ export default function SettingsPage() {
     return () => { cancelled = true; };
   }, [token, updateUser, user]);
 
-  const getChatDisplayName = (scanId: string | null | undefined, fallbackName: string) => {
-    if (!scanId) return fallbackName;
+  const getChatDisplayName = (scanId: string | null | undefined, fallbackName: string, persistedTitle?: string | null) => {
+    if (!scanId) return normalizeDisplayText(persistedTitle || fallbackName);
     const renamedTitle = renamedDiscussions[scanId]?.trim();
-    return normalizeDisplayText(renamedTitle || fallbackName || 'Produit scanné');
+    return normalizeDisplayText(persistedTitle?.trim() || renamedTitle || fallbackName || 'Produit scanné');
   };
 
   const handleLogout = () => { logout(); router.replace('/login'); };
@@ -383,14 +384,14 @@ export default function SettingsPage() {
   );
 }
 
-function DashboardSidebar({ palette, logoClass, scanHistory, isHistoryLoading, getChatDisplayName, isSidebarOpen, planStatus, onClose, onNavigate }: { palette: Palette; logoClass: string; scanHistory: ScanHistoryItem[]; isHistoryLoading: boolean; getChatDisplayName: (scanId: string | null | undefined, fallbackName: string) => string; isSidebarOpen: boolean; planStatus: PlanStatus; onClose: () => void; onNavigate: (path: string) => void; }) {
+function DashboardSidebar({ palette, logoClass, scanHistory, isHistoryLoading, getChatDisplayName, isSidebarOpen, planStatus, onClose, onNavigate }: { palette: Palette; logoClass: string; scanHistory: ScanHistoryItem[]; isHistoryLoading: boolean; getChatDisplayName: (scanId: string | null | undefined, fallbackName: string, persistedTitle?: string | null) => string; isSidebarOpen: boolean; planStatus: PlanStatus; onClose: () => void; onNavigate: (path: string) => void; }) {
   const recentDiscussions = [...scanHistory].sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()).slice(0, 6);
   return (
     <aside className={`fixed inset-y-0 left-0 z-50 flex w-[280px] max-w-[86vw] shrink-0 flex-col px-4 py-4 backdrop-blur-2xl transition-transform duration-300 ease-out lg:static lg:z-auto lg:w-[248px] lg:max-w-none lg:translate-x-0 lg:px-4 xl:w-[270px] xl:px-5 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${palette.sidebar}`}>
       <div className="flex items-center justify-between"><Image src="/logo.png" alt="SkinorAI" width={150} height={36} className={`h-8 w-auto ${logoClass}`} priority /><button type="button" onClick={onClose} className={`rounded-lg border p-1.5 transition lg:hidden ${palette.sidebarButton}`} aria-label="Fermer le menu"><X className="h-4 w-4" /></button></div>
       <button type="button" onClick={() => onNavigate('/scan')} className="mt-6 flex h-[45px] items-center gap-3 rounded-xl bg-gradient-to-r from-[#F7DDE8] via-[#F3D4E3] to-[#EEDAF7] px-5 text-sm font-medium text-[#7A3F5C] shadow-[0_10px_24px_rgba(122,63,92,0.10)]"><Plus className="h-5 w-5" />Nouvelle discussion</button>
       <div className="mt-6"><p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Menu</p><nav className="mt-3 space-y-2"><SidebarButton icon={CircleHelp} label="Discussions" onClick={() => onNavigate('/scan')} className={palette.navIdle} /><SidebarButton icon={FlaskConical} label="Bibliothèque d'ingrédients" onClick={() => onNavigate('/ingredient-library')} className={palette.navIdle} /></nav></div>
-      <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1"><p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Récent</p><div className="mt-3 space-y-2">{isHistoryLoading ? <p className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}>Chargement des discussions...</p> : recentDiscussions.length > 0 ? recentDiscussions.map((chat) => <button key={chat.id} type="button" onClick={() => onNavigate(`/scan?chat=${chat.id}`)} className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${palette.recentCard}`}><p className={`truncate text-sm font-medium ${palette.recentText}`}>{getChatDisplayName(chat.id, chat.productName)}</p><p className={`mt-1 text-sm ${palette.recentMuted}`}>{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>{chat.analysisSummary && <p className={`mt-2 line-clamp-2 text-sm leading-5 ${palette.recentMuted}`}>{normalizeDisplayText(chat.analysisSummary)}</p>}</button>) : <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}>Aucune discussion pour le moment.</p>}</div></div>
+      <div className="mt-5 min-h-0 flex-1 overflow-y-auto pr-1"><p className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}>Récent</p><div className="mt-3 space-y-2">{isHistoryLoading ? <p className={`rounded-xl border px-3 py-2.5 text-xs ${palette.recentCard} ${palette.recentMuted}`}>Chargement des discussions...</p> : recentDiscussions.length > 0 ? recentDiscussions.map((chat) => <button key={chat.id} type="button" onClick={() => onNavigate(`/scan?chat=${chat.id}`)} className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${palette.recentCard}`}><p className={`truncate text-sm font-medium ${palette.recentText}`}>{getChatDisplayName(chat.id, chat.productName, chat.customTitle)}</p><p className={`mt-1 text-sm ${palette.recentMuted}`}>{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>{chat.analysisSummary && <p className={`mt-2 line-clamp-2 text-sm leading-5 ${palette.recentMuted}`}>{normalizeDisplayText(chat.analysisSummary)}</p>}</button>) : <p className={`rounded-xl border px-3 py-2.5 text-xs leading-5 ${palette.recentCard} ${palette.recentMuted}`}>Aucune discussion pour le moment.</p>}</div></div>
       <div className={`mt-4 rounded-2xl p-4 text-center max-lg:mb-4 lg:p-3 xl:p-4 ${palette.premiumCard}`}><span className="mx-auto flex h-9 w-9 items-center justify-center rounded-full border border-[#f0a4db]/25 bg-transparent text-[#f3a6d6]">{planStatus === 'pro' ? <ShieldCheck className="h-4 w-4" /> : <Sparkles className="h-4 w-4" />}</span><h2 className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}>{planStatus === 'pro' ? 'Plan Pro actif' : 'Débloquer Premium'}</h2><p className={`text-sm leading-5 ${palette.premiumText}`}>{planStatus === 'pro' ? 'Votre abonnement premium est bien relié à votre compte.' : 'Obtenez des analyses plus poussées et des scans illimités.'}</p><button type="button" onClick={() => onNavigate('/pricing')} className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold ${palette.premiumButton}`}>{planStatus === 'pro' ? "Voir l'offre" : 'Passer à Premium'}</button></div>
     </aside>
   );

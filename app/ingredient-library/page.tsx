@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -53,10 +53,26 @@ type Ingredient = {
 type ScanHistoryItem = {
   id: string;
   productName: string;
+  customTitle?: string | null;
   createdAt: string;
   updatedAt: string;
   analysisSummary?: string;
 };
+
+type FaceScanHistoryItem = {
+  id: string;
+  skinGoal?: string | null;
+  promptCount: number;
+  createdAt: string;
+  updatedAt: string;
+  title: string;
+  customTitle?: string | null;
+  summary?: string;
+};
+
+type RecentDiscussionItem =
+  | ({ kind: "product" } & ScanHistoryItem)
+  | ({ kind: "face" } & FaceScanHistoryItem);
 
 async function getJson<T>(path: string): Promise<T> {
   const token = getStoredAuthToken();
@@ -76,6 +92,10 @@ async function getJson<T>(path: string): Promise<T> {
 
 function requestScanHistory() {
   return getJson<ScanHistoryItem[]>("/api/scans");
+}
+
+function requestFaceScanHistory() {
+  return getJson<FaceScanHistoryItem[]>("/api/face-scans");
 }
 
 function formatScanHistoryDate(value: string) {
@@ -1306,6 +1326,7 @@ export default function IngredientLibraryPage() {
   const [detailOpen, setDetailOpen] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [scanHistory, setScanHistory] = useState<ScanHistoryItem[]>([]);
+  const [faceScanHistory, setFaceScanHistory] = useState<FaceScanHistoryItem[]>([]);
   const [isHistoryLoading, setIsHistoryLoading] = useState(true);
   const rootRef = useRef<HTMLElement | null>(null);
   const sidebarRef = useRef<HTMLElement | null>(null);
@@ -1353,13 +1374,18 @@ export default function IngredientLibraryPage() {
       setIsHistoryLoading(true);
 
       try {
-        const scans = await requestScanHistory();
+        const [scans, faceScans] = await Promise.all([
+          requestScanHistory(),
+          requestFaceScanHistory().catch(() => []),
+        ]);
         if (!isCancelled) {
           setScanHistory(scans);
+          setFaceScanHistory(faceScans);
         }
       } catch {
         if (!isCancelled) {
           setScanHistory([]);
+          setFaceScanHistory([]);
         }
       } finally {
         if (!isCancelled) {
@@ -1471,9 +1497,27 @@ export default function IngredientLibraryPage() {
   }, []);
 
   const isSombre = theme === "dark";
-  const historyDiscussions = [...scanHistory]
-    .sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime())
+  const historyDiscussions: RecentDiscussionItem[] = [
+    ...scanHistory.map((item) => ({ ...item, kind: "product" as const })),
+    ...faceScanHistory.map((item) => ({ ...item, kind: "face" as const })),
+  ]
+    .sort(
+      (a, b) =>
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime(),
+    )
     .slice(0, 6);
+  const getDiscussionTitle = (chat: RecentDiscussionItem) => {
+    const fallback = chat.kind === "face" ? chat.title : chat.productName;
+    return normalizeDisplayText(chat.customTitle?.trim() || fallback || tr("Discussion enregistrée"));
+  };
+  const getDiscussionSummary = (chat: RecentDiscussionItem) =>
+    normalizeDisplayText(
+      (chat.kind === "face" ? chat.summary : chat.analysisSummary) ||
+        tr("Discussion enregistrée dans votre historique SkinorAI."),
+    );
+  const getDiscussionHref = (chat: RecentDiscussionItem) =>
+    chat.kind === "face" ? `/scan?faceChat=${chat.id}` : `/scan?chat=${chat.id}`;
   const filtered = ingredients.filter((ingredient) => {
     const categoryMatch = selectedCategory === "all" || ingredient.categories.includes(selectedCategory);
     const queryMatch = `${normalizeDisplayText(ingredient.name)} ${normalizeDisplayText(ingredient.description)} ${ingredient.tags.map(normalizeDisplayText).join(" ")}`.toLowerCase().includes(query.trim().toLowerCase());
@@ -1575,13 +1619,13 @@ export default function IngredientLibraryPage() {
                 </p>
               ) : historyDiscussions.length > 0 ? (
                 historyDiscussions.map((chat) => (
-                  <Link key={chat.id} href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
+                  <Link key={chat.id} href={getDiscussionHref(chat)} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
                     <p className={`truncate text-sm font-medium ${isSombre ? "text-white" : "text-[#221d35]"}`}>
-                      {chat.productName || tr("Discussion enregistrée")}
+                      {getDiscussionTitle(chat)}
                     </p>
                     <p className="mt-1 text-sm">{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
                     <p className="mt-2 line-clamp-2 text-sm leading-5">
-                      {chat.analysisSummary || tr("Discussion enregistrée dans votre historique SkinorAI.")}
+                      {getDiscussionSummary(chat)}
                     </p>
                   </Link>
                 ))
@@ -1634,13 +1678,13 @@ export default function IngredientLibraryPage() {
                 </p>
               ) : historyDiscussions.length > 0 ? (
                 historyDiscussions.map((chat) => (
-                  <Link key={chat.id} href={`/scan?chat=${chat.id}`} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
+                  <Link key={chat.id} href={getDiscussionHref(chat)} onClick={() => setIsSidebarOpen(false)} className={`block rounded-xl border px-3 py-2.5 transition hover:-translate-y-0.5 ${isSombre ? "border-white/10 bg-white/[0.04] text-white/75 hover:bg-white/[0.06]" : "border-[#ece5f7] bg-white/90 text-[#7c7693] hover:bg-[#fbf8ff]"}`}>
                     <p className={`truncate text-sm font-medium ${isSombre ? "text-white" : "text-[#221d35]"}`}>
-                      {chat.productName || tr("Discussion enregistrée")}
+                      {getDiscussionTitle(chat)}
                     </p>
                     <p className="mt-1 text-sm">{formatScanHistoryDate(chat.updatedAt || chat.createdAt)}</p>
                     <p className="mt-2 line-clamp-2 text-sm leading-5">
-                      {chat.analysisSummary || tr("Discussion enregistrée dans votre historique SkinorAI.")}
+                      {getDiscussionSummary(chat)}
                     </p>
                   </Link>
                 ))
@@ -1755,3 +1799,4 @@ export default function IngredientLibraryPage() {
     </main>
   );
 }
+

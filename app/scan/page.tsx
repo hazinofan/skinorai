@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import {
@@ -62,9 +62,9 @@ import FaceScanDialog from "@/components/scan/FaceScanDialog";
 
 const stepLabels = [
   "Objectif peau",
-  "Importer l'Ã©tiquette",
-  "IngrÃ©dients dÃ©tectÃ©s",
-  "RÃ©sultat IA",
+  "Importer l'étiquette",
+  "Ingrédients détectés",
+  "Résultat IA",
 ];
 
 type SkinGoal = {
@@ -238,7 +238,7 @@ const goals: SkinGoal[] = [
   },
 ];
 
-type IngredientStatus = "OK" | "Ã€ surveiller";
+type IngredientStatus = "OK" | "À surveiller";
 
 type IngredientItem = {
   name: string;
@@ -409,6 +409,7 @@ type ProductExtractionResponse = {
 type ScanHistoryItem = {
   id: string;
   productName: string;
+  customTitle?: string | null;
   skinGoal?: string;
   promptCount: number;
   createdAt: string;
@@ -425,6 +426,7 @@ type FaceScanHistoryItem = {
   createdAt: string;
   updatedAt: string;
   title: string;
+  customTitle?: string | null;
   summary?: string;
 };
 
@@ -439,6 +441,8 @@ type ScanConversationDetail = ScanHistoryItem & {
 type FaceScanDetail = {
   id: string;
   skinGoal?: string | null;
+  title?: string;
+  customTitle?: string | null;
   observations: {
     quality?: { lighting?: string; focus?: string; faceCoverage?: string };
     observations?: Array<{ area?: string; concern?: string; description?: string; confidence?: string }>;
@@ -497,7 +501,7 @@ function buildIngredientItems(names: string[]): IngredientItem[] {
     const shouldWatch = watchTerms.some((term) => normalized.includes(term));
     return {
       name,
-      status: shouldWatch ? "Ã€ surveiller" : "OK",
+      status: shouldWatch ? "À surveiller" : "OK",
     };
   });
 }
@@ -511,7 +515,7 @@ function parseIngredientText(value: string): string[] {
 
 function formatProductName(imageName?: string | null) {
   if (!imageName) {
-    return "Produit analysÃ©";
+    return "Produit analysé";
   }
 
   return imageName
@@ -580,6 +584,30 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function patchJson<T>(path: string, body: unknown): Promise<T> {
+  const token = getStoredAuthToken();
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+    try {
+      const errorBody = (await response.json()) as { message?: string | string[] };
+      message = Array.isArray(errorBody.message)
+        ? errorBody.message.join(" ")
+        : errorBody.message || message;
+    } catch {}
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<T>;
+}
 const skinGoalApiMap: Record<string, string> = {
   hydration: "hydration",
   acne: "acne",
@@ -621,6 +649,18 @@ function requestScanConversation(scanId: string) {
 
 function requestFaceScanConversation(faceScanId: string) {
   return getJson<FaceScanDetail>(`/api/face-scans/${faceScanId}`);
+}
+
+type RenameConversationResponse = {
+  id: string;
+  productName?: string;
+  title?: string;
+  customTitle?: string | null;
+  updatedAt: string;
+};
+
+function requestRenameProductConversation(scanId: string, title: string) {
+  return patchJson<RenameConversationResponse>(`/api/scans/${scanId}/title`, { title });
 }
 
 function formatScanHistoryDate(value: string) {
@@ -780,7 +820,7 @@ async function requestFaceScanChat({
     throw new Error(messageText);
   }
 
-  return response.json() as Promise<{ answer: string; suggestions?: string[] }>;
+  return response.json() as Promise<ScanChatResponse>;
 }
 async function requestScanChat({
   scanId,
@@ -1085,7 +1125,7 @@ export default function ScanPage() {
           setCurrentStep(3);
         } else {
           setAnalysisError(
-            "Impossible de generer l analyse IA pour le moment. Verifiez le backend et rÃ©essayez.",
+            "Impossible de générer l'analyse IA pour le moment. Vérifiez le backend et réessayez.",
           );
         }
         setAnalysisResult(null);
@@ -1159,9 +1199,9 @@ export default function ScanPage() {
       const detectedIngredientsText = uniqueIngredients.join(", ");
       const extractionWarnings = extractionResults.flatMap((result) => [
         ...result.warnings,
-        ...(result.fullIngredientListVisible ? [] : ["La liste INCI complÃ¨te n'est pas visible. L'analyse sera partielle."]),
-        ...(result.confidence === "low" ? ["Confiance d'extraction faible. VÃ©rifiez chaque ingrÃ©dient."] : []),
-        ...(result.imageType === "product_front" ? ["Seule la face avant du produit est visible. Ajoutez une photo nette de l'Ã©tiquette ingrÃ©dients."] : []),
+        ...(result.fullIngredientListVisible ? [] : ["La liste INCI complète n'est pas visible. L'analyse sera partielle."]),
+        ...(result.confidence === "low" ? ["Confiance d'extraction faible. Vérifiez chaque ingrédient."] : []),
+        ...(result.imageType === "product_front" ? ["Seule la face avant du produit est visible. Ajoutez une photo nette de l'étiquette ingrédients."] : []),
         ...(result.uncertainText.length ? [`Texte incertain: ${result.uncertainText.join(", ")}`] : []),
         ...(!result.usable ? result.retakeInstructions : []),
       ]);
@@ -1184,8 +1224,8 @@ export default function ScanPage() {
         setIngredientItems([]);
         setStepTwoError(
           primaryResult.imageType === "product_front"
-            ? "La face avant a Ã©tÃ© reconnue, mais aucune liste d'ingrÃ©dients n'est visible. Ajoutez l'Ã©tiquette INCI ou saisissez-la manuellement."
-            : "Aucun ingrÃ©dient lisible n'a Ã©tÃ© dÃ©tectÃ©. Corrigez la liste manuellement ou reprenez la photo.",
+            ? "La face avant a été reconnue, mais aucune liste d'ingrédients n'est visible. Ajoutez l'étiquette INCI ou saisissez-la manuellement."
+            : "Aucun ingrédient lisible n'a été détecté. Corrigez la liste manuellement ou reprenez la photo.",
         );
         return;
       }
@@ -1306,7 +1346,7 @@ export default function ScanPage() {
             </h1>
             <p className="mx-auto mt-2 max-w-[820px] text-[15px] leading-6 text-[#66708f] sm:text-[17px]">
               {currentStep === 3
-                ? tr("Verifiez les ingredients detectes par l IA avant de lancer l analyse complete.")
+                ? tr("Vérifiez les ingrédients détectés par l'IA avant de lancer l'analyse complète.")
                 : tr("Scannez l etiquette d un produit de soin pour obtenir une analyse simple des ingredients par IA.") }
             </p>
           </div>
@@ -1753,7 +1793,7 @@ function UploadStep({
               </span>
               <span className="mt-5 flex items-center gap-2 text-xs text-[#727a99]">
                 <Lock className="h-4 w-4" />
-                Vos images sont privÃ©es et sÃ©curisÃ©es.
+                Vos images sont privées et sécurisées.
               </span>
             </button>
             {uploadedImages.length > 0 && (
@@ -1913,7 +1953,7 @@ function IngredientsStep({
                   Liste editable des ingredients (INCI)
                 </h2>
                 <span className="rounded-full bg-[#f2ebff] px-3 py-1 text-xs font-semibold text-[#7c57eb]">
-                  {ingredientItems.length} ingredients detectes
+                  {ingredientItems.length} ingrédients détectés
                 </span>
               </div>
 
@@ -2003,7 +2043,7 @@ function IngredientsStep({
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-bold text-[#171b36]">
-                  Prochaine Ã©tape : RÃ©sultat IA
+                  Prochaine étape : Résultat IA
                 </span>
                 <span className="mt-1 block text-xs text-[#727a99]">
                   L IA analysera vos ingredients pour vous fournir une
@@ -2132,7 +2172,7 @@ function AnalysisLoadingStep({
             />
             <LoadingInfoCard
               icon={ClipboardCheck}
-              title="IngrÃ©dients vÃ©rifiÃ©s"
+              title="Ingrédients vérifiés"
               text={`${ingredientCount} elements confirmes`}
             />
             <LoadingInfoCard
@@ -2148,7 +2188,7 @@ function AnalysisLoadingStep({
             </div>
             <div className="mt-4 flex items-center justify-between text-sm font-medium text-[#7b829e]">
               <span>Lecture de la formule</span>
-              <span>Ã‰valuation de compatibilitÃ©</span>
+              <span>Évaluation de compatibilité</span>
               <span>Preparation du resultat</span>
             </div>
           </div>
@@ -2198,31 +2238,31 @@ const featureCards: FeatureCard[] = [
   {
     id: "ingredient-analyzer",
     icon: FlaskConical,
-    title: "Analyseur d'ingrÃ©dients",
-    text: "DÃ©codez les ingrÃ©dients, vÃ©rifiez les points Ã  surveiller et comprenez ce qui convient Ã  votre peau.",
+    title: "Analyseur d'ingrédients",
+    text: "Décodez les ingrédients, vérifiez les points à surveiller et comprenez ce qui convient à votre peau.",
     image: "/chat/ingredients.png",
-    imageAlt: "Illustration de l'analyse des ingrÃ©dients",
+    imageAlt: "Illustration de l'analyse des ingrédients",
     points: [
-      "Collez ou scannez la liste d'ingrÃ©dients d'un produit de soin.",
-      "Comprenez le rÃ´le de chaque ingrÃ©dient.",
-      "RepÃ©rez les ingrÃ©dients pouvant irriter les peaux sensibles.",
-      "Obtenez une explication claire, sans jargon INCI compliquÃ©.",
+      "Collez ou scannez la liste d'ingrédients d'un produit de soin.",
+      "Comprenez le rôle de chaque ingrédient.",
+      "Repérez les ingrédients pouvant irriter les peaux sensibles.",
+      "Obtenez une explication claire, sans jargon INCI compliqué.",
     ],
-    primaryCtaLabel: "Analyser les ingrÃ©dients",
+    primaryCtaLabel: "Analyser les ingrédients",
     action: "scan",
   },
   {
     id: "routine-coach",
     icon: Bot,
     title: "Coach routine",
-    text: "Recevez des routines personnalisÃ©es selon vos objectifs peau.",
+    text: "Recevez des routines personnalisées selon vos objectifs peau.",
     image: "/chat/routine.png",
     imageAlt: "Illustration du coach routine",
     points: [
       "Construisez une routine simple pour le matin ou le soir.",
       "Sachez quel produit appliquer en premier, ensuite et en dernier.",
-      "Ã‰vitez de mÃ©langer trop d'actifs puissants.",
-      "Recevez des rappels sur le SPF et la frÃ©quence d'utilisation.",
+      "Évitez de mélanger trop d'actifs puissants.",
+      "Recevez des rappels sur le SPF et la fréquence d'utilisation.",
     ],
   },
   {
@@ -2233,10 +2273,10 @@ const featureCards: FeatureCard[] = [
     image: "/chat/scan.png",
     imageAlt: "Illustration du scanner produit",
     points: [
-      "Importez une photo claire de l'Ã©tiquette du produit.",
-      "Extrayez automatiquement les ingrÃ©dients grÃ¢ce Ã  l'OCR.",
-      "Corrigez la liste dÃ©tectÃ©e avant l'analyse.",
-      "Recevez un score, un verdict, des points forts et des ingrÃ©dients Ã  surveiller.",
+      "Importez une photo claire de l'étiquette du produit.",
+      "Extrayez automatiquement les ingrédients grâce à l'OCR.",
+      "Corrigez la liste détectée avant l'analyse.",
+      "Recevez un score, un verdict, des points forts et des ingrédients à surveiller.",
     ],
     primaryCtaLabel: "Scanner un produit",
     action: "scan",
@@ -2245,14 +2285,14 @@ const featureCards: FeatureCard[] = [
     id: "skin-insights",
     icon: Sparkles,
     title: "Insights peau",
-    text: "Suivez vos analyses et obtenez des insights plus prÃ©cis sur votre peau.",
+    text: "Suivez vos analyses et obtenez des insights plus précis sur votre peau.",
     image: "/chat/insights.png",
     imageAlt: "Illustration des insights peau",
     points: [
-      "Comprenez les tendances dans vos produits scannÃ©s.",
-      "Identifiez les ingrÃ©dients qui correspondent le plus souvent Ã  vos objectifs peau.",
-      "RepÃ©rez ce que votre peau semble mieux tolÃ©rer.",
-      "PrÃ©parez des recommandations plus intelligentes avec le temps.",
+      "Comprenez les tendances dans vos produits scannés.",
+      "Identifiez les ingrédients qui correspondent le plus souvent à vos objectifs peau.",
+      "Repérez ce que votre peau semble mieux tolérer.",
+      "Préparez des recommandations plus intelligentes avec le temps.",
     ],
   },
 ];
@@ -2287,10 +2327,13 @@ function ChatWorkspace({
   const [renamedDiscussions, setRenamedDiscussions] = useState<Record<string, string>>({});
   const [editingChatId, setEditingChatId] = useState<string | null>(null);
   const [chatNameDraft, setChatNameDraft] = useState("");
+  const [isChatNameSaving, setIsChatNameSaving] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedFeatureCard, setSelectedFeatureCard] =
     useState<FeatureCard | null>(null);
   const [isFaceScanDialogOpen, setIsFaceScanDialogOpen] = useState(false);
+  const [isFaceScanTutorialOpen, setIsFaceScanTutorialOpen] = useState(false);
+  const [faceScanTutorialStep, setFaceScanTutorialStep] = useState(0);
   const [localUpgradeReason, setLocalUpgradeReason] = useState<UpgradeDialogReason | null>(null);
   const chatAttachment = useChatImageAttachment();
   const scanUploadInputRef = useRef<HTMLInputElement | null>(null);
@@ -2455,6 +2498,7 @@ function ChatWorkspace({
 
     const loadFaceConversation = async () => {
       setIsFaceConversationLoading(true);
+      setChatMessages([]);
 
       try {
         const detail = await requestFaceScanConversation(selectedFaceChatId);
@@ -2563,13 +2607,14 @@ useEffect(() => {
   const getChatDisplayName = (
     scanId: string | null | undefined,
     fallbackName: string,
+    persistedTitle?: string | null,
   ) => {
     if (!scanId) {
-      return fallbackName;
+      return normalizeDisplayText(persistedTitle || fallbackName);
     }
 
     const renamedTitle = renamedDiscussions[scanId]?.trim();
-    return normalizeDisplayText(renamedTitle || fallbackName);
+    return normalizeDisplayText(persistedTitle?.trim() || renamedTitle || fallbackName);
   };
   const [showPlusMenu, setShowPlusMenu] = useState(false);
   const selectedHistoryChat =
@@ -2590,17 +2635,17 @@ useEffect(() => {
       score: 0,
       verdict: "good_choice",
       verdictLabel:
-        selectedHistoryChat.analysisVerdict || "Analyse enregistrÃ©e",
+        selectedHistoryChat.analysisVerdict || "Analyse enregistrée",
       summary:
         selectedHistoryChat.analysisSummary ||
-        "Analyse enregistrÃ©e pour ce produit.",
+        "Analyse enregistrée pour ce produit.",
       positives: [],
       watchouts: [],
       recommendations: selectedGoal.tips,
       nextStep: selectedGoal.nextStep,
       followUpQuestions: selectedGoal.questions,
       disclaimer:
-        "Analyse informative, non mÃ©dicale. Consultez un professionnel en cas de doute.",
+        "Analyse informative, non médicale. Consultez un professionnel en cas de doute.",
     })
     : null;
   const selectedIngredientItems = buildIngredientItems(
@@ -2609,10 +2654,11 @@ useEffect(() => {
   const selectedProductName =
     selectedHistoryDetail?.productName ||
     selectedHistoryChat?.productName ||
-    "Produit scannÃ©";
+    "Produit scanné";
   const selectedDisplayName = getChatDisplayName(
     selectedHistoryChat?.id,
     selectedProductName,
+    selectedHistoryDetail?.customTitle || selectedHistoryChat?.customTitle,
   );
   const selectedFollowUpQuestions = selectedAnalysisResult?.followUpQuestions
     ?.length
@@ -2623,8 +2669,20 @@ useEffect(() => {
   ).filter((message, index) => !(index === 0 && message.role === "assistant"));
 
   useEffect(() => {
+    if (selectedFaceChatId) {
+      return;
+    }
+
     setChatMessages(conversationMessages);
-  }, [selectedHistoryDetail?.id, selectedHistoryDetail?.updatedAt]);
+  }, [selectedHistoryDetail?.id, selectedHistoryDetail?.updatedAt, selectedFaceChatId]);
+
+  useEffect(() => {
+    if (!selectedFaceChatId) {
+      return;
+    }
+
+    setChatMessages(selectedFaceDetail?.conversation ?? []);
+  }, [selectedFaceChatId, selectedFaceDetail?.id, selectedFaceDetail?.updatedAt, selectedFaceDetail?.conversation]);
 
   const refreshScanHistory = async () => {
     try {
@@ -2634,6 +2692,21 @@ useEffect(() => {
       setScanHistory([]);
       setFaceScanHistory([]);
     }
+  };
+
+  const openFaceScanTutorial = () => {
+    setFaceScanTutorialStep(0);
+    setIsFaceScanTutorialOpen(true);
+  };
+
+  const continueFromFaceScanTutorial = () => {
+    setIsFaceScanTutorialOpen(false);
+    if (user?.planStatus === "pro") {
+      setIsFaceScanDialogOpen(true);
+      return;
+    }
+
+    setLocalUpgradeReason("face-scan-pro-required");
   };
 
   const resetNewScanDraft = () => {
@@ -2705,16 +2778,16 @@ useEffect(() => {
       setNewScanIngredientText(extraction.ingredients.join(", "));
       setNewScanWarnings(Array.from(new Set([
         ...extraction.warnings,
-        ...(extraction.fullIngredientListVisible ? [] : ["La liste complÃ¨te n'est pas visible. L'analyse sera partielle."]),
-        ...(extraction.confidence === "low" ? ["Confiance d'extraction faible. VÃ©rifiez les ingrÃ©dients."] : []),
-        ...(extraction.imageType === "product_front" ? ["Ajoutez la photo de l'Ã©tiquette INCI si possible."] : []),
+        ...(extraction.fullIngredientListVisible ? [] : ["La liste complète n'est pas visible. L'analyse sera partielle."]),
+        ...(extraction.confidence === "low" ? ["Confiance d'extraction faible. Vérifiez les ingrédients."] : []),
+        ...(extraction.imageType === "product_front" ? ["Ajoutez la photo de l'étiquette INCI si possible."] : []),
         ...(extraction.uncertainText.length ? [`Texte incertain: ${extraction.uncertainText.join(", ")}`] : []),
         ...(!extraction.usable ? extraction.retakeInstructions : []),
       ])));
       if (!extraction.usable) {
         setNewScanError(extraction.retakeInstructions.join(" ") || "Cette image n'est pas exploitable.");
       } else if (!extraction.ingredients.length) {
-        setNewScanError("Je n'ai pas trouvÃ© de liste d'ingrÃ©dients lisible. Collez-la ci-dessous ou ajoutez une photo plus nette.");
+        setNewScanError("Je n'ai pas trouvé de liste d'ingrédients lisible. Collez-la ci-dessous ou ajoutez une photo plus nette.");
       }
     } catch (error) {
       setNewScanError(error instanceof Error ? error.message : "Impossible d'extraire les informations du produit.");
@@ -2726,7 +2799,7 @@ useEffect(() => {
   const analyzeConversationScan = async () => {
     const ingredients = buildIngredientItems(parseIngredientText(newScanIngredientText));
     if (!ingredients.length) {
-      setNewScanError("Ajoutez ou confirmez au moins un ingrÃ©dient avant l'analyse.");
+      setNewScanError("Ajoutez ou confirmez au moins un ingrédient avant l'analyse.");
       return;
     }
 
@@ -2753,7 +2826,7 @@ useEffect(() => {
       if (error instanceof UpgradeRequiredError) {
         setLocalUpgradeReason(error.reason);
       }
-      setNewScanError(error instanceof Error ? error.message : "Impossible de gÃ©nÃ©rer l'analyse pour le moment.");
+      setNewScanError(error instanceof Error ? error.message : "Impossible de générer l'analyse pour le moment.");
     } finally {
       setIsNewScanAnalyzing(false);
     }
@@ -2839,7 +2912,7 @@ useEffect(() => {
           role: "assistant",
           content: error instanceof Error
             ? error.message
-            : "Impossible de rÃ©pondre pour le moment. RÃ©essayez dans quelques instants.",
+            : "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
           createdAt: new Date().toISOString(),
         },
       ]);
@@ -2884,6 +2957,7 @@ useEffect(() => {
         role: "assistant",
         content: response.answer,
         createdAt: new Date().toISOString(),
+        librarySuggestions: response.librarySuggestions,
       };
 
       setChatMessages((messages) => [...messages, assistantMessage]);
@@ -2931,8 +3005,8 @@ useEffect(() => {
 
   const router = useRouter()
 
-  const saveChatRename = () => {
-    if (!editingChatId) {
+  const saveChatRename = async () => {
+    if (!editingChatId || isChatNameSaving) {
       return;
     }
 
@@ -2941,12 +3015,63 @@ useEffect(() => {
       return;
     }
 
+    const previousTitles = renamedDiscussions;
+    const previousHistory = scanHistory;
+    const previousDetail = selectedHistoryDetail;
+
+    setIsChatNameSaving(true);
     setRenamedDiscussions((current) => ({
       ...current,
       [editingChatId]: trimmedName,
     }));
-    setEditingChatId(null);
-    setChatNameDraft("");
+    setScanHistory((items) =>
+      items.map((item) =>
+        item.id === editingChatId ? { ...item, customTitle: trimmedName } : item,
+      ),
+    );
+    setSelectedHistoryDetail((current) =>
+      current && current.id === editingChatId
+        ? { ...current, customTitle: trimmedName }
+        : current,
+    );
+
+    try {
+      const saved = await requestRenameProductConversation(editingChatId, trimmedName);
+      setRenamedDiscussions((current) => {
+        const next = { ...current };
+        delete next[editingChatId];
+        return next;
+      });
+      setScanHistory((items) =>
+        items.map((item) =>
+          item.id === editingChatId
+            ? { ...item, customTitle: saved.customTitle ?? trimmedName, updatedAt: saved.updatedAt ?? item.updatedAt }
+            : item,
+        ),
+      );
+      setSelectedHistoryDetail((current) =>
+        current && current.id === editingChatId
+          ? { ...current, customTitle: saved.customTitle ?? trimmedName, updatedAt: saved.updatedAt ?? current.updatedAt }
+          : current,
+      );
+      setEditingChatId(null);
+      setChatNameDraft("");
+    } catch (error) {
+      setRenamedDiscussions(previousTitles);
+      setScanHistory(previousHistory);
+      setSelectedHistoryDetail(previousDetail);
+      setChatMessages((messages) => [
+        ...messages,
+        {
+          id: `history-assistant-${chatMessageIdRef.current++}`,
+          role: "assistant",
+          content: error instanceof Error ? error.message : tr("Impossible d'enregistrer le nouveau nom."),
+          createdAt: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setIsChatNameSaving(false);
+    }
   };
 
   const palette = isDarkTheme
@@ -3129,7 +3254,7 @@ useEffect(() => {
                 className={`flex h-11 w-full items-center gap-3 rounded-xl px-4 text-left text-sm font-medium transition ${palette.navIdle}`}
               >
                 <FlaskConical className="h-5 w-5" />
-                {tr("BibliothÃ¨que d'ingrÃ©dients")}
+                {tr("Bibliothèque d'ingrédients")}
               </button>
             </nav>
           </div>
@@ -3138,7 +3263,7 @@ useEffect(() => {
             <p
               className={`px-1 text-[11px] font-semibold uppercase tracking-[0.16em] ${palette.sidebarLabel}`}
             >
-              {tr("RÃ©cent")}
+              {tr("Récent")}
             </p>
             <div className="mt-3 space-y-2">
               {isHistoryLoading ? (
@@ -3171,7 +3296,7 @@ useEffect(() => {
                       <p
                         className={`truncate text-sm font-medium ${palette.recentText}`}
                       >
-                        {isFaceChat ? getChatDisplayName(chat.id, chat.title) : getChatDisplayName(chat.id, chat.productName)}
+                        {isFaceChat ? getChatDisplayName(chat.id, chat.title, chat.customTitle) : getChatDisplayName(chat.id, chat.productName, chat.customTitle)}
                       </p>
                       <p className={`mt-1 text-sm ${palette.recentMuted}`}>
                         {formatScanHistoryDate(
@@ -3207,12 +3332,12 @@ useEffect(() => {
             <h2
               className={`mt-3 text-sm font-semibold ${palette.premiumTitle}`}
             >
-              {hasProPlan ? tr("Plan Pro actif") : tr("DÃ©bloquer Premium")}
+              {hasProPlan ? tr("Plan Pro actif") : tr("Débloquer Premium")}
             </h2>
             <p className={`mt-2 text-sm leading-5 ${palette.premiumText}`}>
               {hasProPlan
                 ? tr("Votre abonnement Pro est actif sur ce compte.")
-                : tr("Obtenez des analyses plus poussÃ©es, des scans illimitÃ©s et des routines personnalisÃ©es.")}
+                : tr("Obtenez des analyses plus poussées, des scans illimités et des routines personnalisées.")}
             </p>
             {!hasProPlan && (
               <button
@@ -3220,7 +3345,7 @@ useEffect(() => {
                 onClick={() => router.push('/pricing')}
                 className={`mt-4 h-10 w-full rounded-xl text-sm font-semibold cursor-pointer ${palette.premiumButton}`}
               >
-                {tr("Passer Ã  Premium")}
+                {tr("Passer à Premium")}
               </button>
             )}
           </div>
@@ -3251,7 +3376,7 @@ useEffect(() => {
                 onClick={() => router.push('/settings')}
                 className={`inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border px-4 text-xs font-medium backdrop-blur transition-colors duration-300 hover:!bg-gray-50 ${palette.headerButton}`}
               >
-                {tr("ParamÃ¨tres")}
+                {tr("Paramètres")}
                 <Settings className="h-4 w-4" />
               </button>
             </div>
@@ -3263,7 +3388,7 @@ useEffect(() => {
                 <div data-chat-hero className="flex items-center justify-between gap-4">
                   <div>
                     <p className={`text-xs font-semibold uppercase tracking-[0.22em] ${palette.subtext}`}>{tr("Conversation visage")}</p>
-                    <h1 className={`mt-2 text-[24px] font-medium leading-tight tracking-[-0.04em] sm:text-[32px] ${palette.heading}`}>{normalizeDisplayText(selectedFaceHistoryChat?.title || selectedFaceDetail?.guidance?.priorities?.[0] || tr("Analyse visage"))}</h1>
+                    <h1 className={`mt-2 text-[24px] font-medium leading-tight tracking-[-0.04em] sm:text-[32px] ${palette.heading}`}>{normalizeDisplayText(selectedFaceDetail?.customTitle || selectedFaceHistoryChat?.customTitle || selectedFaceDetail?.title || selectedFaceHistoryChat?.title || selectedFaceDetail?.guidance?.priorities?.[0] || tr("Analyse visage"))}</h1>
                     <p className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}>{tr("Un résumé simple, sans diagnostic. Vous pouvez continuer la discussion dans ce fil.")}</p>
                   </div>
                   <button type="button" onClick={() => setSelectedFaceChatId(null)} className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}>{tr("Retour à l'accueil")}</button>
@@ -3293,13 +3418,13 @@ useEffect(() => {
                         </div>
                       ) : <div className={`rounded-2xl border p-4 text-sm ${palette.detailCard} ${palette.subtext}`}>{tr("Impossible de charger cette analyse visage pour le moment.")}</div>}
 
-                      {chatMessages.map((message) => <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}><div className={`max-w-[78%] rounded-[22px] border px-4 py-3 text-sm leading-6 ${message.role === "user" ? isDarkTheme ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]" : isDarkTheme ? "border-white/[0.1] bg-white/[0.05] text-white" : "border-[#ece5fb] bg-white text-[#59617d]"}`}>{message.attachment && buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url) && <div className="mb-2 overflow-hidden rounded-xl border border-[#e5ddfb]">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url)!} alt={tr("Image jointe")} className="max-h-44 w-full object-cover" /></div>}<AnimatedChatText content={message.content} animate={message.role === "assistant"} /></div></div>)}
+                      {chatMessages.map((message) => <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}><div className="max-w-[78%]"><div className={`rounded-[22px] border px-4 py-3 text-sm leading-6 ${message.role === "user" ? isDarkTheme ? "border-[#d598d2]/20 bg-gradient-to-r from-[#a56ae2] to-[#e89ac7] text-white" : "border-[#e8defc] bg-[#f7f2ff] text-[#252044]" : isDarkTheme ? "border-white/[0.1] bg-white/[0.05] text-white" : "border-[#ece5fb] bg-white text-[#59617d]"}`}>{message.attachment && buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url) && <div className="mb-2 overflow-hidden rounded-xl border border-[#e5ddfb]">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={buildAttachmentImageUrl(message.attachment.previewUrl ?? message.attachment.url)!} alt={tr("Image jointe")} className="max-h-44 w-full object-cover" /></div>}<AnimatedChatText content={message.content} animate={message.role === "assistant"} /></div>{message.role === "assistant" && <LibrarySuggestionStrip suggestions={message.librarySuggestions} isDarkTheme={isDarkTheme} />}</div></div>)}
                       {isChatSending && <div className="flex justify-start"><div className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}><LoaderCircle className="h-3.5 w-3.5 animate-spin" />{tr("SkinorAI réfléchit...")}</div></div>}
                     </div>
                   </div>
                   <div className="sticky bottom-0 z-20 mt-auto -mx-5 px-5 pb-3 pt-3 backdrop-blur-xl lg:-mx-7 lg:px-7">
                     <input ref={chatAttachment.inputRef} type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; event.target.value = ""; try { chatAttachment.selectFile(file); } catch (error) { setChatMessages((messages) => [...messages, { id: `face-assistant-${chatMessageIdRef.current++}`, role: "assistant", content: error instanceof Error ? error.message : tr("Image invalide."), createdAt: new Date().toISOString() }]); } }} />
-                    {chatAttachment.image && <div className={`mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 rounded-2xl border p-2 ${isDarkTheme ? "border-white/10 bg-[#15111d]" : "border-[#ead8ef] bg-white"}`}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={chatAttachment.image.previewUrl} alt={tr("Image sélectionnée")} className="h-12 w-12 rounded-xl object-cover" /><span className="min-w-0 flex-1 truncate text-xs font-semibold">{chatAttachment.image.file.name}</span><button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full" aria-label={tr("Retirer l image")}><X className="h-4 w-4" /></button></div>}
+                    {chatAttachment.image && <div className={`mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 rounded-2xl border p-2 ${isDarkTheme ? "border-white/10 bg-[#15111d]" : "border-[#ead8ef] bg-white"}`}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={chatAttachment.image.previewUrl} alt={tr("Image sélectionnée")} className="h-12 w-12 rounded-xl object-cover" /><span className="min-w-0 flex-1 truncate text-xs font-semibold">{chatAttachment.image.file.name}</span><button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full" aria-label={tr("Retirer l'image")}><X className="h-4 w-4" /></button></div>}
                     <div className={`mx-auto flex h-12 w-full max-w-3xl items-center gap-2 rounded-full border px-3 shadow-[0_14px_35px_rgba(122,63,92,0.12)] transition ${isDarkTheme ? "border-white/10 bg-[#15111d]" : "border-[#ead8ef] bg-gradient-to-r from-[#fff7fb] via-[#f8edf7] to-[#f1e9ff]"}`}><button type="button" onClick={() => chatAttachment.inputRef.current?.click()} className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition ${isDarkTheme ? "text-white/75 hover:bg-white/10" : "text-[#8b5cf6] hover:bg-[#efe5ff]"}`}><Plus className="h-4 w-4" /></button><input value={chatInput} onChange={(event) => setChatInput(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void askFaceQuestion(chatInput); } }} placeholder={tr("Posez une question sur vos résultats...")} className={`h-full min-w-0 flex-1 bg-transparent text-sm outline-none ${palette.promptInput}`} /><button type="button" onClick={() => void askFaceQuestion(chatInput)} disabled={!chatInput.trim() || isChatSending || !selectedFaceChatId} className="ml-auto flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-[#b594ff] to-[#8c57eb] text-white transition disabled:cursor-not-allowed disabled:opacity-50"><Send className="h-4 w-4" /></button></div>
                   </div>
                 </div>
@@ -3327,7 +3452,7 @@ useEffect(() => {
                           onKeyDown={(event) => {
                             if (event.key === "Enter") {
                               event.preventDefault();
-                              saveChatRename();
+                              void saveChatRename();
                             }
 
                             if (event.key === "Escape") {
@@ -3340,12 +3465,12 @@ useEffect(() => {
                         />
                         <button
                           type="button"
-                          onClick={saveChatRename}
-                          disabled={!chatNameDraft.trim()}
+                          onClick={() => void saveChatRename()}
+                          disabled={!chatNameDraft.trim() || isChatNameSaving}
                           className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 ${palette.headerButton}`}
                         >
                           <Check className="h-4 w-4" />
-                          Enregistrer
+                          {isChatNameSaving ? tr("Enregistrement...") : tr("Enregistrer")}
                         </button>
                         <button
                           type="button"
@@ -3376,8 +3501,8 @@ useEffect(() => {
                     <p
                       className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}
                     >
-                      Reprenez votre analyse, retrouvez le rÃ©sultat prÃ©cÃ©dent et
-                      continuez la discussion dans le mÃªme fil.
+                      Reprenez votre analyse, retrouvez le résultat précédent et
+                      continuez la discussion dans le même fil.
                     </p>
                   </div>
                   <button
@@ -3385,7 +3510,7 @@ useEffect(() => {
                     onClick={() => setSelectedHistoryChatId(null)}
                     className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}
                   >
-                    Retour Ã  l&apos;accueil
+                    Retour à l&apos;accueil
                   </button>
                 </div>
 
@@ -3407,8 +3532,8 @@ useEffect(() => {
                           <p
                             className={`mt-2 ${isDarkTheme ? "text-white/75" : "text-[#69718f]"}`}
                           >
-                            J&apos;ai scannÃ© ce produit pour vÃ©rifier s&apos;il
-                            est bien adaptÃ© Ã  mon objectif peau et Ã  ma routine.
+                            J&apos;ai scanné ce produit pour vérifier s&apos;il
+                            est bien adapté à mon objectif peau et à ma routine.
                           </p>
                         </div>
                       </div>
@@ -3430,7 +3555,7 @@ useEffect(() => {
                                   <h2
                                     className={`text-xl font-bold ${palette.heading}`}
                                   >
-                                    RÃ©sultat de l&apos;analyse IA
+                                    Résultat de l&apos;analyse IA
                                   </h2>
                                   <span
                                     className={`rounded-full px-3 py-1 text-xs font-semibold ${isDarkTheme ? "bg-[#1c2f24] text-[#86d79f]" : "bg-[#e7f8ec] text-[#21a35c]"}`}
@@ -3462,7 +3587,7 @@ useEffect(() => {
                               isDarkTheme={isDarkTheme}
                             />
                             <InsightCard
-                              title="Ã€ surveiller"
+                              title="À surveiller"
                               tone="orange"
                               items={(selectedAnalysisResult.watchouts ?? []).map((item) => ({ ...item, ingredient: normalizeDisplayText(item.ingredient), reason: normalizeDisplayText(item.reason) }))}
                               isDarkTheme={isDarkTheme}
@@ -3485,14 +3610,14 @@ useEffect(() => {
                             className={`mt-5 rounded-2xl px-4 py-3 text-xs leading-5 ${isDarkTheme ? "bg-white/[0.04] text-white/65" : "bg-[#faf7ff] text-[#68708b]"}`}
                           >
                             {selectedAnalysisResult.disclaimer ||
-                              "Analyse informative, non mÃ©dicale. Consultez un professionnel en cas de doute."}
+                              "Analyse informative, non médicale. Consultez un professionnel en cas de doute."}
                           </p>
 
                           <div className="mt-5">
                             <h3
                               className={`text-base font-semibold ${palette.heading}`}
                             >
-                              Questions Ã  poser
+                              Questions à poser
                             </h3>
                             <div className="mt-3 flex flex-wrap gap-2">
                               {selectedFollowUpQuestions.map((question) => (
@@ -3581,7 +3706,7 @@ useEffect(() => {
                             className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-medium shadow-sm ${isDarkTheme ? "border-white/[0.12] bg-white/[0.05] text-[#f0c2df]" : "border-[#ece5fb] bg-white text-[#7a55ea]"}`}
                           >
                             <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                            SkinorAI rÃ©flÃ©chit...
+                            SkinorAI réfléchit...
                           </div>
                         </div>
                       )}
@@ -3614,9 +3739,9 @@ useEffect(() => {
                     {chatAttachment.image && (
                       <div className={`mx-auto mb-2 flex w-full max-w-3xl items-center gap-3 rounded-2xl border p-2 ${isDarkTheme ? "border-white/10 bg-[#15111d]" : "border-[#ead8ef] bg-white"}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={chatAttachment.image.previewUrl} alt={tr("Image sÃ©lectionnÃ©e")} className="h-12 w-12 rounded-xl object-cover" />
+                        <img src={chatAttachment.image.previewUrl} alt={tr("Image sélectionnée")} className="h-12 w-12 rounded-xl object-cover" />
                         <span className="min-w-0 flex-1 truncate text-xs font-semibold">{chatAttachment.image.file.name}</span>
-                        <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full" aria-label={tr("Retirer l image")}><X className="h-4 w-4" /></button>
+                        <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full" aria-label={tr("Retirer l'image")}><X className="h-4 w-4" /></button>
                       </div>
                     )}
                     <div
@@ -3658,7 +3783,7 @@ useEffect(() => {
                                 : "text-[#33243c] hover:bg-[#f5eefe]"
                                 }`}
                             >
-                              {tr("BibliothÃ¨que d'ingrÃ©dients")}
+                              {tr("Bibliothèque d'ingrédients")}
                             </button>
                           </div>
                         )}
@@ -3707,7 +3832,7 @@ useEffect(() => {
                       className={`mt-2 text-center text-[10px] ${isDarkTheme ? "text-white/35" : "text-[#9a8faa]"
                         }`}
                     >
-                      SkinorAI peut faire des erreurs. VÃ©rifiez les informations
+                      SkinorAI peut faire des erreurs. Vérifiez les informations
                       importantes.
                     </p>
                   </div>
@@ -3755,7 +3880,7 @@ useEffect(() => {
                   data-chat-hero
                   className={`mt-3 text-[28px] font-medium leading-tight tracking-[-0.05em] sm:text-[36px] ${palette.heading}`}
                 >
-                  {tr("PrÃªte Ã  mieux comprendre votre peau ?")}
+                  {tr("Prête à mieux comprendre votre peau ?")}
                 </h1>
                 {/* <p data-chat-hero className={`mt-2 max-w-xl text-[13px] leading-5 sm:text-sm ${palette.subtext}`}>
                   Your AI skincare companion for science-backed insights and personalized recommendations.
@@ -3780,17 +3905,14 @@ useEffect(() => {
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        {tr("Extrayez les informations visibles du produit et analysez les ingrÃ©dients confirmÃ©s.")}
+                        {tr("Extrayez les informations visibles du produit et analysez les ingrédients confirmés.")}
                       </span>
                       <img src="/icons/scan.png" alt="scan product" />
                     </span>
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (user?.planStatus === "pro") setIsFaceScanDialogOpen(true);
-                      else setLocalUpgradeReason("face-scan-pro-required");
-                    }}
+                    onClick={openFaceScanTutorial}
                     className={`group cursor-pointer flex min-h-[316px] items-center gap-4 rounded-2xl border p-5 text-left transition hover:-translate-y-1 ${palette.actionCard}`}
                   >
                     {/* <Leaf className="h-7 w-7 text-[#f09ac7]" /> */}
@@ -3803,7 +3925,7 @@ useEffect(() => {
                       <span
                         className={`mt-1.5 block text-[13px] leading-5 ${palette.actionText}`}
                       >
-                        {tr("Analysez des caractÃ©ristiques cosmÃ©tiques visibles avec des conseils prudents.")}
+                        {tr("Analysez des caractéristiques cosmétiques visibles avec des conseils prudents.")}
                       </span>
                       <img src="/icons/face.png" alt="analyze ingredients" />
                     </span>
@@ -3863,6 +3985,16 @@ useEffect(() => {
 
             setSelectedFeatureCard(null);
           }}
+        />
+      )}
+
+      {isFaceScanTutorialOpen && (
+        <FaceScanTutorialDialog
+          isDarkTheme={isDarkTheme}
+          activeStep={faceScanTutorialStep}
+          onStepChange={setFaceScanTutorialStep}
+          onClose={() => setIsFaceScanTutorialOpen(false)}
+          onContinue={continueFromFaceScanTutorial}
         />
       )}
 
@@ -3987,6 +4119,102 @@ function AnimatedChatText({ content, animate }: { content: string; animate: bool
         ),
       )}
     </p>
+  );
+}
+
+const faceScanTutorialSlides = [
+  {
+    title: "Préparez une lumière naturelle",
+    description: "Placez-vous face à une fenêtre ou une source douce pour éviter les ombres fortes sur la peau.",
+    image: "/faceScan.png",
+    alt: "Préparation du scan visage",
+  },
+  {
+    title: "Cadrez le visage clairement",
+    description: "Gardez le visage centré, net, sans filtre, avec les joues, le front et le menton bien visibles.",
+    image: "/icons/face.png",
+    alt: "Cadrage du visage",
+  },
+  {
+    title: "Recevez vos résultats dans le chat",
+    description: "Après l'analyse, SkinorAI ouvre directement la conversation pour expliquer les résultats et suggérer la suite.",
+    image: "/Ai.png",
+    alt: "Résultats SkinorAI",
+  },
+];
+
+type FaceScanTutorialDialogProps = {
+  isDarkTheme: boolean;
+  activeStep: number;
+  onStepChange: (step: number) => void;
+  onClose: () => void;
+  onContinue: () => void;
+};
+
+function FaceScanTutorialDialog({
+  isDarkTheme,
+  activeStep,
+  onStepChange,
+  onClose,
+  onContinue,
+}: FaceScanTutorialDialogProps) {
+  const { locale } = useI18n();
+  const tr = (value: string) => translateStaticText(normalizeDisplayText(value), locale);
+  const slide = faceScanTutorialSlides[activeStep] ?? faceScanTutorialSlides[0];
+  const isFirst = activeStep === 0;
+  const isLast = activeStep === faceScanTutorialSlides.length - 1;
+  const panelClass = isDarkTheme
+    ? "border-white/10 bg-[#111214] text-white"
+    : "border-[#eadff7] bg-white text-[#221d35]";
+  const mutedClass = isDarkTheme ? "text-white/62" : "text-[#746d86]";
+  const stepButtonClass = isDarkTheme
+    ? "border-white/10 bg-white/[0.04] text-white hover:bg-white/[0.08] disabled:text-white/25"
+    : "border-[#eadff7] bg-[#fbf8ff] text-[#2b2540] hover:bg-white disabled:text-[#c2b8d2]";
+
+  return (
+    <div className="fixed inset-0 z-[155] flex items-center justify-center overflow-y-auto bg-black/65 p-3 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true" aria-label={tr("Tutoriel scan visage")}>
+      <div className={`relative max-h-[calc(100vh-24px)] w-full max-w-[520px] overflow-y-auto rounded-[28px] border shadow-2xl sm:max-h-[calc(100vh-48px)] ${panelClass}`}>
+        <button type="button" onClick={onClose} className={`absolute right-4 top-4 z-10 grid h-10 w-10 place-items-center rounded-full border transition ${stepButtonClass}`} aria-label={tr("Fermer")}>
+          <X className="h-4 w-4" />
+        </button>
+
+        <div className="p-4 sm:p-5">
+          <div className="relative overflow-hidden rounded-[22px] bg-[#f7eefc]">
+            <div className="h-[240px] max-h-[34vh] w-full sm:h-[280px] sm:max-h-[36vh]">
+              <Image src={slide.image} alt={tr(slide.alt)} width={760} height={520} className="h-full w-full object-contain p-3 sm:p-4" priority />
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-2">
+            {faceScanTutorialSlides.map((item, index) => (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => onStepChange(index)}
+                className={`h-2 rounded-full transition ${index === activeStep ? "w-8 bg-[#ce98fb]" : isDarkTheme ? "w-2 bg-white/22" : "w-2 bg-[#d9c9ef]"}`}
+                aria-label={tr(`Étape ${index + 1}`)}
+              />
+            ))}
+          </div>
+
+          <div className="mt-4 text-center">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-[#a764dc]">{tr(`Étape ${activeStep + 1} sur 3`)}</p>
+            <h2 className="mt-2 text-xl font-black tracking-tight sm:text-2xl">{tr(slide.title)}</h2>
+            <p className={`mx-auto mt-2 max-w-md text-sm leading-6 ${mutedClass}`}>{tr(slide.description)}</p>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3">
+            <button type="button" onClick={() => onStepChange(Math.max(0, activeStep - 1))} disabled={isFirst} className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl border transition disabled:cursor-not-allowed ${stepButtonClass}`} aria-label={tr("Étape précédente")}>
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button type="button" onClick={isLast ? onContinue : () => onStepChange(Math.min(faceScanTutorialSlides.length - 1, activeStep + 1))} className="flex h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#ce98fb] px-4 text-sm font-black text-[#22172a] transition hover:bg-[#d9affb]">
+              {isLast ? tr("Commencer l'analyse") : tr("Suivant")}
+              {!isLast && <ChevronRight className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -4146,7 +4374,7 @@ function NewScanConversationPanel({
             {tr("Scannez un produit dans la conversation")}
           </h1>
           <p className={`mt-2 max-w-2xl text-sm leading-6 ${palette.subtext}`}>
-            {tr("Ajoutez une photo ou collez les ingrÃ©dients, confirmez votre objectif peau, puis l'analyse sera enregistrÃ©e comme discussion.")}
+            {tr("Ajoutez une photo ou collez les ingrédients, confirmez votre objectif peau, puis l'analyse sera enregistrée comme discussion.")}
           </p>
         </div>
         <button type="button" onClick={onCancel} className={`inline-flex h-10 items-center rounded-xl border px-4 text-sm font-medium transition ${palette.headerButton}`}>
@@ -4176,11 +4404,11 @@ function NewScanConversationPanel({
               >
                 {image ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={image.previewUrl} alt={tr("Produit sÃ©lectionnÃ©")} className="max-h-56 w-full rounded-2xl object-cover" />
+                  <img src={image.previewUrl} alt={tr("Produit sélectionné")} className="max-h-56 w-full rounded-2xl object-cover" />
                 ) : (
                   <span className={`flex flex-col items-center gap-3 text-sm font-semibold ${palette.subtext}`}>
                     <UploadCloud className="h-8 w-8 text-[#9b75f2]" />
-                    {tr("Importer une photo de l'Ã©tiquette")}
+                    {tr("Importer une photo de l'étiquette")}
                   </span>
                 )}
               </button>
@@ -4190,13 +4418,13 @@ function NewScanConversationPanel({
                   {isExtracting
                     ? tr("Extraction des informations visibles...")
                     : extraction
-                      ? tr("VÃ©rifiez les ingrÃ©dients dÃ©tectÃ©s avant de lancer l'analyse.")
+                      ? tr("Vérifiez les ingrédients détectés avant de lancer l'analyse.")
                       : tr("Vous pouvez aussi coller directement la liste INCI ci-dessous.")}
                 </p>
                 {extraction && (
                   <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold">
                     <span className={`rounded-full px-2.5 py-1 ${isDarkTheme ? "bg-white/8 text-white/70" : "bg-[#f1eaff] text-[#7654de]"}`}>{extraction.confidence}</span>
-                    <span className={`rounded-full px-2.5 py-1 ${isDarkTheme ? "bg-white/8 text-white/70" : "bg-[#f1eaff] text-[#7654de]"}`}>{extraction.fullIngredientListVisible ? tr("Liste complÃ¨te") : tr("Liste partielle")}</span>
+                    <span className={`rounded-full px-2.5 py-1 ${isDarkTheme ? "bg-white/8 text-white/70" : "bg-[#f1eaff] text-[#7654de]"}`}>{extraction.fullIngredientListVisible ? tr("Liste complète") : tr("Liste partielle")}</span>
                   </div>
                 )}
               </div>
@@ -4205,13 +4433,13 @@ function NewScanConversationPanel({
 
           <div className="mt-5">
             <div className="flex items-center justify-between gap-3">
-              <h2 className={`text-base font-semibold ${palette.heading}`}>{tr("IngrÃ©dients confirmÃ©s")}</h2>
+              <h2 className={`text-base font-semibold ${palette.heading}`}>{tr("Ingrédients confirmés")}</h2>
               <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${isDarkTheme ? "bg-white/8 text-white/65" : "bg-[#f7f2ff] text-[#7a55ea]"}`}>{ingredientItems.length}</span>
             </div>
             <textarea
               value={ingredientText}
               onChange={(event) => onIngredientTextChange(event.target.value)}
-              placeholder={tr("Collez les ingrÃ©dients ici, sÃ©parÃ©s par des virgules.")}
+              placeholder={tr("Collez les ingrédients ici, séparés par des virgules.")}
               className={`mt-3 min-h-36 w-full resize-none rounded-2xl border px-4 py-3 text-sm leading-6 outline-none ${isDarkTheme ? "border-white/10 bg-white/[0.04] text-white placeholder:text-white/35" : "border-[#e7def4] bg-white text-[#241f36] placeholder:text-[#9a8faa]"}`}
             />
             {warnings.length > 0 && (
@@ -4233,7 +4461,7 @@ function NewScanConversationPanel({
             <div>
               <h2 className={`text-base font-semibold ${palette.heading}`}>{tr("Objectif peau")}</h2>
               <p className={`mt-1 text-xs ${palette.subtext}`}>
-                {hasSavedGoalPreference ? tr("PrÃ©fÃ©rence chargÃ©e depuis vos paramÃ¨tres.") : tr("Choisissez une fois, vous pourrez la changer dans ParamÃ¨tres.")}
+                {hasSavedGoalPreference ? tr("Préférence chargée depuis vos paramètres.") : tr("Choisissez une fois, vous pourrez la changer dans Paramètres.")}
               </p>
             </div>
           </div>
@@ -4264,7 +4492,7 @@ function NewScanConversationPanel({
             {isAnalyzing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {isAnalyzing ? tr("Analyse en cours...") : tr("Analyser dans la conversation")}
           </button>
-          <p className={`mt-3 text-center text-[11px] leading-5 ${palette.subtext}`}>{tr("Le rÃ©sultat sera enregistrÃ© et ouvert comme une discussion.")}</p>
+          <p className={`mt-3 text-center text-[11px] leading-5 ${palette.subtext}`}>{tr("Le résultat sera enregistré et ouvert comme une discussion.")}</p>
         </aside>
       </div>
     </div>
@@ -4330,7 +4558,7 @@ function ResultWorkspace({
       id: "assistant-intro",
       role: "assistant",
       content:
-        "Je peux maintenant rÃ©pondre Ã  vos questions sur ce rÃ©sultat, la routine, les ingrÃ©dients Ã  surveiller ou la frÃ©quence d'utilisation.",
+        "Je peux maintenant répondre à vos questions sur ce résultat, la routine, les ingrédients à surveiller ou la fréquence d'utilisation.",
     },
   ]);
   const [isChatSending, setIsChatSending] = useState(false);
@@ -4443,7 +4671,7 @@ function ResultWorkspace({
           role: "assistant",
           content: error instanceof Error
             ? error.message
-            : "Impossible de rÃ©pondre pour le moment. RÃ©essayez dans quelques instants.",
+            : "Impossible de répondre pour le moment. Réessayez dans quelques instants.",
         },
       ]);
     } finally {
@@ -4508,8 +4736,8 @@ function ResultWorkspace({
                     {productName} - objectif: {selectedGoal.label}
                   </p>
                   <p className="mt-2 text-xs leading-6 text-[#69718f] sm:text-sm">
-                    J&apos;ai scannÃ© ce produit pour vÃ©rifier s&apos;il est bien adaptÃ© Ã 
-                    mon objectif peau et Ã  ma routine.
+                    J&apos;ai scanné ce produit pour vérifier s&apos;il est bien adapté à
+                    mon objectif peau et à ma routine.
                   </p>
                 </div>
                 <div className="hidden items-center gap-3 sm:flex">
@@ -4529,7 +4757,7 @@ function ResultWorkspace({
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
                         <h2 className="text-xl font-bold text-[#171b36]">
-                          RÃ©sultat de l&apos;analyse IA
+                          Résultat de l&apos;analyse IA
                         </h2>
                         <span className="rounded-full bg-[#e7f8ec] px-3 py-1 text-xs font-semibold text-[#21a35c]">
                           {analysisResult.verdictLabel}
@@ -4552,7 +4780,7 @@ function ResultWorkspace({
                     items={analysisResult.positives}
                   />
                   <InsightCard
-                    title="Ã€ surveiller"
+                    title="À surveiller"
                     tone="orange"
                     items={analysisResult.watchouts}
                   />
@@ -4568,7 +4796,7 @@ function ResultWorkspace({
 
                 <div className="mt-5">
                   <h3 className="text-base font-semibold text-[#171b36]">
-                    Questions Ã  poser
+                    Questions à poser
                   </h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {analysisResult.followUpQuestions.map((question) => (
@@ -4659,9 +4887,9 @@ function ResultWorkspace({
                   {chatAttachment.image && (
                     <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[#e5ddfb] bg-[#faf7ff] p-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={chatAttachment.image.previewUrl} alt="Image sÃ©lectionnÃ©e" className="h-12 w-12 rounded-xl object-cover" />
+                      <img src={chatAttachment.image.previewUrl} alt="Image sélectionnée" className="h-12 w-12 rounded-xl object-cover" />
                       <span className="min-w-0 flex-1 truncate text-xs font-semibold text-[#59617d]">{chatAttachment.image.file.name}</span>
-                      <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full text-[#6a7290]" aria-label={tr("Retirer l image")}><X className="h-4 w-4" /></button>
+                      <button type="button" onClick={chatAttachment.remove} className="grid h-8 w-8 place-items-center rounded-full text-[#6a7290]" aria-label={tr("Retirer l'image")}><X className="h-4 w-4" /></button>
                     </div>
                   )}
                   <input
@@ -4843,12 +5071,12 @@ function TipsCard() {
   const tips = [
     [
       Lightbulb,
-      "Bonne luminositÃ©",
-      "Prenez la photo dans un endroit bien Ã©clairÃ©.",
+      "Bonne luminosité",
+      "Prenez la photo dans un endroit bien éclairé.",
     ],
     [
       SquareDashed,
-      "CentrÃ©e et lisible",
+      "Centrée et lisible",
       "Assurez-vous que toute la liste d ingredients est visible et nette.",
     ],
     [
@@ -4890,7 +5118,7 @@ function BeforeContinueCard() {
   const items = [
     [
       ClipboardCheck,
-      "Verifiez que la liste est complete",
+      "Vérifiez que la liste est complète",
       "Assurez-vous que tous les ingredients presents sur l etiquette sont detectes.",
     ],
     [
@@ -4950,9 +5178,9 @@ function PhotoPreview({
         ) : (
           <div className="flex h-full flex-col items-center justify-center px-5 text-center text-[#7a6f99]">
             <Camera className="h-10 w-10 text-[#a184f4]" />
-            <p className="mt-4 text-xs font-semibold">Ajoutez une image pour afficher l aperÃ§u.</p>
+            <p className="mt-4 text-xs font-semibold">Ajoutez une image pour afficher l&apos;aperçu.</p>
             <p className="mt-2 text-xs leading-5 text-[#8a84a4]">
-              Vous pouvez importer une ou plusieurs photos de l Ã©tiquette.
+              Vous pouvez importer une ou plusieurs photos de l&apos;étiquette.
             </p>
           </div>
         )}
@@ -5017,7 +5245,7 @@ function ManualIngredientsDialog({
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-[#faf7ff] px-4 py-3">
           <p className="text-sm text-[#66708f]">
             {parsedCount > 0
-              ? `${parsedCount} ingredients detectes dans votre saisie.`
+              ? `${parsedCount} ingrédients détectés dans votre saisie.`
               : "Collez votre liste pour preparer l etape suivante."}
           </p>
           <p className="text-sm font-semibold text-[#7a54ea]">
@@ -5090,17 +5318,17 @@ function UpgradePlanDialog({
         </p>
         <h2 id="upgrade-plan-title" className="mt-2 text-2xl font-bold">
           {isFaceScan
-            ? "Le scan du visage est rÃ©servÃ© au plan Pro"
+            ? "Le scan du visage est réservé au plan Pro"
             : isScanLimit
               ? "Vos 3 scans gratuits sont termines"
               : "Votre question gratuite est utilisee"}
         </h2>
         <p className="mt-3 text-sm leading-6 text-[#66708f]">
           {isFaceScan
-            ? "Passez au plan Pro pour analyser des caractÃ©ristiques cosmÃ©tiques visibles. Les photos brutes du visage ne sont pas stockÃ©es par dÃ©faut."
+            ? "Passez au plan Pro pour analyser des caractéristiques cosmétiques visibles. Les photos brutes du visage ne sont pas stockées par défaut."
             : isScanLimit
               ? "Passez au plan Pro pour continuer a analyser de nouveaux produits avec SkinorAI."
-              : "Le plan Pro debloque davantage de questions aprÃ¨s chaque scan produit."}
+              : "Le plan Pro débloque davantage de questions après chaque scan produit."}
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
@@ -5112,7 +5340,7 @@ function UpgradePlanDialog({
               </div>
               <div className="rounded-2xl border border-[#ebe4fb] bg-[#faf7ff] p-4">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#8b83a7]">Photos brutes</p>
-                <p className="mt-2 text-base font-bold text-[#7a55ea]">Non stockÃ©es</p>
+                <p className="mt-2 text-base font-bold text-[#7a55ea]">Non stockées</p>
               </div>
             </>
           ) : (
@@ -5456,8 +5684,8 @@ function InsightCard({
           className={`mt-4 text-sm leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
         >
           {isGreen
-            ? "Aucun point fort spÃ©cifique dÃ©tectÃ© pour le moment."
-            : "Aucun ingrÃ©dient prÃ©occupant dÃ©tectÃ© pour le moment."}
+            ? "Aucun point fort spécifique détecté pour le moment."
+            : "Aucun ingrédient préoccupant détecté pour le moment."}
         </p>
       )}
     </section>
@@ -5481,7 +5709,7 @@ function NextStepCard({
         className={`flex items-center gap-2.5 text-lg font-bold ${isDarkTheme ? "text-white" : "text-[#171b36]"}`}
       >
         <Sparkles className="h-5 w-5 text-[#7a55ea]" />
-        Prochaine Ã©tape
+        Prochaine étape
       </h3>
       <p
         className={`mt-3 text-xs leading-6 ${isDarkTheme ? "text-white/70" : "text-[#66708f]"}`}
@@ -5560,7 +5788,7 @@ function FeatureCardDialog({
                 className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${isDarkTheme ? "text-[#f0a6d6]" : "text-[#9a56bf]"
                   }`}
               >
-                {tr("FonctionnalitÃ© SkinorAI")}
+                {tr("Fonctionnalité SkinorAI")}
               </p>
 
               <h2
@@ -5579,7 +5807,7 @@ function FeatureCardDialog({
               ? "bg-white/[0.06] text-white/80 hover:bg-white/[0.10]"
               : "bg-[#f5f1ff] text-[#6f3fe4] hover:bg-[#ede5ff]"
               }`}
-            aria-label={tr("Fermer la fenÃªtre")}
+            aria-label={tr("Fermer la fenêtre")}
           >
             <X className="h-5 w-5" />
           </button>
@@ -5634,6 +5862,10 @@ function FeatureCardDialog({
     </div>
   );
 }
+
+
+
+
 
 
 
